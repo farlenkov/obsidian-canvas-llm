@@ -1,11 +1,10 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
-	"version": "1.0.0",
-	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+  "id": "obsidian-canvas-llm",
+  "name": "Canvas LLM",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "A canvas-like UI to talk with LLMs in Obsidian.",
+  "author": "Mike Farlenkov",
+  "authorUrl": "https://github.com/farlenkov",
+  "isDesktopOnly": false
 }

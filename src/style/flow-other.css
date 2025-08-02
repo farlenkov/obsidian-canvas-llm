@@ -1,0 +1,122 @@
+.canvas-llm
+{
+    /* CANVAS */
+
+    .svelte-flow
+    {
+        background-color: var(--canvas-background) !important;
+    }
+
+    .svelte-flow__background-pattern.dots
+    {
+        fill: var(--interactive-accent);
+    }
+
+    /* CONTROLS PANNEL */
+
+    .svelte-flow__controls
+    {
+        box-shadow: none;
+    }
+
+    .svelte-flow__controls-button
+    {
+        border-radius: 0;
+    }
+
+    .svelte-flow__controls.horizontal .svelte-flow__controls-button 
+    {
+        border-right: none;
+    }
+    
+    .svelte-flow__controls.vertical .svelte-flow__controls-button 
+    {
+        border-bottom: none;
+    }
+
+    .canvas-llm-controll-button svg
+    {
+        max-width: 100% !important;
+        max-height: 100% !important;
+        fill: none !important;
+    }
+
+    /* RESIZE */
+
+    .svelte-flow__resize-control 
+    {
+        opacity: 0;
+    }
+
+    .svelte-flow__resize-control.handle
+    {
+        width: 10px !important;
+        height: 10px !important;
+    }
+
+    .svelte-flow__resize-control.line.top, 
+    .svelte-flow__resize-control.line.bottom
+    {
+        height: 8px !important;
+    }
+
+    .svelte-flow__resize-control.line.left, 
+    .svelte-flow__resize-control.line.right
+    {
+        width: 8px !important;
+    }
+
+    /* EDGE HANDLE */
+
+    .svelte-flow__handle-right { right: -1px; }
+    .svelte-flow__handle-left { left: -1px; }
+
+    .svelte-flow__handle
+    {
+        top: 1em !important;
+        width: 8px !important;
+        height: 8px !important;
+        z-index: 1;
+
+        background-color: var(--background-secondary);
+        border: 1px solid rgb(var(--canvas-color));
+    }
+
+    .svelte-flow__handle:hover
+    {
+        background: #ffd754;
+    }
+
+    .svelte-flow__handle::after
+    {
+        content: "";
+        border-radius: 100%;
+
+        position: absolute; 
+        transform: translate(-50%, -50%); 
+        top: 50%; 
+        left: 50%;
+
+        width: 20px;
+        height: 20px;
+        background: transparent;
+    }
+
+    .svelte-flow__handle:hover div
+    {
+        border: 1px solid #ffd75485;
+    }
+
+    /* EDGE */
+
+    .svelte-flow .svelte-flow__edge-path
+    {
+        stroke: #aaa;
+        stroke-width: 1.5;
+    }
+
+    .svelte-flow .svelte-flow__edge-path.selected
+    {
+        stroke: #ffd754;
+    }
+}

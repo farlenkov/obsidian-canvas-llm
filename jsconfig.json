@@ -1,0 +1,23 @@
+{
+  "compilerOptions": 
+  {
+    "target": "es6",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+
+    "paths": 
+    {
+      "*": ["node_modules/*"],
+
+      "$lib": ["./src"],
+      "$lib/*": ["./src/*"]
+    }
+  },
+  
+  "include": 
+  [
+    "**/*.js", 
+    "**/*.svelte"
+  ]
+}

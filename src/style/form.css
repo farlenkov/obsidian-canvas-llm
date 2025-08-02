@@ -1,0 +1,57 @@
+.canvas-llm
+{
+    table.form
+    {
+        border-collapse: collapse;
+
+        td, th { 
+            border: 1px solid #aaa; 
+        }
+
+        th { 
+            color: #ffffff;
+            font-weight: 100; 
+        }
+
+        td { 
+            vertical-align: top; 
+        } 
+    }
+
+    .form
+    {
+        .inputbox1
+        {
+            border: none;
+            border-bottom: 1px dashed #aaa;
+            border-radius: 0;
+            background: transparent;
+            width: 100%;
+            height: 1.5em;
+            outline: none;
+            padding: 0;
+            box-shadow: none;
+        }
+
+        .inputbox1:hover,
+        .inputbox1:focus
+        { 
+            border-bottom: 1px dashed #999; 
+        }
+
+        .inputbox2
+        {
+            background-color: #ffffff13;
+            border: 1px solid #474747;
+            border-radius: 0.5em;
+            padding: 0.1em 0.5em;
+            box-shadow: none;
+        }
+
+        .inputbox2:hover,
+        .inputbox2:focus
+        { 
+            border: 1px solid #686868;
+        }
+    }
+}

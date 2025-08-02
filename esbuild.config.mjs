@@ -1,6 +1,7 @@
 import esbuild from "esbuild";
 import process from "process";
-import builtins from "builtin-modules";
+import esbuildSvelte from "esbuild-svelte";
+import { copyFile, mkdir } from "fs/promises";
 
 const banner =
 `/*
@@ -10,40 +11,77 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = (process.argv[2] === "production");
+const outdir = "../../vault/.obsidian/plugins/obsidian-canvas-llm";
 
-const context = await esbuild.context({
-	banner: {
-		js: banner,
-	},
-	entryPoints: ["main.ts"],
-	bundle: true,
-	external: [
-		"obsidian",
-		"electron",
-		"@codemirror/autocomplete",
-		"@codemirror/collab",
-		"@codemirror/commands",
-		"@codemirror/language",
-		"@codemirror/lint",
-		"@codemirror/search",
-		"@codemirror/state",
-		"@codemirror/view",
-		"@lezer/common",
-		"@lezer/highlight",
-		"@lezer/lr",
-		...builtins],
-	format: "cjs",
-	target: "es2018",
-	logLevel: "info",
-	sourcemap: prod ? false : "inline",
-	treeShaking: true,
-	outfile: "main.js",
-	minify: prod,
-});
-
-if (prod) {
-	await context.rebuild();
-	process.exit(0);
-} else {
-	await context.watch();
+async function copyStatic() 
+{
+    try 
+    {
+        await mkdir(outdir, { recursive: true });
+        await copyFile("manifest.json", `${outdir}/manifest.json`);
+        
+        if (!prod)
+            console.log("Copied manifest.json");        
+    } 
+    catch (error) 
+    {
+        console.error("Error copying manifest.json:", error);
+    }
 }
+
+(async () => 
+{
+    try 
+    {
+        await copyStatic();
+
+        const cssContext = await esbuild.context
+        ({
+            entryPoints: ['src/style/style.css'], 
+            bundle: true,
+            outfile: `${outdir}/styles.css`,
+            logLevel: 'error',
+        });
+
+        const jsContext = await esbuild.context
+        ({
+            banner: { js: banner },
+            entryPoints: ["src/main.js"],
+            bundle: true,
+            external: ["obsidian"],
+            format: "cjs",
+            target: "es2018",
+            logLevel: "info",
+            sourcemap: prod ? false : "inline",
+            treeShaking: true,
+            outfile: `${outdir}/main.js`,
+            plugins: 
+            [
+                esbuildSvelte({
+                    compilerOptions: { css: "injected" }
+                }),
+            ],
+        });
+
+        if (prod) 
+        {
+            await jsContext .rebuild();
+            await cssContext.rebuild();
+
+            await jsContext .dispose();
+            await cssContext.dispose();
+            console.log("Production build complete.");
+        } 
+        else 
+        {
+            await jsContext .watch();
+            await cssContext.watch();
+            console.log("Watching for changes...");
+        }
+    } 
+    catch (e) 
+    {
+        console.error(e);
+        process.exit(1);
+    }
+})();
