@@ -3,6 +3,7 @@ import openai       from '$lib/providers/openai.js';
 import anthropic    from '$lib/providers/anthropic.js';
 import deepseek     from '$lib/providers/deepseek.js';
 import openrouter   from '$lib/providers/openrouter.js';
+import sambanova    from '$lib/providers/sambanova.js';
 
 class ProviderInfo
 {
@@ -12,7 +13,8 @@ class ProviderInfo
         openai,
         anthropic,
         deepseek,
-        openrouter
+        openrouter,
+        sambanova
     ];
 
     constructor ()

@@ -62,7 +62,7 @@
         height:     var(--modal-height);
 
         max-width:  30em;
-        max-height: 24em;
+        max-height: 29em;
     }
 
     .setting-item-name 
