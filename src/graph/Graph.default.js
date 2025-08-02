@@ -1,8 +1,9 @@
 export default function creteDefaultGraph()
 {
-    const node1 = (new Date).getTime().toString();
-    const node2 = node1 + 1;
-    const edge1 = node1 + 2;
+    const time = (new Date).getTime();
+    const node1 = (time + 1).toString();
+    const node2 = (time + 2).toString();
+    const edge1 = (time + 3).toString();
 
     return {
         "nodes": 

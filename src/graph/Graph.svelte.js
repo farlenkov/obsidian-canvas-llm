@@ -161,16 +161,22 @@ class GraphState
     {
         // GET EDGE
     
-        const edgeList = get(this.edges);
-        const sourceEdge = edgeList.find((edge) => edge.target === targetId);
+        const allEdges = get(this.edges);
+        const sourceEdge = allEdges.find((edge) => edge.target === targetId);
     
         if (!sourceEdge)
             return "";
     
         // GET NODE
     
-        const nodeList = get(this.nodes);
-        const sourceNode = nodeList.find((node) => node.id === sourceEdge.source);
+        const allNodes = get(this.nodes);
+        const sourceNode = allNodes.find((node) => node.id === sourceEdge.source);
+
+        if (!sourceNode)
+        {
+            console.log("[Graph: GetPrompt] Node not found: " + sourceEdge.source);
+            return "";
+        }
     
         // GET TEXT
     
