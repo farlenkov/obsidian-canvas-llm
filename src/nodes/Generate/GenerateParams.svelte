@@ -1,5 +1,6 @@
 <script>
 
+    import { onDestroy } from 'svelte';
     import { RefreshCcw , RefreshCw, SquareArrowOutUpRight  } from 'lucide-svelte';
 
     import params from './GenerateParams.svelte.js';
@@ -13,6 +14,7 @@
     let hasKey = $derived(settings.HasKey(selectedProvider.id));
     let hasModels = $derived(settings.HasModels(selectedProvider.id));
     let isUpdating = $derived(modelsInfo.updating[selectedProvider.id]);
+    let fetchError = $derived(modelsInfo.errors[selectedProvider.id]);
  
     if (modelsInfo.index[params.ModelID])
         selectedProvider = providersInfo.index[modelsInfo.index[params.ModelID].providerId];
@@ -52,6 +54,11 @@
         
         return true;
     }
+
+    onDestroy(() => 
+    {
+		modelsInfo.resetErrors();
+	});
 
 </script>
 
@@ -182,6 +189,15 @@
                                         </button>
 
                                     </div>
+
+                                    {#if fetchError}
+                                        <error>
+                                            {fetchError}
+                                            <button type="button" class="btn-dark" onclick={() => {modelsInfo.resetErrors()}}>
+                                                <XIcon size={24} strokeWidth={2}/>
+                                            </button>
+                                        </error>
+                                    {/if}
                                 </div>
                             {:else}
                                 {#each settings.GetModels(selectedProvider.id) as model}
