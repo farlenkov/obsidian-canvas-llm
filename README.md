@@ -43,3 +43,9 @@ You can also choose a different model for each block.
 The current version supports five API providers, and you'll need your own API keys to use them.
 
 ![Graph Example](assets/screenshots/api_keys.png)
+
+# Installation
+
+1. Download [latest release](https://github.com/farlenkov/obsidian-canvas-llm/releases/latest).
+2. Copy files `main.js`, `styles.css`, `manifest.json` to your Obsidian plugins directory: `vault/.obsidian/plugins/obsidian-canvas-llm`
+4. Enable the plugin in Obsidian → Settings → Community Plugins → Installed plugins → Canvas LLM.
