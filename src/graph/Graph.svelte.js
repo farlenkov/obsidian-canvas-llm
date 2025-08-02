@@ -1,5 +1,6 @@
 import { writable, get } from 'svelte/store';
 import creteDefaultGraph from "./Graph.default.js"
+import models from '$lib/models/ModelInfo.svelte.js';
 
 const CONTEXT_KEY = Symbol("graph");
 
@@ -7,33 +8,33 @@ class GraphState
 {
     constructor()
     {
-        const graphJson = this.#LoadFromLocalStorage();
-        this.#UpgradeGraph(graphJson);
+        const graphJson = creteDefaultGraph(); // this.loadFromLocalStorage();
+        this.upgradeGraph(graphJson);
 
         this.nodes = writable(graphJson.nodes);
         this.edges = writable(graphJson.edges);
         this.OnChange = () => {};
     }
 
-    #LoadFromLocalStorage() 
-    {
-        if (localStorage.graph)
-            return JSON.parse(localStorage.graph);
-        else
-            return creteDefaultGraph();
-    }
+    // loadFromLocalStorage() 
+    // {
+    //     if (localStorage.graph)
+    //         return JSON.parse(localStorage.graph);
+    //     else
+    //         return creteDefaultGraph();
+    // }
 
     LoadFromFile(graphJson)
     {
         if (typeof graphJson === 'string')
             graphJson = JSON.parse(graphJson);
 
-        this.#UpgradeGraph(graphJson);
+        this.upgradeGraph(graphJson);
         this.nodes.set(graphJson.nodes);
         this.edges.set(graphJson.edges);
     }
 
-    #UpgradeGraph(graphJson)
+    upgradeGraph(graphJson)
     {
         graphJson.nodes.forEach(node => 
         {
@@ -48,6 +49,14 @@ class GraphState
 
             if (node.data.htmls)
                 delete node.data.htmls;
+
+            if (!node.data.provider)
+            {
+                const model = models.index[node.data.model];
+
+                if (model)
+                    node.data.provider = model.providerId;
+            }
         });
     }
 
@@ -78,6 +87,13 @@ class GraphState
         this.nodes.update((nodes) => 
         {
             return nodes.filter((node2) => node2.id != node.id);
+        });
+
+        this.edges.update((edges) => 
+        {
+            return edges.filter((edge) => 
+                edge.source != node.id && 
+                edge.target != node.id);
         });
         
         this.OnChange();

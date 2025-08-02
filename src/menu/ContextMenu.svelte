@@ -43,12 +43,29 @@
 
     function addTextInput()
     {
-        addNode({type:"textInput", width: 260, height: 120, data : { value : "" }});
+        addNode
+        ({
+          type:"textInput", 
+          width: 260, 
+          height: 120, 
+          data : { value : "" }
+        });
     }
 
     function addGenerate()
     {
-        addNode({type:"generate", width: 460, height: 340, data : { markdowns : "", htmls : "", model : settings.Data.defaultModel }});
+        addNode
+        ({
+          type:"generate", 
+          width: 460, 
+          height: 340, 
+          data : 
+          { 
+            markdowns : [""], 
+            provider : settings.Data.defaultProvider, 
+            model : settings.Data.defaultModel 
+          }
+        });
     }
     
     function nodeRemove() 

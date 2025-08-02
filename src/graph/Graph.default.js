@@ -33,7 +33,8 @@ export default function creteDefaultGraph()
                 "data": {
                     "markdowns": "",
                     "htmls": "",
-                    "model":"gemini-2.0-flash"
+                    "model":"gemini-2.0-flash",
+                    "provider":"google"
                 }
             }
         ],

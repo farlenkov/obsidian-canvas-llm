@@ -3,6 +3,7 @@ import providers from "$lib/models/ProviderInfo.svelte.js"
 const DEFAULT_SETTINGS = 
 {
     defaultModel : "gemini-2.0-flash",
+    defaultProvider : "google",
     launchCounter : 0
 };
 
