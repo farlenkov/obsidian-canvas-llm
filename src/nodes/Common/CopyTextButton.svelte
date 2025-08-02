@@ -10,8 +10,8 @@
 
         if (navigator.clipboard)
             navigator.clipboard.writeText(text);
-        else
-            console.log("[clipboard]", text);
+        // else
+        //     console.log("[clipboard]", text);
     }
     
 </script>

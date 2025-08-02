@@ -1,5 +1,4 @@
-import providerInfo from "$lib/models/ProviderInfo.svelte.js"
-import modelsInfo from '$lib/models/ModelInfo.svelte.js';
+import providers from "$lib/models/ProviderInfo.svelte.js"
 
 const DEFAULT_SETTINGS = 
 {
@@ -21,24 +20,24 @@ class SettingsState
 
         // CheckApiKey
 
-        if (this.Data.launchCounter == 1)
-        {
-            let needToShowSettings = true;
+        // if (this.Data.launchCounter == 1)
+        // {
+        //     let needToShowSettings = true;
 
-            for (let i = 0; i < providerInfo.list.length; i++)
-            {
-                let provider = providerInfo.list[i];
+        //     for (let i = 0; i < providers.list.length; i++)
+        //     {
+        //         let provider = providers.list[i];
 
-                if (this.HasKey(provider.id))
-                {
-                    needToShowSettings = false;
-                    break;
-                }
-            }
+        //         if (this.HasKey(provider.id))
+        //         {
+        //             needToShowSettings = false;
+        //             break;
+        //         }
+        //     }
 
-            if (needToShowSettings)
-                this.Show();
-        }
+        //     if (needToShowSettings)
+        //         this.Show();
+        // }
     }
 
     async Save()

@@ -22,7 +22,6 @@ class ContextMenuState
 
     #Show (event, node, edge, connection) 
     {
-        console.log(event);
         const noContextMenu = event.target.closest(".nomenu");
 
         if (noContextMenu)
