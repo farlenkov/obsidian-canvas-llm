@@ -31,7 +31,7 @@ Take a look at this screenshot — this graph represents two separate chat branc
 > Why did the LLM cross the road? To get to the other side… and then write a 5,000-word essay about its motivations for doing so, citing every philosopher who ever pondered the nature of crossing roads and incorporating a sonnet about the existential dread of sidewalks.
 
 As you can see, Canvas LLM provides a visual way to interact with LLMs using branching conversations. 
-It can be especially useful when you're working on complex research projects, where navigating through a traditional chat UI becomes ineffective.
+It can be especially useful when you're working on complex research projects, where navigating through a traditional chat UI becomes inefficient and overwhelming.
 
 ## Model Selection
 
