@@ -32,20 +32,28 @@ Take a look at this screenshot — this graph represents two separate chat branc
 
 As you can see, Canvas LLM provides a visual way to interact with LLMs using branching conversations.
 
-# Model Selection
+## Model Selection
 
 You can also choose a different model for each block.
 
 ![Graph Example](assets/screenshots/model_select.png)
 
-# API Providers
+## API Providers
 
 The current version supports five API providers, and you'll need your own API keys to use them.
 
 ![Graph Example](assets/screenshots/api_keys.png)
 
-# Installation
+## Installation
 
 1. Download [latest release](https://github.com/farlenkov/obsidian-canvas-llm/releases/latest) (files `main.js`, `styles.css`, `manifest.json`).
 2. Copy this files to your Obsidian plugins directory: `vault/.obsidian/plugins/obsidian-canvas-llm`
 3. Enable the plugin in Obsidian → Settings → Community Plugins → Installed plugins → Canvas LLM.
+
+## Credits
+
+Canvas LLM is powered by [Svelte Flow](https://svelteflow.dev) from [xyflow](https://xyflow.com)
+
+## License
+
+This project is licensed under the GPL-3.0 license - see the LICENSE file for details.
