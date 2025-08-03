@@ -37,7 +37,6 @@ class SambaNova
     {
         // https://docs.sambanova.ai/cloud/api-reference/endpoints/chat
 
-        const url = "https://api.sambanova.ai/v1/chat/completions";
         const messages = [];
 
         nodes.forEach(node => 
@@ -54,9 +53,11 @@ class SambaNova
 
         try 
         {
-            const httpResp = await fetch(url, 
+            const httpReq = 
             {
-                method : "POST",
+                url : "https://api.sambanova.ai/v1/chat/completions",
+                throw : false,
+                method: 'POST',
                 headers : 
                 {
                     "Content-Type" : "application/json",
@@ -67,15 +68,15 @@ class SambaNova
                     model : model.id,
                     messages : messages
                 })
-            });
+            };
 
-            const jsonResp = await httpResp.json();
-
+            console.log(`[Canvas LLM] REQUEST: ${this.name} / ${model.name}`, httpReq);
+            const httpResp = await requestUrl(httpReq);
+            console.log(`[Canvas LLM] RESPONSE: ${this.name} / ${model.name}`, httpResp);
+            const jsonResp = await httpResp.json;
+            
             if (jsonResp?.error?.message)
                 throw jsonResp.error.message;
-
-            if (!httpResp.ok)
-                throw `${httpResp.status}: ${httpResp.statusText}`;
       
             const message = jsonResp.choices[0].message;
             const markdowns = [message.content];

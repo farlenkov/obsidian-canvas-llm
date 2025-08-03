@@ -39,8 +39,6 @@ class Google
 
     async CallModel(model, nodes)
     {
-        const url    = `https://generativelanguage.googleapis.com/v1beta/models/${model.id}:generateContent`;
-        // const url = `https://generativelanguage.googleapis.com/v1alpha/models/${model.id}:generateContent`;
         const messages = [];
 
         nodes.forEach(node => 
@@ -74,10 +72,10 @@ class Google
             if (model.thinking)
                 body.generationConfig.thinkingConfig = { includeThoughts : true };
             
-            const options = 
+            const httpReq = 
             {
-                url : url,
-                throw : true,
+                url : `https://generativelanguage.googleapis.com/v1beta/models/${model.id}:generateContent`,
+                // throw : true,
                 method: 'POST',
                 body : JSON.stringify(body),
                 headers : 
@@ -87,8 +85,13 @@ class Google
                 }
             };
 
-            const httpResp = await requestUrl(options);
+            console.log(`[Canvas LLM] REQUEST: ${this.name} / ${model.name}`, httpReq);
+            const httpResp = await requestUrl(httpReq);
+            console.log(`[Canvas LLM] RESPONSE: ${this.name} / ${model.name}`, httpResp);
             const jsonResp = await httpResp.json;
+
+            if (jsonResp?.error?.message)
+                throw jsonResp.error.message;
 
             if (!jsonResp.candidates)
                 throw "API provider respond with empty message.";

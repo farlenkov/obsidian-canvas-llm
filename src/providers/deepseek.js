@@ -45,7 +45,6 @@ class DeepSeek
     {
         // https://api-docs.deepseek.com/
 
-        const url = "https://api.deepseek.com/chat/completions";
         const messages = [];
 
         nodes.forEach(node => 
@@ -62,9 +61,11 @@ class DeepSeek
 
         try 
         {
-            const httpResp = await fetch(url, 
+            const httpReq = 
             {
-                method : "POST",
+                url : "https://api.deepseek.com/chat/completions",
+                throw : false,
+                method: 'POST',
                 headers : 
                 {
                     "Content-Type" : "application/json",
@@ -76,15 +77,15 @@ class DeepSeek
                     messages : messages,
                     stream : false
                 })
-            });
+            };
 
-            const jsonResp = await httpResp.json();
+            console.log(`[Canvas LLM] REQUEST: ${this.name} / ${model.name}`, httpReq);
+            const httpResp = await requestUrl(httpReq);
+            console.log(`[Canvas LLM] RESPONSE: ${this.name} / ${model.name}`, httpResp);
+            const jsonResp = await httpResp.json;
 
             if (jsonResp?.error?.message)
                 throw jsonResp.error.message;
-
-            if (!httpResp.ok)
-                throw `${httpResp.status}: ${httpResp.statusText}`;
       
             const message = jsonResp.choices[0].message;
 

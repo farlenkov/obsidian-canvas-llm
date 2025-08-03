@@ -46,7 +46,6 @@ class Anthropic
         // https://docs.anthropic.com/en/api/getting-started
         // https://docs.anthropic.com/en/api/messages
 
-        const url = `https://api.anthropic.com/v1/messages`;
         const messages = [];
 
         nodes.forEach(node => 
@@ -67,32 +66,34 @@ class Anthropic
 
         try 
         {
-            const httpResp = await fetch(url, 
+            const httpReq = 
             {
-                method: "POST",
-                headers: 
+                url : "https://api.anthropic.com/v1/messages",
+                throw : false,
+                method: 'POST',
+                headers : 
                 {
                     "x-api-key": settings.Data.anthropicKey,
                     "anthropic-version": "2023-06-01",
                     "content-type": "application/json",
                     "anthropic-dangerous-direct-browser-access" : "true"
                 },
-                body: JSON.stringify(
-                {
+                body : JSON.stringify
+                ({
                     model : model.id,
                     messages : messages,
                     max_tokens : 2048
                 })
-            });
+            };
 
-            const jsonResp = await httpResp.json();
+            console.log(`[Canvas LLM] REQUEST: ${this.name} / ${model.name}`, httpReq);
+            const httpResp = await requestUrl(httpReq);
+            console.log(`[Canvas LLM] RESPONSE: ${this.name} / ${model.name}`, httpResp);
+            const jsonResp = await httpResp.json;
             
             if (jsonResp?.error?.message)
                 throw jsonResp.error.message;
 
-            if (!httpResp.ok)
-                throw `${httpResp.status}: ${httpResp.statusText}`;
-            
             const markdowns = jsonResp.content.map(content => content.text);
             return markdowns;
         } 

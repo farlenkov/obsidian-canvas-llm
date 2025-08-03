@@ -42,7 +42,6 @@ class OpenAI
         // https://platform.openai.com/docs/guides/text-generation#conversations-and-context
         // https://platform.openai.com/docs/quickstart?language-preference=curl
 
-        const url = "https://api.openai.com/v1/chat/completions";
         const messages = [];
 
         nodes.forEach(node => 
@@ -59,9 +58,11 @@ class OpenAI
 
         try 
         {
-            const httpResp = await fetch(url, 
+            const httpReq = 
             {
-                method : "POST",
+                url : "https://api.openai.com/v1/chat/completions",
+                throw : false,
+                method: 'POST',
                 headers : 
                 {
                     "Content-Type" : "application/json",
@@ -72,15 +73,15 @@ class OpenAI
                     model : model.id,
                     messages : messages
                 })
-            });
+            };
 
-            const jsonResp = await httpResp.json();
-
+            console.log(`[Canvas LLM] REQUEST: ${this.name} / ${model.name}`, httpReq);
+            const httpResp = await requestUrl(httpReq);
+            console.log(`[Canvas LLM] RESPONSE: ${this.name} / ${model.name}`, httpResp);
+            const jsonResp = await httpResp.json;
+            
             if (jsonResp?.error?.message)
                 throw jsonResp.error.message;
-
-            if (!httpResp.ok)
-                throw `${httpResp.status}: ${httpResp.statusText}`;
       
             const markdowns = jsonResp.choices.map(choice => choice.message.content);
             return markdowns;
