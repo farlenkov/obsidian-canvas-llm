@@ -8,7 +8,6 @@ export default class CanvasPlugin extends Plugin
 {
     async onload() 
     {
-        const self = this;
         settings.Init(this);
         this.RegisterCanvasView();
         this.RegisterMenuItem();
@@ -19,6 +18,11 @@ export default class CanvasPlugin extends Plugin
             () => { this.CreateNewCanvas("/"); });
     }
 
+    async onunload() 
+    {
+        
+    }
+
     async RegisterCanvasView()
     {
         this.registerExtensions(
@@ -27,32 +31,30 @@ export default class CanvasPlugin extends Plugin
 
         this.registerView(
             'canvas-llm-view',
-            (leaf) => 
-            {
-                self.canvasView = new CanvasView(leaf, this);
-                return self.canvasView;
-            });
+            (leaf) => new CanvasView(leaf, this));
     }
 
     async RegisterMenuItem()
     {
-        const ev = this.app.workspace.on('file-menu', (menu, menuFile) => 
-        {
-            if (menuFile.extension === undefined) 
-            { 
-                menu.addItem((item) => 
-                {
-                    item.setTitle('New Canvas LLM')
-                        .setIcon('workflow') 
-                        .onClick(async () =>
-                        {
-                            this.CreateNewCanvas(menuFile.path);
-                        });
-                });
-            }
-        });
+        const fileMenuEvent = this.app.workspace.on(
+            'file-menu', 
+            (menu, menuFile) => 
+            {
+                if (menuFile.extension === undefined) 
+                { 
+                    menu.addItem((item) => 
+                    {
+                        item.setTitle('New Canvas LLM')
+                            .setIcon('workflow') 
+                            .onClick(async () =>
+                            {
+                                this.CreateNewCanvas(menuFile.path);
+                            });
+                    });
+                }
+            });
 
-        this.registerEvent(ev);
+        this.registerEvent(fileMenuEvent);
     }
 
     async CreateNewCanvas(folderPath)
@@ -73,10 +75,5 @@ export default class CanvasPlugin extends Plugin
 
         const leaf = this.app.workspace.getLeaf();
         await leaf.openFile(file);
-    }
-
-    async onunload() 
-    {
-        
     }
 }
