@@ -6,8 +6,7 @@ class SambaNova
     name = "SambaNova";
     keys = "https://cloud.sambanova.ai/apis";
     models = "https://cloud.sambanova.ai/plans/pricing";
-    price = true;
-
+    
     async FetchModels()
     {
         // https://docs.sambanova.ai/cloud/api-reference/endpoints/model-list
