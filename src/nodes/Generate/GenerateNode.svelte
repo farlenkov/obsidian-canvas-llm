@@ -125,7 +125,7 @@
                 </tabs>
             {/if}
 
-            <node-body class="nodrag nozoom nomenu node-text">
+            <node-body class="nodrag nozoom nomenu node-text markdown-rendered">
                 {#if data.markdowns.length == 1}
                     {@html mdToHtml(data.markdowns[0])}
                 {:else}

@@ -114,27 +114,6 @@
                 padding: 0.5em;
                 overflow: auto;
 
-                table 
-                {
-                    border-collapse: collapse;
-                    margin-bottom: 1em;
-
-                    th { background: #5b2600; }
-
-                    th, td 
-                    { 
-                        border: 1px solid #ffc879 !important; 
-                        line-height: 1.25em;
-                        padding: 0.5em;
-                    }
-                }
-                
-                hr
-                {
-                    margin: 2em;
-                    border-top: 1px dashed #fff;
-                }
-
                 ol
                 {
                     list-style: decimal !important;
