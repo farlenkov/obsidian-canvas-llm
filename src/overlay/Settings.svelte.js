@@ -25,9 +25,9 @@ class SettingsState
         // {
         //     let needToShowSettings = true;
 
-        //     for (let i = 0; i < providers.list.length; i++)
+        //     for (let i = 0; i < providers.List.length; i++)
         //     {
-        //         let provider = providers.list[i];
+        //         let provider = providers.List[i];
 
         //         if (this.HasKey(provider.id))
         //         {

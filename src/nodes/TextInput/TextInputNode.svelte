@@ -7,14 +7,11 @@
   let {id, data, selected} = $props();
   let value = $state(data.value);
 
-  const connections = useNodeConnections({ nodeId: id, type: 'target' });
-  const isConnectable = $derived ($connections.length === 0);
-
   function onChange ()
   {
     graph.UpdateNode(id, {value: value});
   }
-  
+
 </script>
 
 <NodeResizer 

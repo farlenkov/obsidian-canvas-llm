@@ -1,7 +1,6 @@
 import { Plugin, Modal, Notice, TextFileView, PluginSettingTab, Setting } from 'obsidian';
 
 import CanvasView from './CanvasView.js';
-import CanvasSetting from './CanvasSetting.js';
 import settings from '$lib/overlay/Settings.svelte.js';
 import creteDefaultGraph from '$lib/graph/Graph.default.js';
 
@@ -18,8 +17,6 @@ export default class CanvasPlugin extends Plugin
             'workflow', 
             'Create new Canvas LLM', 
             () => { this.CreateNewCanvas("/"); });
-
-        // this.addSettingTab(new CanvasSetting(this.app, this));
     }
 
     async RegisterCanvasView()

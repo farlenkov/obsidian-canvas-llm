@@ -3,9 +3,8 @@ import settings from '$lib/overlay/Settings.svelte.js';
 
 class ModelInfo
 {
-    index = $state({});
-    updating = $state({});
-    errors = $state({});
+    Updating = $state({});
+    Errors = $state({});
 
     constructor ()
     {
@@ -17,36 +16,34 @@ class ModelInfo
         while (!settings.Data)
             await new Promise((resolve) => setTimeout(resolve, 1));
 
-        var self = this;
-        this.defaultProvider = providers.list[0];
-
-        providers.list.forEach(provider => 
+        providers.List.forEach(provider => 
         {
             let models = settings.GetModels(provider.id);
+            provider.ModelById = {};
 
             models.forEach(model =>
             {
-                model.providerId = provider.id;
-                self.index[model.id] = model;
+                model.ProviderId = provider.id;
+                provider.ModelById[model.id] = model;
             });
         });
     }
 
-    resetErrors()
+    ResetErrors()
     {
-        this.errors = {};
+        this.Errors = {};
     }
 
-    async fetchModels(providerId)
+    async FetchModels(providerId)
     {
-        if (this.updating[providerId])
+        if (this.Updating[providerId])
             return;
 
-        this.updating[providerId] = true;
+        this.Updating[providerId] = true;
 
         try
         {
-            const provider = providers.index[providerId];
+            const provider = providers.ById[providerId];
             const models = await provider.FetchModels();
 
             models.sort((a,b) => 
@@ -66,10 +63,10 @@ class ModelInfo
         catch (ex)
         {
             console.log(ex);
-            this.errors[providerId] = ex;
+            this.Errors[providerId] = ex;
         }
 
-        this.updating[providerId] = false;
+        this.Updating[providerId] = false;
     }
 }
 

@@ -2,8 +2,7 @@
 
     import { SquareArrowOutUpRight, Loader } from 'lucide-svelte';
     import settings from './Settings.svelte.js';
-    import CloseOverlay from './CloseOverlay.svelte';
-    import providersInfo from '$lib/models/ProviderInfo.svelte.js';
+    import providers from '$lib/models/ProviderInfo.svelte.js';
     
 </script>
 
@@ -21,7 +20,7 @@
                     </div>
                     <div class="vertical-tab-header-group-items">
 
-                        {#each providersInfo.list as provider}
+                        {#each providers.List as provider}
 
                             <div class="setting-item">
                                 <div class="setting-item-info">

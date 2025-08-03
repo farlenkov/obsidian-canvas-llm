@@ -5,30 +5,24 @@
 
     import params from './GenerateParams.svelte.js';
     import graph from '$lib/graph/Graph.svelte.js';
-    import providersInfo from '$lib/models/ProviderInfo.svelte.js';
-    import modelsInfo from '$lib/models/ModelInfo.svelte.js';
+    import providers from '$lib/models/ProviderInfo.svelte.js';
+    import models from '$lib/models/ModelInfo.svelte.js';
     import settings from '$lib/overlay/Settings.svelte.js';
-    import CloseOverlay from '$lib/overlay/CloseOverlay.svelte';
 
-    let selectedProvider = $state({});
+    let selectedProvider = $state(providers.ById[params.ProviderID]);
     let hasKey = $derived(settings.HasKey(selectedProvider.id));
     let hasModels = $derived(settings.HasModels(selectedProvider.id));
-    let isUpdating = $derived(modelsInfo.updating[selectedProvider.id]);
-    let fetchError = $derived(modelsInfo.errors[selectedProvider.id]);
- 
-    if (modelsInfo.index[params.ModelID])
-        selectedProvider = providersInfo.index[modelsInfo.index[params.ModelID].providerId];
-    else
-        selectedProvider = providersInfo.defaultProvider;
+    let isUpdating = $derived(models.Updating[selectedProvider.id]);
+    let fetchError = $derived(models.Errors[selectedProvider.id]);
 
     function clickProvider(providerId)
     {
-        selectedProvider = providersInfo.index[providerId];
+        selectedProvider = providers.ById[providerId];
     }
 
     function clickModel (modelId)
     {
-        graph.UpdateNode(params.NodeID, {model : modelId});
+        graph.UpdateNode(params.NodeID, {provider : selectedProvider.id, model : modelId});
         params.Hide();
     }
 
@@ -57,7 +51,7 @@
 
     onDestroy(() => 
     {
-		modelsInfo.resetErrors();
+		models.ResetErrors();
 	});
 
 </script>
@@ -77,7 +71,7 @@
                         class:disabled={isUpdating || !hasKey}
                         disabled={isUpdating || !hasKey}
                         aria-label="Refresh models from {selectedProvider.name}" 
-                        onclick={()=>{modelsInfo.updateModels(selectedProvider.id)}}>
+                        onclick={()=>{models.FetchModels(selectedProvider.id)}}>
                         <RefreshCcw size={16}/>  
                     </button>
 
@@ -123,7 +117,7 @@
                 </div>
                 <div class="vertical-tab-header-group-items">
                     
-                     {#each providersInfo.list as provider}
+                     {#each providers.List as provider}
                         <div onclick={()=>{clickProvider(provider.id)}} 
                             class="vertical-tab-nav-item"                            
                             class:is-active={provider.id == selectedProvider.id}>
@@ -179,12 +173,12 @@
                                         <button 
                                             style="margin-top: 1em;"
                                             disabled={isUpdating}
-                                            onclick={()=>{modelsInfo.updateModels(selectedProvider.id)}}>
+                                            onclick={()=>{models.FetchModels(selectedProvider.id)}}>
                                             
                                             {#if isUpdating}
                                                 Getting models...
                                             {:else}
-                                                Refresh models
+                                                Get model list
                                             {/if}
                                         </button>
 
@@ -193,7 +187,7 @@
                                     {#if fetchError}
                                         <error>
                                             {fetchError}
-                                            <button type="button" class="btn-dark" onclick={() => {modelsInfo.resetErrors()}}>
+                                            <button type="button" class="btn-dark" onclick={() => {models.ResetErrors()}}>
                                                 <XIcon size={24} strokeWidth={2}/>
                                             </button>
                                         </error>

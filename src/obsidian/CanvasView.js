@@ -20,9 +20,10 @@ export default class CanvasView extends TextFileView
         return 'canvas-llm-view';
     }
 
-    setViewData (fileContents, clear)
+    async setViewData (fileContents, clear)
     {
-        graph.LoadFromFile(JSON.parse(fileContents));
+        const graphJson = JSON.parse(fileContents);
+        await graph.LoadFromFile(graphJson);
 
         if (this.graphView)
         {
@@ -38,7 +39,7 @@ export default class CanvasView extends TextFileView
 
     getViewData ()
     {
-        return JSON.stringify(graph.Dump());
+        return JSON.stringify(graph.Dump(), null, '\t');
     }
 
     clear ()

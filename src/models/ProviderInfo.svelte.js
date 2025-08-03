@@ -7,21 +7,20 @@ import sambanova    from '$lib/providers/sambanova.js';
 
 class ProviderInfo
 {
-    list = 
+    List = 
     [
-        google,
-        openai,
         anthropic,
         deepseek,
+        google,
+        openai,
         openrouter,
         sambanova
     ];
 
     constructor ()
     {
-        this.index = {};
-        this.defaultProvider = this.list[0];
-        this.list.forEach(provider => this.index[provider.id] = provider);
+        this.ById = {};
+        this.List.forEach(provider => this.ById[provider.id] = provider);
     }
 }
 
