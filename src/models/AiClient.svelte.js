@@ -1,21 +1,18 @@
 import providers from "$lib/models/ProviderInfo.svelte.js"
 import models from '$lib/models/ModelInfo.svelte.js';
 
-const LINE = "\n\n---\n\n";
-
 class AiClient
 {
-    async Call(modelId, messages)
+    async Call(providerId, modelId, messages)
     {
-        const model = models.index[modelId];
+        const provider = providers.ById[providerId];
+        const model = provider.ModelById[modelId];
+        
+        if (!provider)
+            throw `[AiClient: Call] Invalid Provider ID: ${providerId}`;
 
         if (!model)
-            throw `[AiClient: Call] Invalid Model ID: ${model.id}`;
-
-        const provider = providers.index[model.providerId];
-
-        if (!provider)
-            throw `[AiClient: Call] Invalid Provider ID: ${model.providerId} / ${model.id}`;
+            throw `[AiClient: Call] Invalid Model ID: ${providerId} / ${modelId}`;
 
         let markdowns = await provider.CallModel(model, messages); 
         const htmls = null;

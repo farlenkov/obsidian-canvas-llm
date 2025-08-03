@@ -8,7 +8,8 @@
 
     import settings from '$lib/overlay/Settings.svelte.js';
     import graph from '$lib/graph/Graph.svelte.js';
-    import modelsInfo from '$lib/models/ModelInfo.svelte.js';
+    import providers from "$lib/models/ProviderInfo.svelte.js"
+    import models from '$lib/models/ModelInfo.svelte.js';
     import aiClient from '$lib/models/AiClient.svelte.js';
     import { mdToHtml } from '$lib/utils/Markdown.js';
     import params from './GenerateParams.svelte.js';
@@ -24,19 +25,20 @@
         
         if (!data.model)
         {
-            params.Show(id);
+            showParams();
             return;
         }
 
-        const model = modelsInfo.index[data.model];
+        const provider = providers.ById[data.provider];
+        const model = provider.ModelById[data.model];
 
         if (!model)
         {
-            params.Show(id);
+            showParams()
             return;
         }
 
-        if (!settings.HasKey(model.providerId))
+        if (!settings.HasKey(provider.id))
         {
             settings.Show();
             return;
@@ -47,12 +49,12 @@
         try
         {
             const nodes = graph.GetPrompt(id);
-            const { markdowns, htmls } = await aiClient.Call(data.model, nodes);
+            const { markdowns, htmls } = await aiClient.Call(data.provider, data.model, nodes);
             graph.UpdateNode(id, { markdowns, htmls, part : 0 });
         }
         catch (err)
         {
-            console.error("[GenerateNode > Exec]", data.model, err);
+            console.error("[GenerateNode > Exec]", data.provider, data.model, err);
             errorMessage = err;
         }
 
@@ -64,6 +66,14 @@
         data.part = tabNum;
         activeTab = tabNum;
         graph.OnChange();
+    }
+
+    function showParams()
+    {
+        if (!data.provider || !data.model)
+            params.Show(id, settings.Data.defaultProvider, settings.Data.defaultModel);
+        else
+            params.Show(id, data.provider, data.model);
     }
 
 </script>
@@ -100,7 +110,7 @@
                         </button>
                     {/if}
                     <CopyTextButton text={data.markdowns[activeTab]} />
-                    <ParamsButton onclick={() => params.Show(id, data.model)} />
+                    <ParamsButton onclick={showParams} />
                 </node-header-right>
 
             </node-header>

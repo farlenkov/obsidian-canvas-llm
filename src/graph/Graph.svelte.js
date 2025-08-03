@@ -1,5 +1,6 @@
 import { writable, get } from 'svelte/store';
 import creteDefaultGraph from "./Graph.default.js"
+import providers from "$lib/models/ProviderInfo.svelte.js"
 import models from '$lib/models/ModelInfo.svelte.js';
 
 const CONTEXT_KEY = Symbol("graph");
@@ -24,17 +25,17 @@ class GraphState
     //         return creteDefaultGraph();
     // }
 
-    LoadFromFile(graphJson)
+    async LoadFromFile(graphJson)
     {
         if (typeof graphJson === 'string')
             graphJson = JSON.parse(graphJson);
 
-        this.upgradeGraph(graphJson);
+        await this.upgradeGraph(graphJson);
         this.nodes.set(graphJson.nodes);
         this.edges.set(graphJson.edges);
     }
 
-    upgradeGraph(graphJson)
+    async upgradeGraph(graphJson)
     {
         graphJson.nodes.forEach(node => 
         {
@@ -50,12 +51,14 @@ class GraphState
             if (node.data.htmls)
                 delete node.data.htmls;
 
-            if (!node.data.provider)
+            if (node.data.model &&
+                !node.data.provider)
             {
-                const model = models.index[node.data.model];
-
-                if (model)
-                    node.data.provider = model.providerId;
+                providers.List.forEach(provider => 
+                {
+                    if (provider.ModelById[node.data.model])
+                        node.data.provider = provider.id;
+                });
             }
         });
     }

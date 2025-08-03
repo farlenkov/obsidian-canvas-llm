@@ -5,15 +5,11 @@ class GenerateParams
     FilterName = $state("");
     FilterFree = $state(false);
     IsVisible = $derived(this.NodeID > 0);
-    
-    constructor()
-    {
-        
-    }
 
-    Show (nodeId, modelId) 
+    Show (nodeId, providerId, modelId) 
     {
         this.NodeID = nodeId;
+        this.ProviderID = providerId;
         this.ModelID = modelId;
     }
 
