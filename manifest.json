@@ -1,10 +1,10 @@
 {
-  "id": "obsidian-canvas-llm",
+  "id": "canvas-llm",
   "name": "Canvas LLM",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "minAppVersion": "0.15.0",
-  "description": "A canvas-like UI to talk with LLMs in Obsidian.",
+  "description": "A canvas-like UI to talk with LLMs.",
   "author": "Mike Farlenkov",
   "authorUrl": "https://github.com/farlenkov",
-  "isDesktopOnly": false
+  "isDesktopOnly": true
 }
