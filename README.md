@@ -41,7 +41,7 @@ You can also choose a different model for each block.
 
 ## API Providers
 
-The current version supports five API providers, and you'll need your own API keys to use them. But don't worry — some providers, like [Google](https://ai.google.dev/gemini-api/docs/pricing) and [OpenRouter](https://openrouter.ai/models?max_price=0), offer free models.
+The current version supports six API providers, and you'll need your own API keys to use them. But don't worry — some providers, like [Google](https://ai.google.dev/gemini-api/docs/pricing), [OpenRouter](https://openrouter.ai/models?max_price=0) and [SambaNova](https://cloud.sambanova.ai/plans/pricing), offer free models.
 
 ![Graph Example](assets/screenshots/api_keys.png)
 
