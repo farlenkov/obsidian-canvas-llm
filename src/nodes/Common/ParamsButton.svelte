@@ -1,6 +1,6 @@
 <script>
 
-    import { Menu } from 'lucide-svelte';
+    import { Menu, Settings } from 'lucide-svelte';
     let { onclick } = $props();
 
 </script>
@@ -10,7 +10,7 @@
     class="clickable-icon" 
     aria-label="Open node params" 
     {onclick}>
-    <Menu size={16}/> 
+    <Settings size={16}/> 
 </button>
 
 <style>
