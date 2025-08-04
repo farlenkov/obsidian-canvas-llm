@@ -9,7 +9,10 @@
 
     .svelte-flow__background-pattern.dots
     {
-        fill: var(--interactive-accent);
+        /* fill: var(--interactive-accent); */
+        /* fill: var(--tab-outline-color); */
+        fill: var(--divider-color);
+        /* fill: var(--canvas-dot-pattern); */
     }
 
     /* CONTROLS PANNEL */

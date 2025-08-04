@@ -1,7 +1,7 @@
 <script>
 
     import { onDestroy } from 'svelte';
-    import { RefreshCcw , RefreshCw, SquareArrowOutUpRight  } from 'lucide-svelte';
+    import { RefreshCcw , RefreshCw, SquareArrowOutUpRight, XIcon  } from 'lucide-svelte';
 
     import params from './GenerateParams.svelte.js';
     import graph from '$lib/graph/Graph.svelte.js';
@@ -314,6 +314,11 @@
         {
             padding: 0.5em;
         }
+    }
+
+    error
+    {
+        margin-top: 1em;
     }
 
 </style>

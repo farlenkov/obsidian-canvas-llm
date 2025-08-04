@@ -1,7 +1,8 @@
-import google       from '$lib/providers/google.js';
-import openai       from '$lib/providers/openai.js';
 import anthropic    from '$lib/providers/anthropic.js';
 import deepseek     from '$lib/providers/deepseek.js';
+import google       from '$lib/providers/google.js';
+import groq         from '$lib/providers/groq.js';
+import openai       from '$lib/providers/openai.js';
 import openrouter   from '$lib/providers/openrouter.js';
 import sambanova    from '$lib/providers/sambanova.js';
 
@@ -12,6 +13,7 @@ class ProviderInfo
         anthropic,
         deepseek,
         google,
+        groq,
         openai,
         openrouter,
         sambanova
