@@ -5,6 +5,7 @@ import groq         from '$lib/providers/groq.js';
 import openai       from '$lib/providers/openai.js';
 import openrouter   from '$lib/providers/openrouter.js';
 import sambanova    from '$lib/providers/sambanova.js';
+import xai          from '$lib/providers/xai.js';
 
 class ProviderInfo
 {
@@ -16,7 +17,8 @@ class ProviderInfo
         groq,
         openai,
         openrouter,
-        sambanova
+        sambanova,
+        xai
     ];
 
     constructor ()
