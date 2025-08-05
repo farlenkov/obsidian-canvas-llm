@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-canvas-llm",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"description": "A canvas-like UI to talk with LLMs in Obsidian.",
 	"main": "main.js",
 	"keywords": [],
