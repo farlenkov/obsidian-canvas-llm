@@ -1,6 +1,7 @@
 import settings from '$lib/overlay/Settings.svelte.js';
+import Provider from './provider.js';
 
-class OpenRouter
+class OpenRouter extends Provider
 {
     id = "openrouter";
     name = "OpenRouter";
@@ -8,94 +9,43 @@ class OpenRouter
     models = "https://openrouter.ai/models";
     price = true;
 
-    async FetchModels()
+    GetFetchUrl()
     {
-        const url = "https://openrouter.ai/api/v1/models";
-        const resp = await fetch(url);
-
-        if (!resp.ok)
-            throw new Error(`${resp.status}: ${resp.statusText}`);
-
-        const data = await resp.json();
-        const result = [];
-
-        data.data.forEach(model => 
-        {    
-            result.push(
-            { 
-                id : model.id,
-                name : model.name,
-                desc : model.description,
-                context : model.context_length,
-                prompt : parseFloat(model.pricing.prompt),
-                completion : parseFloat(model.pricing.completion)
-            })
-        });
-
-        return result;
+        return "https://openrouter.ai/api/v1/models";
     }
 
-    async CallModel(model, nodes)
+    GetFetchHeaders()
     {
-        // https://openrouter.ai/docs/quick-start
+        return {};
+    }
 
-        const messages = [];
+    ReadModel(model)
+    {
+        return { 
+            id : model.id,
+            name : model.name,
+            desc : model.description,
+            context : model.context_length,
+            owner : model.owned_by || this.name,
+            prompt : parseFloat(model.pricing.prompt),
+            completion : parseFloat(model.pricing.completion)
+        };
+    }
 
-        nodes.forEach(node => 
-        {
-            node.content.forEach(content => 
-            {    
-                messages.push
-                ({ 
-                    content : content, 
-                    role : node.role === "model" ? "assistant" : node.role
-                });
-            });
-        });
+    // https://openrouter.ai/docs/quick-start
 
-        try 
-        {
-            const httpReq = 
-            {
-                url : "https://openrouter.ai/api/v1/chat/completions",
-                throw : false,
-                method: 'POST',
-                headers : 
-                {
-                    "Content-Type" : "application/json",
-                    "Authorization" : "Bearer " + settings.Data.openrouterKey
-                },
-                body : JSON.stringify
-                ({
-                    model : model.id,
-                    messages : messages,
-                    stream : false
-                })
-            };
+    GetModelUrl(model)
+    {
+        return "https://openrouter.ai/api/v1/chat/completions";
+    }
 
-            console.log(`[Canvas LLM] REQUEST: ${this.name} / ${model.name}`, httpReq);
-            const httpResp = await requestUrl(httpReq);
-            console.log(`[Canvas LLM] RESPONSE: ${this.name} / ${model.name}`, httpResp);
-            const jsonResp = await httpResp.json;
-            
-            if (jsonResp?.error?.message)
-                throw jsonResp.error.message;
-      
-            const message = jsonResp.choices[0].message;
-
-            const markdowns = message.reasoning_content 
-                ? [message.reasoning_content, message.content]
-                : [message.content];
-
-            return markdowns;
-        } 
-        catch (error) 
-        {
-            console.error("[AiClient: CallOpenRouter]", error);
-            throw error;
-        }
+    GetModelHeaders()
+    {
+        return {
+            "Content-Type" : "application/json",
+            "Authorization" : "Bearer " + settings.Data.openrouterKey
+        };
     }
 }
 
-const provider = new OpenRouter();
-export default provider;
+export default new OpenRouter();

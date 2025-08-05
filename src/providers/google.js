@@ -1,33 +1,40 @@
 import settings from '$lib/overlay/Settings.svelte.js';
+import Provider from './provider.js';
 
-class Google
+class Google extends Provider
 {
     id = "google";
     name = "Google";
     keys = "https://aistudio.google.com/app/apikey";
     models = "https://ai.google.dev/gemini-api/docs/pricing";
 
-    async FetchModels()
-    {
-        // https://ai.google.dev/api/models#models_list-SHELL
+    // https://ai.google.dev/api/models#models_list-SHELL
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${settings.Data.googleKey}`;
-        const resp = await request(url);
-        const data = JSON.parse(resp);
+    GetFetchUrl()
+    {
+        return `https://generativelanguage.googleapis.com/v1beta/models?key=${settings.Data.googleKey}`;
+    }
+
+    GetFetchHeaders()
+    {
+        return {};
+    }
+
+    ReadModels(data)
+    {
         const result = [];
 
         data.models.forEach(model => 
         {
-            const id = model.name.replace("models/", "");
-
             if (model.supportedGenerationMethods.indexOf('generateContent') < 0)
                 return;
 
             result.push(
             { 
-                id : id,
+                id : model.name.replace("models/", ""),
                 name : model.displayName,
                 desc : model.description,
+                owner : this.name,
                 context : model.inputTokenLimit,
                 prompt : -1,
                 completion : -1
@@ -37,7 +44,20 @@ class Google
         return result;
     }
 
-    async CallModel(model, nodes)
+    GetModelUrl(model)
+    {
+        return `https://generativelanguage.googleapis.com/v1beta/models/${model.id}:generateContent`;
+    }
+
+    GetModelHeaders()
+    {
+        return {
+            "Content-Type" : "application/json",
+            "x-goog-api-key" : settings.Data.googleKey
+        };
+    }
+
+    ReadMessages(nodes)
     {
         const messages = [];
 
@@ -60,52 +80,36 @@ class Google
             messages.push(message);
         });
 
-        try 
+        return messages;
+    }
+
+    GetModelBody(model, messages)
+    {
+        const body = 
         {
-            const body = 
-            {
-                contents : messages,
-                generationConfig : {},  
-                safetySettings : [{ category : "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold : "BLOCK_NONE" }]
-            };
+            contents : messages,
+            generationConfig : {},  
+            safetySettings : 
+            [{ 
+                category : "HARM_CATEGORY_SEXUALLY_EXPLICIT", 
+                threshold : "BLOCK_NONE" 
+            }]
+        };
 
-            if (model.thinking)
-                body.generationConfig.thinkingConfig = { includeThoughts : true };
-            
-            const httpReq = 
-            {
-                url : `https://generativelanguage.googleapis.com/v1beta/models/${model.id}:generateContent`,
-                // throw : true,
-                method: 'POST',
-                body : JSON.stringify(body),
-                headers : 
-                {
-                    "Content-Type" : "application/json",
-                    "x-goog-api-key" : settings.Data.googleKey
-                }
-            };
+        // if (model.thinking)
+        //     body.generationConfig.thinkingConfig = { includeThoughts : true };
 
-            console.log(`[Canvas LLM] REQUEST: ${this.name} / ${model.name}`, httpReq);
-            const httpResp = await requestUrl(httpReq);
-            console.log(`[Canvas LLM] RESPONSE: ${this.name} / ${model.name}`, httpResp);
-            const jsonResp = await httpResp.json;
+        return body;
+    }
 
-            if (jsonResp?.error?.message)
-                throw jsonResp.error.message;
+    ReadResponse(data)
+    {
+        if (!data.candidates)
+            return [""];
+            // throw "API provider respond with empty message.";
 
-            if (!jsonResp.candidates)
-                throw "API provider respond with empty message.";
-
-            const markdowns = jsonResp.candidates[0].content.parts.map(part => part.text);
-            return markdowns;
-        } 
-        catch (error) 
-        {
-            console.error("[AiClient: CallGoogle]", error);
-            throw error;
-        }
+        return data.candidates[0].content.parts.map(part => part.text)
     }
 }
 
-const provider = new Google();
-export default provider;
+export default new Google();

@@ -1,93 +1,52 @@
 import settings from '$lib/overlay/Settings.svelte.js';
+import Provider from './provider.js';
 
-class SambaNova
+class SambaNova extends Provider
 {
     id = "sambanova";
     name = "SambaNova";
     keys = "https://cloud.sambanova.ai/apis";
     models = "https://cloud.sambanova.ai/plans/pricing";
-    
-    async FetchModels()
+
+    // https://docs.sambanova.ai/cloud/api-reference/endpoints/model-list
+
+    GetFetchUrl()
     {
-        // https://docs.sambanova.ai/cloud/api-reference/endpoints/model-list
-
-        const url = "https://api.sambanova.ai/v1/models";
-        const resp = await request(url);
-        const data = JSON.parse(resp);
-        const result = [];
-
-        data.data.forEach(model => 
-        {    
-            result.push(
-            { 
-                id : model.id,
-                name : model.id,
-                desc : model.id,
-                context : model.context_length,
-                prompt : parseFloat(model.pricing.prompt),
-                completion : parseFloat(model.pricing.completion)
-            })
-        });
-
-        return result;
+        return "https://api.sambanova.ai/v1/models";
     }
 
-    async CallModel(model, nodes)
+    GetFetchHeaders()
     {
-        // https://docs.sambanova.ai/cloud/api-reference/endpoints/chat
+        return {};
+    }
 
-        const messages = [];
+    ReadModel(model)
+    {
+        return { 
+            id : model.id,
+            name : model.id,
+            desc : model.id,
+            context : model.context_length,
+            owner : model.owned_by || this.name,
+            prompt : parseFloat(model.pricing.prompt),
+            completion : parseFloat(model.pricing.completion)
+        };
+    }
 
-        nodes.forEach(node => 
-        {
-            node.content.forEach(content => 
-            {    
-                messages.push
-                ({ 
-                    content : content, 
-                    role : node.role === "model" ? "assistant" : node.role
-                });
-            });
-        });
+    // https://docs.sambanova.ai/cloud/api-reference/endpoints/chat
 
-        try 
-        {
-            const httpReq = 
-            {
-                url : "https://api.sambanova.ai/v1/chat/completions",
-                throw : false,
-                method: 'POST',
-                headers : 
-                {
-                    "Content-Type" : "application/json",
-                    "Authorization" : "Bearer " + settings.Data.sambanovaKey
-                },
-                body : JSON.stringify
-                ({
-                    model : model.id,
-                    messages : messages
-                })
-            };
+    GetModelUrl(model)
+    {
+        return "https://api.sambanova.ai/v1/chat/completions";
+    }
 
-            console.log(`[Canvas LLM] REQUEST: ${this.name} / ${model.name}`, httpReq);
-            const httpResp = await requestUrl(httpReq);
-            console.log(`[Canvas LLM] RESPONSE: ${this.name} / ${model.name}`, httpResp);
-            const jsonResp = await httpResp.json;
-            
-            if (jsonResp?.error?.message)
-                throw jsonResp.error.message;
-      
-            const message = jsonResp.choices[0].message;
-            const markdowns = [message.content];
-            return markdowns;
-        } 
-        catch (error) 
-        {
-            console.error("[AiClient: CallSambaNova]", error);
-            throw error;
-        }
+    GetModelHeaders()
+    {
+        return {
+            "Content-Type" : "application/json",
+            "Authorization" : "Bearer " + settings.Data.sambanovaKey
+        };
     }
 }
 
-const provider = new SambaNova();
-export default provider;
+export default new SambaNova();
