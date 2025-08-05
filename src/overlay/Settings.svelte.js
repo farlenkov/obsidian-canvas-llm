@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS =
 
 class SettingsState
 {
+    FileVersion = 1;
     IsVisible = $state(false);
     Data = $state();
 
@@ -17,6 +18,7 @@ class SettingsState
         this.plugin = plugin;
         this.Data = Object.assign({}, DEFAULT_SETTINGS, await plugin.loadData());
         this.Data.launchCounter++;
+        this.Data.version = this.FileVersion;
         this.Save();
 
         // CheckApiKey

@@ -1,12 +1,13 @@
 import { writable, get } from 'svelte/store';
 import creteDefaultGraph from "./Graph.default.js"
 import providers from "$lib/models/ProviderInfo.svelte.js"
-import models from '$lib/models/ModelInfo.svelte.js';
 
 const CONTEXT_KEY = Symbol("graph");
 
 class GraphState
 {
+    FileVersion = 1;
+
     constructor()
     {
         const graphJson = creteDefaultGraph(); // this.loadFromLocalStorage();
@@ -16,14 +17,6 @@ class GraphState
         this.edges = writable(graphJson.edges);
         this.OnChange = () => {};
     }
-
-    // loadFromLocalStorage() 
-    // {
-    //     if (localStorage.graph)
-    //         return JSON.parse(localStorage.graph);
-    //     else
-    //         return creteDefaultGraph();
-    // }
 
     async LoadFromFile(graphJson)
     {
@@ -37,6 +30,9 @@ class GraphState
 
     async upgradeGraph(graphJson)
     {
+        if (!graphJson.version)
+            graphJson.version = this.FileVersion;
+        
         graphJson.nodes.forEach(node => 
         {
             if (node.data.markdown)
@@ -171,6 +167,7 @@ class GraphState
     Dump ()
     {
         return {
+            version : this.FileVersion,
             nodes : get(this.nodes),
             edges : get(this.edges)
         };
