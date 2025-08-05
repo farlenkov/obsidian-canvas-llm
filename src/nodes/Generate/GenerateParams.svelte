@@ -198,6 +198,7 @@
                                     {#if checkFilter(model)}
                                         <div onclick={()=>{clickModel(model.id)}} 
                                             class="vertical-tab-nav-item"
+                                            aria-label="{model.desc}"
                                             class:is-active={params.ModelID == model.id}>
                                             
                                             {#if (model.prompt + model.completion) != 0}

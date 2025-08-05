@@ -18,6 +18,8 @@
     let inProgress = $state(false);
     let errorMessage = $state("");
     let activeTab = $state(data.part ?? 0);
+    let provider = $derived(providers.ById[data.provider]);
+    let model = $derived(provider ? provider.ModelById[data.model] : null);
 
     async function clickGenerate()
     {
@@ -28,9 +30,6 @@
             showParams();
             return;
         }
-
-        const provider = providers.ById[data.provider];
-        const model = provider.ModelById[data.model];
 
         if (!model)
         {
@@ -93,7 +92,9 @@
             <node-header>
                 <node-header-left>
                     {#if data.model}
-                        {data.model}
+                        <div aria-label="[{model.owner}] {model.desc}">
+                            {data.model}
+                        </div>
                     {:else}
                         Generate
                     {/if}
