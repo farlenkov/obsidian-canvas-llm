@@ -64,8 +64,8 @@
           data : 
           { 
             markdowns : [""], 
-            provider : defaultModel.provider, 
-            model : defaultModel.model 
+            provider : defaultModel.providerId, 
+            model : defaultModel.id 
           }
         });
     }

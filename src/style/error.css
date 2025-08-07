@@ -1,19 +1,22 @@
-error
+.canvas-llm
 {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1em;
-
-    padding: 1.5em;
-    overflow: auto;
-
-    background: #6a2b2b;;
-    color: white;
-
-    button
+    error
     {
-        padding: .5em;
-        margin: -.5em -.5em 0 0; 
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1em;
+
+        padding: 1.5em;
+        overflow: auto;
+
+        background: #6a2b2b;;
+        color: white;
+
+        button
+        {
+            padding: .5em;
+            margin: -.5em -.5em 0 0; 
+        }
     }
 }

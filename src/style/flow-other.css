@@ -60,29 +60,34 @@
     .svelte-flow__resize-control.line.top, 
     .svelte-flow__resize-control.line.bottom
     {
-        height: 8px !important;
+        height: 10px !important;
     }
 
     .svelte-flow__resize-control.line.left, 
     .svelte-flow__resize-control.line.right
     {
-        width: 8px !important;
+        width: 10px !important;
     }
 
     /* EDGE HANDLE */
 
-    .svelte-flow__handle-right { right: -1px; }
-    .svelte-flow__handle-left { left: -1px; }
+    /* .svelte-flow__handle-right { right: -1px; } */
+    /* .svelte-flow__handle-left { left: -1px; } */
 
     .svelte-flow__handle
     {
-        top: 1em !important;
+        top: 1.05em !important;
         width: 8px !important;
         height: 8px !important;
         z-index: 1;
 
         background-color: var(--background-secondary);
         border: 1px solid rgb(var(--canvas-color));
+    }
+
+    .svelte-flow__node.selected .svelte-flow__handle
+    {
+        border-color: var(--color-accent);
     }
 
     .svelte-flow__handle:hover
