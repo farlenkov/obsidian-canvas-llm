@@ -4,6 +4,7 @@ export default class Provider
     {
         const options = 
         {
+            throw : false,
             url : this.GetFetchUrl(),
             headers : this.GetFetchHeaders()
         };

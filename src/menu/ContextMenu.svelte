@@ -54,6 +54,8 @@
 
     function addGenerate()
     {
+        const defaultModel = settings.GetDefaultModel();
+
         addNode
         ({
           type:"generate", 
@@ -62,8 +64,8 @@
           data : 
           { 
             markdowns : [""], 
-            provider : settings.Data.defaultProvider, 
-            model : settings.Data.defaultModel 
+            provider : defaultModel.provider, 
+            model : defaultModel.model 
           }
         });
     }

@@ -1,9 +1,12 @@
+import settings from '$lib/overlay/Settings.svelte.js';
+
 export default function creteDefaultGraph()
 {
     const time = (new Date).getTime();
     const node1 = (time + 1).toString();
     const node2 = (time + 2).toString();
     const edge1 = (time + 3).toString();
+    const defaultModel = settings.GetDefaultModel();
 
     return {
         "nodes": 
@@ -33,8 +36,8 @@ export default function creteDefaultGraph()
                 "data": {
                     "markdowns": "",
                     "htmls": "",
-                    "model":"gemini-2.0-flash",
-                    "provider":"google"
+                    "model": defaultModel.id,
+                    "provider": defaultModel.providerId
                 }
             }
         ],

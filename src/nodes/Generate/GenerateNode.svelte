@@ -18,8 +18,17 @@
     let inProgress = $state(false);
     let errorMessage = $state("");
     let activeTab = $state(data.part ?? 0);
+
     let provider = $derived(providers.ById[data.provider]);
     let model = $derived(provider ? provider.ModelById[data.model] : null);
+
+    function getModelDesc()
+    {
+        if (model)
+            return `[ ${provider.name} / ${model.owner} ] ${model.desc}`;
+        else
+            return `[ ${data.provider} ] ${data.model}`;
+    }
 
     async function clickGenerate()
     {
@@ -48,6 +57,13 @@
         try
         {
             const nodes = graph.GetPrompt(id);
+
+            if (nodes.length == 0)
+            {
+                errorMessage = "Prompt is empty. Please connect some Input node.";
+                return;
+            }
+            
             const { markdowns, htmls } = await aiClient.Call(data.provider, data.model, nodes);
             graph.UpdateNode(id, { markdowns, htmls, part : 0 });
         }
@@ -92,7 +108,7 @@
             <node-header>
                 <node-header-left>
                     {#if data.model}
-                        <div aria-label="[{model.owner}] {model.desc}">
+                        <div aria-label="{getModelDesc()}">
                             {data.model}
                         </div>
                     {:else}

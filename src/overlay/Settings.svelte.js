@@ -4,6 +4,7 @@ const DEFAULT_SETTINGS =
 {
     defaultModel : "gemini-2.0-flash",
     defaultProvider : "google",
+    recentModels : [],
     launchCounter : 0
 };
 
@@ -90,6 +91,47 @@ class SettingsState
     SetModels (providerId, models)
     {
         return this.Data[providerId + "Models"] = models;
+    }
+
+    AddRecentModel (model)
+    {
+        try
+        {
+            for (var i = 0; i < this.Data.recentModels.length; i++)
+            {
+                var recentModel = this.Data.recentModels[i];
+
+                if (recentModel.providerId == model.providerId &&
+                    recentModel.id == model.id)
+                {
+                    this.Data.recentModels.splice(i, 1);
+                    i--
+                }
+            }
+
+            this.Data.recentModels.unshift(model);
+            this.Save();
+        }
+        catch (ex)
+        {
+            console.error(ex);
+        }
+    }
+
+    GetDefaultModel()
+    {
+        if (!this.Data.recentModels ||
+            this.Data.recentModels.length == 0)
+        {
+            return {
+                providerId : this.Data.defaultProvider,
+                id : this.Data.defaultModel
+            };
+        }
+        else
+        {
+            return this.Data.recentModels[0];
+        }
     }
 }
 

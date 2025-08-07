@@ -23,7 +23,7 @@ class ModelInfo
 
             models.forEach(model =>
             {
-                model.ProviderId = provider.id;
+                model.providerId = provider.id;
                 provider.ModelById[model.id] = model;
             });
         });

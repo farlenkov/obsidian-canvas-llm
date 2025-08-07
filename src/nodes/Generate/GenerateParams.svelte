@@ -9,26 +9,36 @@
     import models from '$lib/models/ModelInfo.svelte.js';
     import settings from '$lib/overlay/Settings.svelte.js';
 
-    let selectedProvider = $state(providers.ById[params.ProviderID]);
-    let hasKey = $derived(settings.HasKey(selectedProvider.id));
-    let hasModels = $derived(settings.HasModels(selectedProvider.id));
-    let isUpdating = $derived(models.Updating[selectedProvider.id]);
-    let fetchError = $derived(models.Errors[selectedProvider.id]);
+    const RECENT_TAB = "recent";
+    const FAVORITES_TAB = "favorites";
+
+    let selectedProviderId = $state(params.ProviderTab || params.ProviderID);
+    let selectedProvider = $derived(providers.ById[selectedProviderId]);
+    let selectedProviderName = $derived(selectedProvider == null ? selectedProviderId : selectedProvider.name);
+    let selectedProviderPrice = $derived(selectedProvider == null ? false : selectedProvider.price);
+    
+    let hasKey = $derived(settings.HasKey(selectedProviderId));
+    let hasModels = $derived(settings.HasModels(selectedProviderId));
+    let isSpecial = $derived(selectedProviderId == RECENT_TAB || selectedProviderId == FAVORITES_TAB);
+    let isUpdating = $derived(models.Updating[selectedProviderId]);
+    let fetchError = $derived(models.Errors[selectedProviderId]);
 
     function clickProvider(providerId)
     {
-        selectedProvider = providers.ById[providerId];
+        selectedProviderId = providerId;
     }
 
-    function clickModel (modelId)
+    function clickModel (model)
     {
-        graph.UpdateNode(params.NodeID, {provider : selectedProvider.id, model : modelId});
+        graph.UpdateNode(params.NodeID, {provider : model.providerId, model : model.id});
+        params.ProviderTab = selectedProviderId;
+        settings.AddRecentModel(model);
         params.Hide();
     }
 
     function checkFilter(model)
     {
-        if (selectedProvider.price && params.FilterFree)
+        if (selectedProviderPrice && params.FilterFree)
         {
             // if (typeof model.prompt !== 'number')
             //     return false;
@@ -47,6 +57,18 @@
             return false;
         
         return true;
+    }
+
+    function getModelDesc(model)
+    {
+        const provider = providers.ById[model.providerId];
+        return `[ ${provider.name} / ${model.owner} ] ${model.desc}`;
+    }
+
+    function getProviderName(model)
+    {
+        const provider = providers.ById[model.providerId];
+        return `(${provider.name})`;
     }
 
     onDestroy(() => 
@@ -70,14 +92,15 @@
                         class="clickable-icon" 
                         class:disabled={isUpdating || !hasKey}
                         disabled={isUpdating || !hasKey}
-                        aria-label="Refresh models from {selectedProvider.name}" 
-                        onclick={()=>{models.FetchModels(selectedProvider.id)}}>
+                        aria-label="Refresh models from {selectedProviderName}" 
+                        onclick={()=>{models.FetchModels(selectedProviderId)}}>
                         <RefreshCcw size={16}/>  
                     </button>
 
                     <button 
                         class="clickable-icon" 
-                        aria-label="Review models from {selectedProvider.name}" 
+                        aria-label="Review models from {selectedProviderName}" 
+                        disabled={isSpecial}
                         onclick={()=>{window.open(selectedProvider.models)}}>
                         <SquareArrowOutUpRight size={16}/>  
                     </button>
@@ -87,18 +110,18 @@
                 <input 
                     type=text 
                     class="models-filter-name inputbox2"
-                    class:disabled={!hasKey || !hasModels}
+                    class:disabled={!isSpecial && (!hasKey || !hasModels)}
                     placeholder="Filter models by name"
                     disabled={!hasKey || !hasModels}
                     bind:value={params.FilterName}>
 
                 <label 
                     class="models-filter-free"
-                    class:disabled={!selectedProvider.price || !hasKey || !hasModels}
+                    class:disabled={!selectedProviderPrice || !hasKey || !hasModels}
                     aria-label="Show only free models">
                     <input 
                         type="checkbox" 
-                        disabled={!selectedProvider.price || !hasKey || !hasModels}
+                        disabled={!selectedProviderPrice || !hasKey || !hasModels}
                         bind:checked={params.FilterFree}> Free
                 </label>
 
@@ -120,7 +143,7 @@
                      {#each providers.List as provider}
                         <div onclick={()=>{clickProvider(provider.id)}} 
                             class="vertical-tab-nav-item"                            
-                            class:is-active={provider.id == selectedProvider.id}>
+                            class:is-active={provider.id == selectedProviderId}>
                             {provider.name}
                             <div class="vertical-tab-nav-item-chevron">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-chevron-right">
@@ -129,6 +152,17 @@
                             </div>
                         </div>
                     {/each}
+
+                    <div onclick={()=>{clickProvider(RECENT_TAB)}} 
+                        class="vertical-tab-nav-item resent-models-tab"                            
+                        class:is-active={RECENT_TAB == selectedProviderId}>
+                        Resent
+                        <div class="vertical-tab-nav-item-chevron">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-chevron-right">
+                                <path d="m9 18 6-6-6-6"></path>
+                            </svg>
+                        </div>
+                    </div>
                     
                 </div>
             </div>
@@ -138,10 +172,10 @@
             <div class="vertical-tab-content">
                 <div class="vertical-tab-header-group">
                     <div class="vertical-tab-header-group-title">
-                        Models from {selectedProvider.name}
+                        Models from {selectedProviderName}
                     </div>
                     <div class="vertical-tab-header-group-items">                        
-                        {#if !hasKey}
+                        {#if !isSpecial && !hasKey}
                             <div style="padding: var(--size-4-1) var(--size-4-2);">
                                 You did not provide the API key for <b>{selectedProvider.name}</b>.
                                 <br>
@@ -164,7 +198,7 @@
                                 </div>
                             </div>
                         {:else}
-                            {#if !hasModels}
+                            {#if !isSpecial && !hasModels}
                                 <div style="padding: var(--size-4-1) var(--size-4-2);">
                                     List of models for <b>{selectedProvider.name}</b> not downloaded yet.
                                     <br>
@@ -173,7 +207,7 @@
                                         <button 
                                             style="margin-top: 1em;"
                                             disabled={isUpdating}
-                                            onclick={()=>{models.FetchModels(selectedProvider.id)}}>
+                                            onclick={()=>{models.FetchModels(selectedProviderId)}}>
                                             
                                             {#if isUpdating}
                                                 Getting models...
@@ -194,18 +228,24 @@
                                     {/if}
                                 </div>
                             {:else}
-                                {#each settings.GetModels(selectedProvider.id) as model}
+                                {#each settings.GetModels(selectedProviderId) as model}
                                     {#if checkFilter(model)}
-                                        <div onclick={()=>{clickModel(model.id)}} 
+                                        <div onclick={()=>{clickModel(model)}} 
                                             class="vertical-tab-nav-item"
-                                            aria-label="{model.desc}"
+                                            aria-label="{getModelDesc(model)}"
                                             class:is-active={params.ModelID == model.id}>
-                                            
+
                                             {#if (model.prompt + model.completion) != 0}
                                                 {model.id}
                                             {:else}
                                                 {model.id.replace(":free","")} 
                                                 <label-free>free</label-free>
+                                            {/if}
+
+                                            {#if isSpecial}
+                                                <label-provider>
+                                                    {getProviderName(model)}
+                                                </label-provider>
                                             {/if}
                                                 
                                             <!-- <div class="vertical-tab-nav-item-chevron">
@@ -278,6 +318,12 @@
         padding: 0 0.25em;
     }
 
+    label-provider
+    {
+        display: inline-block;
+        opacity: 0.5;
+    }
+
     models-filter
     {
         display:flex;
@@ -318,6 +364,11 @@
     }
 
     error
+    {
+        margin-top: 1em;
+    }
+
+    .resent-models-tab
     {
         margin-top: 1em;
     }

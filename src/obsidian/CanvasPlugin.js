@@ -69,9 +69,11 @@ export default class CanvasPlugin extends Plugin
             filePath = `${folderPath}/${baseName} ${counter}.canvas-llm`;
         }
 
+        const graph = creteDefaultGraph();
+
         const file = await this.app.vault.create(
             filePath, 
-            JSON.stringify(creteDefaultGraph()));
+            JSON.stringify(graph));
 
         const leaf = this.app.workspace.getLeaf();
         await leaf.openFile(file);

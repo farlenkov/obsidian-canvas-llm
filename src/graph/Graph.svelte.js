@@ -1,8 +1,5 @@
 import { writable, get } from 'svelte/store';
-import creteDefaultGraph from "./Graph.default.js"
 import providers from "$lib/models/ProviderInfo.svelte.js"
-
-const CONTEXT_KEY = Symbol("graph");
 
 class GraphState
 {
@@ -10,11 +7,8 @@ class GraphState
 
     constructor()
     {
-        const graphJson = creteDefaultGraph(); // this.loadFromLocalStorage();
-        this.upgradeGraph(graphJson);
-
-        this.nodes = writable(graphJson.nodes);
-        this.edges = writable(graphJson.edges);
+        this.nodes = writable([]);
+        this.edges = writable([]);
         this.OnChange = () => {};
     }
 
@@ -181,7 +175,7 @@ class GraphState
         const sourceEdge = allEdges.find((edge) => edge.target === targetId);
     
         if (!sourceEdge)
-            return "";
+            return [];
     
         // GET NODE
     
@@ -191,7 +185,7 @@ class GraphState
         if (!sourceNode)
         {
             console.log("[Graph: GetPrompt] Node not found: " + sourceEdge.source);
-            return "";
+            return [];
         }
     
         // GET TEXT
