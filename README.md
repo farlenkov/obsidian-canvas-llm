@@ -6,7 +6,7 @@ Let me introduce an alternative: a canvas-like UI.
 
 ![Graph Example](assets/screenshots/graph_example.png)
 
-Take a look at this screenshot — here you can type prompts into 'Input' cards and call the LLM APIs in 'Generate' cards. This example graph shows two separate chat branches:
+Take a look at this screenshot — here you can type prompts into `Input` cards and call the LLM APIs in `Generate` cards. This example graph shows two separate chat branches:
 
 ### Branch 1:
 
