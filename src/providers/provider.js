@@ -13,7 +13,10 @@ export default class Provider
         const resp = await requestUrl(options);
         console.log(`[Canvas LLM] FetchModels ← ${this.name}`, resp);
 
-        const data = resp.json;
+        const text = await resp.text;
+        const data = this.ParseResponse(text);
+        this.CheckError(data);
+
         const result = this.ReadModels(data);
         return result;
     }
@@ -58,10 +61,9 @@ export default class Provider
             const resp = await requestUrl(options);
             console.log(`[Canvas LLM] CallModel ← ${this.name} / ${model.name}`, resp);
             
-            const data = await resp.json;
-            
-            if (data?.error?.message)
-                throw data.error.message;
+            const text = await resp.text;
+            const data = this.ParseResponse(text);
+            this.CheckError(data);
       
             const markdowns = this.ReadResponse(data);
             return markdowns;
@@ -103,6 +105,28 @@ export default class Provider
             messages : messages,
             stream : false
         };
+    }
+
+    CheckError(data)
+    {
+        if (typeof data?.error == "string")
+            throw data.error;
+
+        if (typeof data?.error?.message == "string")
+            throw data.error.message;
+    }
+
+    ParseResponse(text)
+    {
+        try
+        {
+            const data = JSON.parse(text);
+            return data;
+        }
+        catch(ex)
+        {
+            throw text;
+        }
     }
 
     ReadResponse(data)

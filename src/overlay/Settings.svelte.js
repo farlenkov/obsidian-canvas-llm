@@ -110,6 +110,10 @@ class SettingsState
             }
 
             this.Data.recentModels.unshift(model);
+
+            while (this.Data.recentModels.length > 14)
+                this.Data.recentModels.splice(13, 1);
+
             this.Save();
         }
         catch (ex)

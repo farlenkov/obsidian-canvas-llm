@@ -21,11 +21,13 @@
     let hasModels = $derived(settings.HasModels(selectedProviderId));
     let isSpecial = $derived(selectedProviderId == RECENT_TAB || selectedProviderId == FAVORITES_TAB);
     let isUpdating = $derived(models.Updating[selectedProviderId]);
-    let fetchError = $derived(models.Errors[selectedProviderId]);
+
+    let errorMessage = $state();
 
     function clickProvider(providerId)
     {
         selectedProviderId = providerId;
+        errorMessage = null;
     }
 
     function clickModel (model)
@@ -70,11 +72,12 @@
         const provider = providers.ById[model.providerId];
         return `(${provider.name})`;
     }
-
-    onDestroy(() => 
+    
+    async function fetchModels()
     {
-		models.ResetErrors();
-	});
+        errorMessage = null;
+        errorMessage = await models.FetchModels(selectedProviderId);
+    }
 
 </script>
 
@@ -93,7 +96,7 @@
                         class:disabled={isUpdating || !hasKey}
                         disabled={isUpdating || !hasKey}
                         aria-label="Refresh models from {selectedProviderName}" 
-                        onclick={()=>{models.FetchModels(selectedProviderId)}}>
+                        onclick={fetchModels}>
                         <RefreshCcw size={16}/>  
                     </button>
 
@@ -238,7 +241,7 @@
                                         <button 
                                             style="margin-top: 1em;"
                                             disabled={isUpdating}
-                                            onclick={()=>{models.FetchModels(selectedProviderId)}}>
+                                            onclick={fetchModels}>
                                             
                                             {#if isUpdating}
                                                 Getting models...
@@ -249,16 +252,25 @@
 
                                     </div>
 
-                                    {#if fetchError}
-                                        <error>
-                                            {fetchError}
-                                            <button type="button" class="btn-dark" onclick={() => {models.ResetErrors()}}>
+                                    {#if errorMessage}
+                                        <error style="margin-top: 1em;">
+                                            {errorMessage}
+                                            <button type="button" class="btn-dark" onclick={() => {errorMessage = null}}>
                                                 <XIcon size={24} strokeWidth={2}/>
                                             </button>
                                         </error>
                                     {/if}
                                 </div>
                             {:else}
+                                {#if errorMessage}
+                                    <error>
+                                        {errorMessage}
+                                        <button type="button" class="btn-dark" onclick={() => {errorMessage = null}}>
+                                            <XIcon size={24} strokeWidth={2}/>
+                                        </button>
+                                    </error>
+                                {/if}
+
                                 {#each settings.GetModels(selectedProviderId) as model}
                                     {#if checkFilter(model)}
                                         <div onclick={()=>{clickModel(model)}} 
@@ -286,7 +298,7 @@
                                     {/if}
                                 {/each}
                             {/if}
-                        {/if}                        
+                        {/if}
                     </div>
                 </div>
             </div>
@@ -397,11 +409,6 @@
         {
             padding: 0.5em;
         }
-    }
-
-    error
-    {
-        margin-top: 1em;
     }
 
 </style>

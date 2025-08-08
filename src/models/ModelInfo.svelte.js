@@ -4,8 +4,7 @@ import settings from '$lib/overlay/Settings.svelte.js';
 class ModelInfo
 {
     Updating = $state({});
-    Errors = $state({});
-
+    
     constructor ()
     {
         this.readLocal ();
@@ -29,17 +28,13 @@ class ModelInfo
         });
     }
 
-    ResetErrors()
-    {
-        this.Errors = {};
-    }
-
     async FetchModels(providerId)
     {
         if (this.Updating[providerId])
             return;
 
         this.Updating[providerId] = true;
+        let error = null;
 
         try
         {
@@ -58,15 +53,15 @@ class ModelInfo
 
             settings.SetModels(providerId, models);
             settings.Save();
-            this.readLocal ();
+            this.readLocal();
         }
         catch (ex)
         {
-            console.log(ex);
-            this.Errors[providerId] = ex;
+            error = ex;
         }
 
         this.Updating[providerId] = false;
+        return error;
     }
 }
 
