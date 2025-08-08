@@ -138,23 +138,53 @@
                 <div class="vertical-tab-header-group-title">
                     API Providers
                 </div>
+                <div class="vertical-tab-header-group-items">                    
+                    {#each providers.List as provider}
+                        {#if !provider.untested}
+
+                            <div onclick={()=>{clickProvider(provider.id)}} 
+                                class="vertical-tab-nav-item"                            
+                                class:is-active={provider.id == selectedProviderId}>
+                                {provider.name}
+                                <div class="vertical-tab-nav-item-chevron">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-chevron-right">
+                                        <path d="m9 18 6-6-6-6"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        {/if}
+                    {/each}
+                </div>
+                
+                <div class="vertical-tab-header-group-title">
+                    Untested
+                </div>
+                <div class="vertical-tab-header-group-items">                    
+                    {#each providers.List as provider}
+                        {#if provider.untested}
+
+                            <div onclick={()=>{clickProvider(provider.id)}} 
+                                class="vertical-tab-nav-item"                            
+                                class:is-active={provider.id == selectedProviderId}>
+                                {provider.name}
+                                <div class="vertical-tab-nav-item-chevron">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-chevron-right">
+                                        <path d="m9 18 6-6-6-6"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                        {/if}
+                    {/each}
+                </div>
+                
+                <div class="vertical-tab-header-group-title">
+                    Your
+                </div>
                 <div class="vertical-tab-header-group-items">
                     
-                     {#each providers.List as provider}
-                        <div onclick={()=>{clickProvider(provider.id)}} 
-                            class="vertical-tab-nav-item"                            
-                            class:is-active={provider.id == selectedProviderId}>
-                            {provider.name}
-                            <div class="vertical-tab-nav-item-chevron">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-chevron-right">
-                                    <path d="m9 18 6-6-6-6"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    {/each}
-
                     <div onclick={()=>{clickProvider(RECENT_TAB)}} 
-                        class="vertical-tab-nav-item resent-models-tab"                            
+                        class="vertical-tab-nav-item"                            
                         class:is-active={RECENT_TAB == selectedProviderId}>
                         Resent
                         <div class="vertical-tab-nav-item-chevron">
@@ -163,9 +193,10 @@
                             </svg>
                         </div>
                     </div>
-                    
+
                 </div>
-            </div>
+            </div>  
+                
         </div>
 
         <div class="vertical-tab-content-container">
@@ -289,6 +320,11 @@
         padding-top: 0;
         padding-bottom: 0;
     }
+
+    .vertical-tab-header-group-items 
+    {
+        margin-bottom: 1.5em;
+    }
     
     .vertical-tab-content-container
     {
@@ -364,11 +400,6 @@
     }
 
     error
-    {
-        margin-top: 1em;
-    }
-
-    .resent-models-tab
     {
         margin-top: 1em;
     }

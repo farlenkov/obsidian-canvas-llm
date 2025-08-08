@@ -59,17 +59,14 @@
             const nodes = graph.GetPrompt(id);
 
             if (nodes.length == 0)
-            {
-                errorMessage = "Prompt is empty. Please connect some Input node.";
-                return;
-            }
+                throw "Prompt is empty. Please connect some Input node.";
             
             const { markdowns, htmls } = await aiClient.Call(data.provider, data.model, nodes);
             graph.UpdateNode(id, { markdowns, htmls, part : 0 });
         }
         catch (err)
         {
-            console.error("[GenerateNode > Exec]", data.provider, data.model, err);
+            console.error("[Canvas LLM] Generate", data.provider, data.model, err);
             errorMessage = err;
         }
 

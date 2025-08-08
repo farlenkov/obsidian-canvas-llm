@@ -1,3 +1,4 @@
+import alibaba      from '$lib/providers/alibaba.js';
 import anthropic    from '$lib/providers/anthropic.js';
 import deepseek     from '$lib/providers/deepseek.js';
 import google       from '$lib/providers/google.js';
@@ -11,6 +12,7 @@ class ProviderInfo
 {
     List = 
     [
+        alibaba,
         anthropic,
         deepseek,
         google,
