@@ -1,0 +1,386 @@
+[
+  {
+    "id": "qwen-max",
+    "name": "Qwen-Max",
+    "desc": "Best inference performance among Qwen models, for complex multi-step tasks",
+    "context": 32768,
+    "prompt": 1.6,
+    "completion": 6.4
+  },
+  {
+    "id": "qwen-max-latest",
+    "name": "Qwen-Max (latest)",
+    "desc": "Always same performance as the latest snapshot",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-max-2025-01-25",
+    "name": "Qwen-Max (2025-01-25)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-plus",
+    "name": "Qwen-Plus",
+    "desc": "Balanced combination of performance, speed, and cost",
+    "context": 131072,
+    "prompt": 0.4,
+    "completion": 1.2
+  },
+  {
+    "id": "qwen-plus-latest",
+    "name": "Qwen-Plus (latest)",
+    "desc": "Always same performance as the latest snapshot",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-plus-2025-07-28",
+    "name": "Qwen-Plus (2025-07-28)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-plus-2025-07-14",
+    "name": "Qwen-Plus (2025-07-14)",
+    "desc": "Snapshot version",
+    "context": 131072,
+    "prompt": 0.4,
+    "completion": 1.2
+  },
+  {
+    "id": "qwen-plus-2025-04-28",
+    "name": "Qwen-Plus (2025-04-28)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-turbo",
+    "name": "Qwen-Turbo",
+    "desc": "Fast speed and low cost, suitable for simple tasks",
+    "context": 131072,
+    "prompt": 0.044,
+    "completion": 0.431
+  },
+  {
+    "id": "qwen-turbo-latest",
+    "name": "Qwen-Turbo (latest)",
+    "desc": "Always same performance as the latest snapshot",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-turbo-2025-04-28",
+    "name": "Qwen-Turbo (2025-04-28)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-long-latest",
+    "name": "Qwen-Long (latest)",
+    "desc": "Longest context window model",
+    "context": 10000000,
+    "prompt": 0.072,
+    "completion": 0.287
+  },
+  {
+    "id": "qwen-long-2025-01-25",
+    "name": "Qwen-Long (2025-01-25)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-omni-turbo",
+    "name": "Qwen-Omni-Turbo",
+    "desc": "Multimodal understanding and generation model",
+    "context": 32768,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-omni-turbo-latest",
+    "name": "Qwen-Omni-Turbo (latest)",
+    "desc": "Always same performance as the latest snapshot",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-omni-turbo-2025-03-26",
+    "name": "Qwen-Omni-Turbo (2025-03-26)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qvq-max",
+    "name": "QVQ-Max",
+    "desc": "Visual reasoning model; stronger capabilities in mathematics, coding, visual analysis",
+    "context": 131072,
+    "prompt": 1.147,
+    "completion": 4.588
+  },
+  {
+    "id": "qvq-max-latest",
+    "name": "QVQ-Max (latest)",
+    "desc": "Always same performance as the latest snapshot",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qvq-max-2025-03-25",
+    "name": "QVQ-Max (2025-03-25)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qvq-plus",
+    "name": "QVQ-Plus",
+    "desc": "Visual reasoning model variant",
+    "context": -1,
+    "prompt": 0.287,
+    "completion": 0.717
+  },
+  {
+    "id": "qvq-plus-latest",
+    "name": "QVQ-Plus (latest)",
+    "desc": "Always same performance as the latest snapshot",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-vl-max",
+    "name": "Qwen-VL-Max",
+    "desc": "Visual language model; enhanced visual reasoning and instruction following",
+    "context": 131072,
+    "prompt": 0.431,
+    "completion": 1.291
+  },
+  {
+    "id": "qwen-vl-max-latest",
+    "name": "Qwen-VL-Max (latest)",
+    "desc": "Always same performance as the latest snapshot",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-vl-max-2025-04-08",
+    "name": "Qwen-VL-Max (2025-04-08)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-vl-plus",
+    "name": "Qwen-VL-Plus",
+    "desc": "Visual language model variant",
+    "context": 131072,
+    "prompt": 0.216,
+    "completion": 0.646
+  },
+  {
+    "id": "qwen-vl-plus-latest",
+    "name": "Qwen-VL-Plus (latest)",
+    "desc": "Always same performance as the latest snapshot",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-vl-plus-2025-05-07",
+    "name": "Qwen-VL-Plus (2025-05-07)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-vl-ocr",
+    "name": "Qwen-VL-OCR",
+    "desc": "Specialized for text extraction from images (OCR)",
+    "context": 34096,
+    "prompt": 0.717,
+    "completion": -1
+  },
+  {
+    "id": "qwen-vl-ocr-latest",
+    "name": "Qwen-VL-OCR (latest)",
+    "desc": "Always same performance as the latest snapshot",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-vl-ocr-2025-04-13",
+    "name": "Qwen-VL-OCR (2025-04-13)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-math-plus",
+    "name": "Qwen-Math-Plus",
+    "desc": "Model for solving mathematical problems",
+    "context": 4096,
+    "prompt": 0.574,
+    "completion": 1.721
+  },
+  {
+    "id": "qwen-math-plus-latest",
+    "name": "Qwen-Math-Plus (latest)",
+    "desc": "Always same performance as the latest snapshot",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-math-plus-2024-09-19",
+    "name": "Qwen-Math-Plus (2024-09-19)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-math-turbo",
+    "name": "Qwen-Math-Turbo",
+    "desc": "Faster, lower-cost math model",
+    "context": -1,
+    "prompt": 0.287,
+    "completion": 0.861
+  },
+  {
+    "id": "qwen-math-turbo-latest",
+    "name": "Qwen-Math-Turbo (latest)",
+    "desc": "Always same performance as the latest snapshot",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-math-turbo-2024-09-19",
+    "name": "Qwen-Math-Turbo (2024-09-19)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen3-coder-plus",
+    "name": "Qwen3-Coder-Plus",
+    "desc": "Latest Qwen3 coder model with strong coding and agent capability",
+    "context": 1000000,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen3-coder-plus-2025-07-22",
+    "name": "Qwen3-Coder-Plus (2025-07-22)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen3-coder-flash",
+    "name": "Qwen3-Coder-Flash",
+    "desc": "Coder-Flash version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen3-coder-flash-2025-07-28",
+    "name": "Qwen3-Coder-Flash (2025-07-28)",
+    "desc": "Snapshot version",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-coder-plus",
+    "name": "Qwen-Coder-Plus",
+    "desc": "Earlier version, strong coding capability",
+    "context": 131072,
+    "prompt": 0.502,
+    "completion": 1.004
+  },
+  {
+    "id": "qwen-coder-plus-latest",
+    "name": "Qwen-Coder-Plus (latest)",
+    "desc": "Same performance as latest snapshot",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-coder-turbo",
+    "name": "Qwen-Coder-Turbo",
+    "desc": "Earlier coder-turbo version",
+    "context": 131072,
+    "prompt": 0.287,
+    "completion": 0.861
+  },
+  {
+    "id": "qwen-coder-turbo-latest",
+    "name": "Qwen-Coder-Turbo (latest)",
+    "desc": "Same performance as latest snapshot",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  },
+  {
+    "id": "qwen-mt-plus",
+    "name": "Qwen-MT-Plus",
+    "desc": "Flagship machine translation LLM upgraded based on Qwen 3",
+    "context": 4096,
+    "prompt": 0.259,
+    "completion": 0.775
+  },
+  {
+    "id": "qwen-mt-turbo",
+    "name": "Qwen-MT-Turbo",
+    "desc": "Turbo variant for translation",
+    "context": -1,
+    "prompt": 0.101,
+    "completion": 0.280
+  },
+  {
+    "id": "qwen-doc-turbo",
+    "name": "Qwen-Doc-Turbo",
+    "desc": "Data mining model for structured information extraction from documents",
+    "context": 131072,
+    "prompt": 0.087,
+    "completion": 0.144
+  },
+  {
+    "id": "text-embedding-v3",
+    "name": "Text embedding v3",
+    "desc": "Converts text into numerical representations for search, clustering, recommendation, classification",
+    "context": -1,
+    "prompt": -1,
+    "completion": -1
+  }
+]
