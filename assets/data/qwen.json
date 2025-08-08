@@ -1,4 +1,5 @@
-[
+{
+  "data" : [
   {
     "id": "qwen-max",
     "name": "Qwen-Max",
@@ -383,4 +384,4 @@
     "prompt": -1,
     "completion": -1
   }
-]
+]}
