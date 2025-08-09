@@ -208,7 +208,12 @@
                     <div class="vertical-tab-header-group-title">
                         Models from {selectedProviderName}
                     </div>
-                    <div class="vertical-tab-header-group-items">                        
+                    <div class="vertical-tab-header-group-items">
+                        <untested>
+                            Access to this provider is implemented according to its documentation, but has not been tested by the developer of Canvas LLM. 
+                            If you use it, please <a href="https://github.com/farlenkov/obsidian-canvas-llm/issues">share</a> your results with me.
+                        </untested>
+
                         {#if !isSpecial && !hasKey}
                             <div style="padding: var(--size-4-1) var(--size-4-2);">
                                 You did not provide the API key for <b>{selectedProvider.name}</b>.
@@ -409,6 +414,17 @@
         {
             padding: 0.5em;
         }
+    }
+    
+    untested
+    {
+        display: block;
+        border-left: 3px solid var(--color-blue);
+        background-color: var(--background-secondary);
+        margin-bottom: 1em;
+        font-size: 0.8em;
+        padding: 8px;
+        border-radius: 4px;
     }
 
 </style>
