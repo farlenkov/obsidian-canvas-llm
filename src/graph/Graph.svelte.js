@@ -167,8 +167,10 @@ class GraphState
         };
     }
 
-    GetPrompt (targetId)
+    GetPrompt (targetId, loop = {})
     {
+        loop[targetId] = true;
+
         // GET EDGE
     
         const allEdges = get(this.edges);
@@ -187,6 +189,9 @@ class GraphState
             console.log("[Graph: GetPrompt] Node not found: " + sourceEdge.source);
             return [];
         }
+
+        if (loop[sourceNode.id])
+            return [];
     
         // GET TEXT
     
@@ -198,7 +203,7 @@ class GraphState
             case "generate": result = { role : "model", content : sourceNode.data.markdowns}; break;
         }
     
-        return [ ...this.GetPrompt(sourceNode.id), result];
+        return [ ...this.GetPrompt(sourceNode.id, loop), result];
     }
 }
 
