@@ -48,7 +48,7 @@ The current version supports 8 API providers, and you'll need your own API keys 
 ## Installation
 
 1. Download [latest release](https://github.com/farlenkov/obsidian-canvas-llm/releases/latest) (files `main.js`, `styles.css`, `manifest.json`).
-2. Copy this files to your Obsidian plugins directory: `vault/.obsidian/plugins/obsidian-canvas-llm`.
+2. Copy this files to your Obsidian plugins directory: `vault/.obsidian/plugins/canvas-llm`.
 3. Enable the plugin in `Obsidian` → `Settings` → `Community Plugins` → `Canvas LLM`.
 
 ## Credits
