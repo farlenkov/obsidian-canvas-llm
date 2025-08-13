@@ -103,12 +103,11 @@ class Google extends Provider
     }
 
     ReadResponse(data)
-    {
-        if (!data.candidates)
-            return [""];
-            // throw "API provider respond with empty message.";
+    {            
+        if (!data?.candidates?.[0]?.content?.parts)
+            return [""]; // throw "API provider respond with empty message.";
 
-        return data.candidates[0].content.parts.map(part => part.text)
+        return data.candidates[0].content.parts.map(part => part.text);
     }
 }
 
