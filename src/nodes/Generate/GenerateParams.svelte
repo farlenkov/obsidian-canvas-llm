@@ -149,11 +149,6 @@
                                 class="vertical-tab-nav-item"                            
                                 class:is-active={provider.id == selectedProviderId}>
                                 {provider.name}
-                                <div class="vertical-tab-nav-item-chevron">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-chevron-right">
-                                        <path d="m9 18 6-6-6-6"></path>
-                                    </svg>
-                                </div>
                             </div>
                         {/if}
                     {/each}
@@ -170,11 +165,6 @@
                                 class="vertical-tab-nav-item"                            
                                 class:is-active={provider.id == selectedProviderId}>
                                 {provider.name}
-                                <div class="vertical-tab-nav-item-chevron">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon lucide-chevron-right">
-                                        <path d="m9 18 6-6-6-6"></path>
-                                    </svg>
-                                </div>
                             </div>
                             
                         {/if}
@@ -209,10 +199,13 @@
                         Models from {selectedProviderName}
                     </div>
                     <div class="vertical-tab-header-group-items">
-                        <untested>
-                            Access to this provider is implemented according to its documentation, but has not been tested by the developer of Canvas LLM. 
-                            If you use it, please <a href="https://github.com/farlenkov/obsidian-canvas-llm/issues">share</a> your results with me.
-                        </untested>
+
+                        {#if !isSpecial && selectedProvider.untested}
+                            <untested>
+                                Access to this provider is implemented according to its documentation, but has not been tested by the developer of Canvas LLM. 
+                                If you use it, please <a href="https://github.com/farlenkov/obsidian-canvas-llm/issues">share</a> your results with me.
+                            </untested>
+                        {/if}
 
                         {#if !isSpecial && !hasKey}
                             <div style="padding: var(--size-4-1) var(--size-4-2);">
@@ -421,7 +414,7 @@
         display: block;
         border-left: 3px solid var(--color-blue);
         background-color: var(--background-secondary);
-        margin-bottom: 1em;
+        margin-bottom: 0.5em;
         font-size: 0.8em;
         padding: 8px;
         border-radius: 4px;
