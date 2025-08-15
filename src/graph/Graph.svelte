@@ -46,7 +46,6 @@
     }
 
 </script>
-        <!-- colorMode = "dark" -->
 
 <div 
     style:height="100%" 
@@ -78,8 +77,8 @@
         onnodecontextmenu = {({ event, node })  => contextMenu.ShowNode(event, node)}
         onedgecontextmenu = {({ event, edge })  => contextMenu.ShowEdge(event, edge)}
 
-        onnodemousemove = {({ event }) => {zoomOnScroll = (event.target.closest(".nozoom") == null)}}
-        onnodemouseleave = {() => {zoomOnScroll = true}}>
+        onnodepointermove   = {({event}) => { zoomOnScroll = event.target.closest(".nozoom") == null }}
+        onnodepointerleave  = {() => { zoomOnScroll = true }}>
 
         <Controls position='bottom-left' orientation='horizontal'>
             <ControlButton onclick={() => showMiniMap = !showMiniMap} title="MiniMap" class={'canvas-llm-controll-button'}>
