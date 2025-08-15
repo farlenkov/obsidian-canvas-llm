@@ -61,8 +61,8 @@
             if (nodes.length == 0)
                 throw "Prompt is empty. Please connect some Input node.";
             
-            const { markdowns, htmls } = await aiClient.Call(data.provider, data.model, nodes);
-            graph.UpdateNode(id, { markdowns, htmls, part : 0 });
+            const { markdowns } = await aiClient.Call(data.provider, data.model, nodes);
+            graph.UpdateNode(id, { markdowns, part : 0 });
         }
         catch (err)
         {

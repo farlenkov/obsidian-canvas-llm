@@ -132,7 +132,7 @@ export default class Provider
     ReadResponse(data)
     {
         if (!data?.choices)
-            return [""]; // throw "API provider respond with empty message.";
+            return [""];
 
         return data.choices.map(choice => choice.message.content)
     }

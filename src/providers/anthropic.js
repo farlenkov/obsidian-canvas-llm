@@ -54,7 +54,7 @@ class Anthropic extends Provider
     ReadResponse(data)
     {
         if (!data?.content)
-            return [""]; // throw "API provider respond with empty message.";
+            return [""];
 
         return data.content.map(content => content.text);
     }

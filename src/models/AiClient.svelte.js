@@ -5,6 +5,8 @@ class AiClient
 {
     async Call(providerId, modelId, messages)
     {
+        // GET PROVIDER
+
         const provider = providers.ById[providerId];
         const model = provider.ModelById[modelId];
         
@@ -14,9 +16,14 @@ class AiClient
         if (!model)
             throw `[AiClient: Call] Invalid Model ID: ${providerId} / ${modelId}`;
 
-        let markdowns = await provider.CallModel(model, messages); 
-        const htmls = null;
-        return { markdowns, htmls };
+        // CALL PROVIDER
+
+        let markdowns = await provider.CallModel(model, messages);
+
+        if (!markdowns.some(md => md != ""))
+            throw "API provider respond with empty message.";
+
+        return { markdowns };
     }
 }
 
