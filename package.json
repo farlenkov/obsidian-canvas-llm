@@ -11,14 +11,14 @@
 		"build": "node esbuild.config.mjs production"
 	},
 	"devDependencies": {
-		"@types/node": "^16.11.6",
-		"@xyflow/svelte": "^0.1.26",
-		"builtin-modules": "3.3.0",
-		"esbuild": "0.17.3",
+		"@types/node": "^24.2.1",
+		"@xyflow/svelte": "^1.2.3",
+		"builtin-modules": "5.0.0",
+		"esbuild": "0.25.9",
 		"esbuild-svelte": "^0.9.3",
-		"lucide-svelte": "^0.469.0",
+		"lucide-svelte": "^0.539.0",
 		"obsidian": "latest",
 		"showdown": "^2.1.0",
-		"svelte": "^5.37.1"
+		"svelte": "^5.38.1"
 	}
 }

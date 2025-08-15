@@ -73,7 +73,7 @@ export default class CanvasPlugin extends Plugin
 
         const file = await this.app.vault.create(
             filePath, 
-            JSON.stringify(graph));
+            JSON.stringify(graph, null, '\t'));
 
         const leaf = this.app.workspace.getLeaf();
         await leaf.openFile(file);

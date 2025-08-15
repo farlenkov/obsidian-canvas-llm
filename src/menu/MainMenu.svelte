@@ -68,13 +68,13 @@
     showFitView={false} 
     showLock={false} 
     showZoom={false}>
-    <ControlButton on:click={() => fileInput.click()} title="Import" class={'canvas-llm-controll-button'}>
+    <ControlButton onclick={() => fileInput.click()} title="Import" class={'canvas-llm-controll-button'}>
         <Upload size={24} />
     </ControlButton>
-    <ControlButton on:click={onclickExport} title="Export" class={'canvas-llm-controll-button'}>
+    <ControlButton onclick={onclickExport} title="Export" class={'canvas-llm-controll-button'}>
         <Download size={24} />
     </ControlButton>
-    <ControlButton on:click={() => settings.Show()} title="Settings" class={'canvas-llm-controll-button'}>
+    <ControlButton onclick={() => settings.Show()} title="Settings" class={'canvas-llm-controll-button'}>
         <Settings size={24} />
     </ControlButton>
 </Controls>

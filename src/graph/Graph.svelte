@@ -54,8 +54,8 @@
     bind:clientHeight={contextMenu.CanvasHeight}>
 
     <SvelteFlow
-        nodes = {graph.nodes}
-        edges = {graph.edges}
+        bind:nodes = {graph.nodes}
+        bind:edges = {graph.edges}
         {nodeTypes}
         {zoomOnScroll}
         {preventScrolling}
@@ -67,25 +67,25 @@
         onconnectend={onConnectEnd}
         ondelete = {(event) => graph.OnChange()}
         
-        on:paneclick = {() => contextMenu.Hide()}
-        on:nodeclick = {() => contextMenu.Hide()}
-        on:edgeclick = {() => contextMenu.Hide()}
+        onpaneclick = {() => contextMenu.Hide()}
+        onnodeclick = {() => contextMenu.Hide()}
+        onedgeclick = {() => contextMenu.Hide()}
 
-        on:nodedragstart = {() => contextMenu.Hide()}
-        on:nodedragstop = {() => graph.OnChange()}
+        onnodedragstart = {()   => contextMenu.Hide()}
+        onnodedragstop = {()    => graph.OnChange()}
 
-        on:panecontextmenu = {({ detail : { event } })        => contextMenu.ShowPane(event)}
-        on:nodecontextmenu = {({ detail : { event, node } })  => contextMenu.ShowNode(event, node)}
-        on:edgecontextmenu = {({ detail : { event, edge } })  => contextMenu.ShowEdge(event, edge)}
+        onpanecontextmenu = {({ event })        => contextMenu.ShowPane(event)}
+        onnodecontextmenu = {({ event, node })  => contextMenu.ShowNode(event, node)}
+        onedgecontextmenu = {({ event, edge })  => contextMenu.ShowEdge(event, edge)}
 
-        on:nodemousemove = {({ detail : { event }}) => {zoomOnScroll = (event.target.closest(".nozoom") == null)}}
-        on:nodemouseleave = {() => {zoomOnScroll = true}}>
+        onnodemousemove = {({ event }) => {zoomOnScroll = (event.target.closest(".nozoom") == null)}}
+        onnodemouseleave = {() => {zoomOnScroll = true}}>
 
         <Controls position='bottom-left' orientation='horizontal'>
-            <ControlButton on:click={() => showMiniMap = !showMiniMap} title="MiniMap" class={'canvas-llm-controll-button'}>
+            <ControlButton onclick={() => showMiniMap = !showMiniMap} title="MiniMap" class={'canvas-llm-controll-button'}>
                 <MapIcon size={24} />
             </ControlButton>
-            <ControlButton on:click={() => settings.Show()} title="Settings" class={'canvas-llm-controll-button'}>
+            <ControlButton onclick={() => settings.Show()} title="Settings" class={'canvas-llm-controll-button'}>
                 <Settings size={24} />
             </ControlButton>
         </Controls>

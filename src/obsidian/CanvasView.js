@@ -39,7 +39,7 @@ export default class CanvasView extends TextFileView
 
     getViewData ()
     {
-        return JSON.stringify(graph.Dump(), null, '\t');
+        return graph.ToString();
     }
 
     clear ()

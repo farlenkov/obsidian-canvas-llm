@@ -1,11 +1,10 @@
 import settings from '$lib/overlay/Settings.svelte.js';
+import {CreateNodeId, CreateEdgeId} from '$lib/utils/CreateId';
 
 export default function creteDefaultGraph()
 {
-    const time = (new Date).getTime();
-    const node1 = (time + 1).toString();
-    const node2 = (time + 2).toString();
-    const edge1 = (time + 3).toString();
+    const node1 = CreateNodeId();
+    const node2 = CreateNodeId();
     const defaultModel = settings.GetDefaultModel();
 
     return {
@@ -14,28 +13,19 @@ export default function creteDefaultGraph()
             {
                 "id": node1,
                 "type": "textInput",
-                "position": {
-                    "x": 20,
-                    "y": 0
-                },
-                "data": {
-                    "value": "What is LLM?"
-                },
+                "position": { "x": 20, "y": 0 },
+                "data": { "value": "What is LLM?" },
                 "width": 180,
                 "height": 100
             },
             {
                 "id": node2,
                 "type": "generate",
-                "position": {
-                    "x": 240,
-                    "y": 0
-                },
+                "position": { "x": 240, "y": 0 },
                 "width": 460,
                 "height": 340,
                 "data": {
-                    "markdowns": "",
-                    "htmls": "",
+                    "markdowns": [""],
                     "model": defaultModel.id,
                     "provider": defaultModel.providerId
                 }
@@ -44,7 +34,7 @@ export default function creteDefaultGraph()
         "edges": 
         [
             {
-                "id": edge1,
+                "id": CreateEdgeId(node1, node2),
                 "source": node1,
                 "target": node2
             }
