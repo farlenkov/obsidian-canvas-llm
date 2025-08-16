@@ -62,7 +62,16 @@
                 throw "Prompt is empty. Please connect some Input node.";
             
             const { markdowns } = await aiClient.Call(data.provider, data.model, nodes);
-            graph.UpdateNode(id, { markdowns, part : 0 });
+            const oldMarkdowns = data.markdowns.filter(md => md ? true : false);
+
+            const update = 
+            {
+                part : oldMarkdowns.length,
+                markdowns : [...oldMarkdowns, ...markdowns]
+            };
+
+            graph.UpdateNode(id, update);
+            activeTab = update.part;
         }
         catch (err)
         {
@@ -73,19 +82,20 @@
         inProgress = false;
     }
 
-    function clickTab(tabNum)
-    {
-        data.part = tabNum;
-        activeTab = tabNum;
-        graph.OnChange();
-    }
-
     function showParams()
     {
         if (!data.provider || !data.model)
             params.Show(id, settings.Data.defaultProvider, settings.Data.defaultModel);
         else
             params.Show(id, data.provider, data.model);
+    }
+
+    function clickNextPart()
+    {
+        const nextPart = (activeTab + 1) % data.markdowns.length;
+        data.part = nextPart;
+        activeTab = nextPart;
+        graph.OnChange();
     }
 
 </script>
@@ -101,7 +111,7 @@
 <div class="canvas-node" class:is-selected={selected}>
     <div class="canvas-node-container">
 
-        <node-content class:has-tabs={data.markdowns.length > 1}>
+        <node-content>
             <node-header>
                 <node-header-left>
                     {#if data.model}
@@ -114,6 +124,15 @@
                 </node-header-left>
 
                 <node-header-right>
+                    {#if data.markdowns.length > 1}
+                        <button 
+                            class="next-part"
+                            aria-label="Next part" 
+                            onclick={clickNextPart}>
+                            {activeTab + 1}
+                        </button>
+                    {/if}
+
                     {#if !inProgress}
                         <button class="mod-cta" aria-label="Call LLM" onclick={clickGenerate}>
                             <Play size={16}/>  
@@ -123,26 +142,15 @@
                             <Loader size={16} class="rotate"/> 
                         </button>
                     {/if}
+
                     <CopyTextButton text={data.markdowns[activeTab]} />
                     <ParamsButton onclick={showParams} />
                 </node-header-right>
 
             </node-header>
 
-            {#if data.markdowns.length > 1}
-                <tabs>
-                    {#each data.markdowns as markdown, i}
-                        <button 
-                            class:active={activeTab == i} 
-                            onclick={() => clickTab(i)}>Part {i + 1}</button>
-                    {/each}
-                </tabs>
-            {/if}
-
             <node-body class="nodrag nozoom nomenu node-text markdown-rendered">
-                {#if data.markdowns.length == 1}
-                    {@html mdToHtml(data.markdowns[0])}
-                {:else}
+                {#if data.markdowns.length > 0}
                     {@html mdToHtml(data.markdowns[activeTab])}
                 {/if}
 
@@ -163,28 +171,13 @@
 
 <style>
 
-  tabs
-  {
-    display: flex;
-    border-bottom: 1px solid #aaa;
-
-    button
-    {
-      padding: 0.1em 1em; 
-    }
-    
-    button:hover
-    {
-      background: #ffffff1f; 
-    }
-
-    button.active
-    {
-      background: #575757;
-    }
-  }
-
   node-header-right .btn-main { margin-right: 0.5em;}
+
+  button.next-part
+  {
+    padding: var(--size-4-1) var(--size-4-2);
+    margin-right: 0.25em;
+  }
 
   error
   {
@@ -205,6 +198,7 @@
     .mod-cta
     {
       margin-right: 0.5em;
+      padding: var(--size-4-1) var(--size-4-2);
     }
   }
 

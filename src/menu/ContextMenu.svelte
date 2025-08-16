@@ -64,7 +64,7 @@
           height: 340, 
           data : 
           { 
-            markdowns : [""], 
+            markdowns : [], 
             provider : defaultModel.providerId, 
             model : defaultModel.id 
           }

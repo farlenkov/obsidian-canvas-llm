@@ -47,6 +47,30 @@ class SambaNova extends Provider
             "Authorization" : "Bearer " + settings.Data.sambanovaKey
         };
     }
+
+    ReadResponse(data)
+    {            
+        if (!data?.choices)
+            return [""];
+
+        const result = [];
+
+        data.choices.forEach(choice => 
+        {
+            const content = choice.message.content;
+            const thinkMatch = content.match(/<think>([\s\S]*?)<\/think>/);
+            const reasoning = thinkMatch ? thinkMatch[1].trim() : "";
+            const response = content.replace(/<think>[\s\S]*?<\/think>/, "").trim();
+
+            if (reasoning)
+                result.push(reasoning);
+
+            if (response)
+                result.push(response);
+        });
+
+        return result;
+    }
 }
 
 export default new SambaNova();

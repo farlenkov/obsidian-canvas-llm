@@ -96,9 +96,7 @@ class Google extends Provider
             }]
         };
 
-        // if (model.thinking)
-        //     body.generationConfig.thinkingConfig = { includeThoughts : true };
-
+        body.generationConfig.thinkingConfig = { includeThoughts : true };
         return body;
     }
 

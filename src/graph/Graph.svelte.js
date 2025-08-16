@@ -243,7 +243,7 @@ class GraphState
         switch (sourceNode.type)
         {
             case "textInput": result = { role : "user", content : [sourceNode.data.value]}; break;
-            case "generate": result = { role : "model", content : sourceNode.data.markdowns}; break;
+            case "generate": result = { role : "model", content : [sourceNode.data.markdowns[sourceNode.data.part]]}; break;
         }
     
         return [ ...this.GetPrompt(sourceNode.id, loop), result];

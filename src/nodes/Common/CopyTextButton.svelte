@@ -22,13 +22,3 @@
     onclick={onClick}>
     <Copy size={16}/>  
 </button>
-
-<style>
-
-    .btn-dark 
-    {
-        border-radius: 0.5em;
-        padding: 0.25em;
-    }
-
-</style>

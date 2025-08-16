@@ -120,11 +120,6 @@
                     list-style-type: decimal !important;
                 }
             }
-        } 
-        
-        node-content.has-tabs
-        {
-            grid-template-rows: 2em 2em auto;
         }
     }
 }

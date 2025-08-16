@@ -25,7 +25,7 @@ export default function creteDefaultGraph()
                 "width": 460,
                 "height": 340,
                 "data": {
-                    "markdowns": [""],
+                    "markdowns": [],
                     "model": defaultModel.id,
                     "provider": defaultModel.providerId
                 }

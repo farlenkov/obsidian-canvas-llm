@@ -63,7 +63,7 @@
         proOptions = {{hideAttribution:true}}
         snapGrid = {[20,20]}
         onconnectstart = {() => contextMenu.Hide()}
-        onconnectend={onConnectEnd}
+        onconnectend = {onConnectEnd}
         ondelete = {(event) => graph.OnChange()}
         
         onpaneclick = {() => contextMenu.Hide()}

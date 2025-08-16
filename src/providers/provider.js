@@ -134,6 +134,17 @@ export default class Provider
         if (!data?.choices)
             return [""];
 
-        return data.choices.map(choice => choice.message.content)
+        const result = [];
+
+        data.choices.forEach(choice => 
+        {
+            if (choice.message.reasoning)
+                result.push(choice.message.reasoning);
+
+            if (choice.message.content)
+                result.push(choice.message.content);
+        });
+
+        return result;
     }
 }
