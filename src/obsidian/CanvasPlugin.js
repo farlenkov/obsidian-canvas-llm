@@ -1,4 +1,4 @@
-import { Plugin, Modal, Notice, TextFileView, PluginSettingTab, Setting } from 'obsidian';
+import { Plugin } from 'obsidian';
 
 import CanvasView from './CanvasView.js';
 import settings from '$lib/overlay/Settings.svelte.js';

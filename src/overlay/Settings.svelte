@@ -1,14 +1,14 @@
 <script>
 
-    import { SquareArrowOutUpRight, Loader } from 'lucide-svelte';
-    import settings from './Settings.svelte.js';
-    import providers from '$lib/models/ProviderInfo.svelte.js';
+    import { getContext } from 'svelte';
+    import { SquareArrowOutUpRight } from 'lucide-svelte';
+    const appState = getContext("appState");
     
 </script>
 
 <div class='modal mod-sidebar-layout'>
 
-    <div class="modal-close-button" onclick={() => settings.Hide()}></div>
+    <div class="modal-close-button" onclick={() => appState.HideSettings()}></div>
 
     <div class="vertical-tab-content-container">
         <div class="vertical-tab-content">
@@ -18,7 +18,7 @@
                 </div>
                 <div class="vertical-tab-header-group-items">
 
-                    {#each providers.List as provider}
+                    {#each appState.providers.List as provider}
 
                         <div class="setting-item">
                             <div class="setting-item-info">
@@ -37,9 +37,9 @@
                                 <input 
                                     type="text"
                                     class="inputbox1" 
-                                    bind:value={settings.Data[provider.id + "Key"]} 
+                                    bind:value={appState.settings.Data[provider.id + "Key"]} 
                                     placeholder="API key for {provider.name}"
-                                    onchange={() => settings.Save()} />
+                                    onchange={() => appState.settings.Save()} />
                             </div>
                         </div>
                     

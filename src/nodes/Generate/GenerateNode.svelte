@@ -1,25 +1,24 @@
 <script>
 
+	import { getContext } from 'svelte';
     import { Play, Loader, XIcon } from 'lucide-svelte';
-    import { Handle, Position, NodeResizer, useNodeConnections } from '@xyflow/svelte';
+    import { Handle, Position, NodeResizer } from '@xyflow/svelte';
     
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
 
     import settings from '$lib/overlay/Settings.svelte.js';
-    import graph from '$lib/graph/Graph.svelte.js';
-    import providers from "$lib/models/ProviderInfo.svelte.js"
-    import models from '$lib/models/ModelInfo.svelte.js';
     import aiClient from '$lib/models/AiClient.svelte.js';
     import { mdToHtml } from '$lib/utils/Markdown.js';
-    import params from './GenerateParams.svelte.js';
 
+    const appState = getContext("appState");
+    
     let {id, data, selected} = $props();
     let inProgress = $state(false);
     let errorMessage = $state("");
     let activeTab = $state(data.part ?? 0);
 
-    let provider = $derived(providers.ById[data.provider]);
+    let provider = $derived(appState.providers.ById[data.provider]);
     let model = $derived(provider ? provider.ModelById[data.model] : null);
 
     function getModelDesc()
@@ -48,7 +47,7 @@
 
         if (!settings.HasKey(provider.id))
         {
-            settings.Show();
+            appState.ShowSettings();
             return;
         }
         
@@ -56,7 +55,7 @@
 
         try
         {
-            const nodes = graph.GetPrompt(id);
+            const nodes = appState.graph.GetPrompt(id);
 
             if (nodes.length == 0)
                 throw "Prompt is empty. Please connect some Input node.";
@@ -70,7 +69,7 @@
                 markdowns : [...oldMarkdowns, ...markdowns]
             };
 
-            graph.UpdateNode(id, update);
+            appState.graph.UpdateNode(id, update);
             activeTab = update.part;
         }
         catch (err)
@@ -85,9 +84,9 @@
     function showParams()
     {
         if (!data.provider || !data.model)
-            params.Show(id, settings.Data.defaultProvider, settings.Data.defaultModel);
+            appState.generateNodeParams.Show(id, settings.Data.defaultProvider, settings.Data.defaultModel);
         else
-            params.Show(id, data.provider, data.model);
+            appState.generateNodeParams.Show(id, data.provider, data.model);
     }
 
     function clickNextPart()
@@ -95,7 +94,7 @@
         const nextPart = (activeTab + 1) % data.markdowns.length;
         data.part = nextPart;
         activeTab = nextPart;
-        graph.OnChange();
+        appState.graph.OnChange();
     }
 
 </script>
@@ -103,7 +102,7 @@
 <NodeResizer 
     minWidth={100} 
     minHeight={30} 
-    onResizeEnd={() => graph.OnChange()} />
+    onResizeEnd={() => appState.graph.OnChange()} />
 
 <Handle type="target" position={Position.Left} />
 <Handle type="source" position={Position.Right} />
@@ -127,7 +126,7 @@
                     {#if data.markdowns.length > 1}
                         <button 
                             class="next-part"
-                            aria-label="Next part" 
+                            aria-label="Switch part ({activeTab + 1}/{data.markdowns.length})" 
                             onclick={clickNextPart}>
                             {activeTab + 1}
                         </button>

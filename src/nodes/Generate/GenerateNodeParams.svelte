@@ -1,26 +1,22 @@
 <script>
 
-    import { onDestroy } from 'svelte';
-    import { RefreshCcw , RefreshCw, SquareArrowOutUpRight, XIcon  } from 'lucide-svelte';
-
-    import params from './GenerateParams.svelte.js';
-    import graph from '$lib/graph/Graph.svelte.js';
-    import providers from '$lib/models/ProviderInfo.svelte.js';
-    import models from '$lib/models/ModelInfo.svelte.js';
-    import settings from '$lib/overlay/Settings.svelte.js';
+    import { getContext } from 'svelte';
+    import { RefreshCcw , SquareArrowOutUpRight, XIcon  } from 'lucide-svelte';
 
     const RECENT_TAB = "recent";
     const FAVORITES_TAB = "favorites";
 
-    let selectedProviderId = $state(params.ProviderTab || params.ProviderID);
-    let selectedProvider = $derived(providers.ById[selectedProviderId]);
+    const appState = getContext("appState");
+
+    let selectedProviderId = $state(appState.generateNodeParams.ProviderTab || appState.generateNodeParams.ProviderID);
+    let selectedProvider = $derived(appState.providers.ById[selectedProviderId]);
     let selectedProviderName = $derived(selectedProvider == null ? selectedProviderId : selectedProvider.name);
     let selectedProviderPrice = $derived(selectedProvider == null ? false : selectedProvider.price);
     
-    let hasKey = $derived(settings.HasKey(selectedProviderId));
-    let hasModels = $derived(settings.HasModels(selectedProviderId));
+    let hasKey = $derived(appState.settings.HasKey(selectedProviderId));
+    let hasModels = $derived(appState.settings.HasModels(selectedProviderId));
     let isSpecial = $derived(selectedProviderId == RECENT_TAB || selectedProviderId == FAVORITES_TAB);
-    let isUpdating = $derived(models.Updating[selectedProviderId]);
+    let isUpdating = $derived(appState.models.Updating[selectedProviderId]);
 
     let errorMessage = $state();
 
@@ -32,15 +28,15 @@
 
     function clickModel (model)
     {
-        graph.UpdateNode(params.NodeID, {provider : model.providerId, model : model.id});
-        params.ProviderTab = selectedProviderId;
-        settings.AddRecentModel(model);
-        params.Hide();
+        appState.graph.UpdateNode(appState.generateNodeParams.NodeID, {provider : model.providerId, model : model.id});
+        appState.generateNodeParams.ProviderTab = selectedProviderId;
+        appState.settings.AddRecentModel(model);
+        appState.generateNodeParams.Hide();
     }
 
     function checkFilter(model)
     {
-        if (selectedProviderPrice && params.FilterFree)
+        if (selectedProviderPrice && appState.generateNodeParams.FilterFree)
         {
             // if (typeof model.prompt !== 'number')
             //     return false;
@@ -52,7 +48,7 @@
                 return false;
         }
 
-        let nameFilter = params.FilterName.trim();
+        let nameFilter = appState.generateNodeParams.FilterName.trim();
 
         if (nameFilter && 
             model.id.toLowerCase().indexOf(nameFilter.toLowerCase()) < 0)
@@ -63,27 +59,27 @@
 
     function getModelDesc(model)
     {
-        const provider = providers.ById[model.providerId];
+        const provider = appState.providers.ById[model.providerId];
         return `[ ${provider.name} / ${model.owner} ] ${model.desc}`;
     }
 
     function getProviderName(model)
     {
-        const provider = providers.ById[model.providerId];
+        const provider = appState.providers.ById[model.providerId];
         return `(${provider.name})`;
     }
     
     async function fetchModels()
     {
         errorMessage = null;
-        errorMessage = await models.FetchModels(selectedProviderId);
+        errorMessage = await appState.models.FetchModels(selectedProviderId);
     }
 
 </script>
 
 <div class='modal mod-sidebar-layout'>
 
-    <div class="modal-close-button" onclick={() => params.Hide()}></div>
+    <div class="modal-close-button" onclick={() => appState.generateNodeParams.Hide()}></div>
 
     <div style="position: absolute; top:0; left:0; right:0; height:3em">
         <div style="position: relative;width: 100%;height: 100%;">
@@ -116,7 +112,7 @@
                     class:disabled={!isSpecial && (!hasKey || !hasModels)}
                     placeholder="Filter models by name"
                     disabled={!hasKey || !hasModels}
-                    bind:value={params.FilterName}>
+                    bind:value={appState.generateNodeParams.FilterName}>
 
                 <label 
                     class="models-filter-free"
@@ -125,7 +121,7 @@
                     <input 
                         type="checkbox" 
                         disabled={!selectedProviderPrice || !hasKey || !hasModels}
-                        bind:checked={params.FilterFree}> Free
+                        bind:checked={appState.generateNodeParams.FilterFree}> Free
                 </label>
 
 
@@ -142,7 +138,7 @@
                     API Providers
                 </div>
                 <div class="vertical-tab-header-group-items">                    
-                    {#each providers.List as provider}
+                    {#each appState.providers.List as provider}
                         {#if !provider.untested}
 
                             <div onclick={()=>{clickProvider(provider.id)}} 
@@ -158,7 +154,7 @@
                     Untested
                 </div>
                 <div class="vertical-tab-header-group-items">                    
-                    {#each providers.List as provider}
+                    {#each appState.providers.List as provider}
                         {#if provider.untested}
 
                             <div onclick={()=>{clickProvider(provider.id)}} 
@@ -224,7 +220,7 @@
                                 <div style="display: inline-block;">
                                     <button 
                                         style="margin-top: 0.6em;"
-                                        onclick={()=>{settings.Show()}}>
+                                        onclick={()=>{appState.ShowSettings()}}>
                                         Open Settings
                                     </button>
                                 </div>
@@ -269,12 +265,12 @@
                                     </error>
                                 {/if}
 
-                                {#each settings.GetModels(selectedProviderId) as model}
+                                {#each appState.settings.GetModels(selectedProviderId) as model}
                                     {#if checkFilter(model)}
                                         <div onclick={()=>{clickModel(model)}} 
                                             class="vertical-tab-nav-item"
                                             aria-label="{getModelDesc(model)}"
-                                            class:is-active={params.ModelID == model.id}>
+                                            class:is-active={appState.generateNodeParams.ModelID == model.id}>
 
                                             {#if (model.prompt + model.completion) != 0}
                                                 {model.id}

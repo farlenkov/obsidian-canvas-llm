@@ -1,6 +1,6 @@
 <script>
 
-    import { Menu, Settings } from 'lucide-svelte';
+    import { Settings } from 'lucide-svelte';
     let { onclick } = $props();
 
 </script>

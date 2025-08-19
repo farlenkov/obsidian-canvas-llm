@@ -1,13 +1,12 @@
 <script>
   
+    import { getContext } from 'svelte';
     import { useSvelteFlow } from '@xyflow/svelte';
     import { SquareXIcon, TextCursorInputIcon, BotIcon, SquarePlayIcon } from 'lucide-svelte';
 
-    import {CreateNodeId, CreateEdgeId} from '$lib/utils/CreateId';
-    import graph from '$lib/graph/Graph.svelte.js';
-    import settings from '$lib/overlay/Settings.svelte.js';
-    import contextMenu from '$lib/menu/ContextMenu.svelte.js';
+    import { CreateNodeId, CreateEdgeId } from '$lib/utils/CreateId';
 
+    const appState = getContext("appState");
     const { screenToFlowPosition } = useSvelteFlow();
 
     function addNode(newNode)
@@ -17,29 +16,29 @@
 
         newNode.position = screenToFlowPosition(
         {
-            x : contextMenu.Event.clientX,
-            y : contextMenu.Event.clientY
+            x : appState.contextMenu.Event.clientX,
+            y : appState.contextMenu.Event.clientY
         });
 
-        graph.AddNode(newNode);
+        appState.graph.AddNode(newNode);
 
-        if (contextMenu.Connection)
+        if (appState.contextMenu.Connection)
         {
-            if (contextMenu.Connection.fromHandle.type == "source")
+            if (appState.contextMenu.Connection.fromHandle.type == "source")
             {
-                graph.AddEdge(
-                    contextMenu.Connection.fromNode.id, 
+                appState.graph.AddEdge(
+                    appState.contextMenu.Connection.fromNode.id, 
                     newNode.id);
             }
             else
             {
-                graph.AddEdge(
+                appState.graph.AddEdge(
                     newNode.id, 
-                    contextMenu.Connection.fromNode.id);
+                    appState.contextMenu.Connection.fromNode.id);
             }
         }
 
-        contextMenu.Hide();
+        appState.contextMenu.Hide();
     }
 
     function addTextInput()
@@ -55,7 +54,7 @@
 
     function addGenerate()
     {
-        const defaultModel = settings.GetDefaultModel();
+        const defaultModel = appState.settings.GetDefaultModel();
 
         addNode
         ({
@@ -73,35 +72,35 @@
     
     function nodeRemove() 
     {
-        graph.RemoveNode(contextMenu.Node);
-        contextMenu.Hide();
+        appState.graph.RemoveNode(appState.contextMenu.Node);
+        appState.contextMenu.Hide();
     }
 
     function edgeRemove()
     {
-        graph.RemoveEdge(contextMenu.Edge);
-        contextMenu.Hide();
+        appState.graph.RemoveEdge(appState.contextMenu.Edge);
+        appState.contextMenu.Hide();
     }
 
   </script>
 
-{#if contextMenu.IsVisible}
+{#if appState.contextMenu.IsVisible}
 
   <div
-    style:top={contextMenu.Top}
-    style:left={contextMenu.Left}
-    style:right={contextMenu.Right}
-    style:bottom={contextMenu.Bottom}
+    style:top={appState.contextMenu.Top}
+    style:left={appState.contextMenu.Left}
+    style:right={appState.contextMenu.Right}
+    style:bottom={appState.contextMenu.Bottom}
     class="context-menu- menu">
    
-    {#if contextMenu.Node}
+    {#if appState.contextMenu.Node}
 
       <div class="context-menu-item- menu-item tappable is-warning" onclick={nodeRemove}>
         <SquareXIcon size={24} color="red" class="menu-item-icon" />
         <div class="menu-item-title">Delete node</div>
       </div>
 
-    {:else if contextMenu.Edge}
+    {:else if appState.contextMenu.Edge}
 
       <div class="context-menu-item- menu-item tappable is-warning" onclick={edgeRemove}>
         <SquareXIcon size={24} color="red" class="menu-item-icon" />

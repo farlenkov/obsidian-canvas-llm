@@ -1,13 +1,13 @@
-import { writable, get } from 'svelte/store';
-import {CreateNodeId, CreateEdgeId} from '$lib/utils/CreateId';
-import providers from "$lib/models/ProviderInfo.svelte.js"
+import { CreateNodeId, CreateEdgeId } from '$lib/utils/CreateId';
+import providers from '$lib/models/ProviderInfo.svelte.js';
 
-class GraphState
+export default class GraphState
 {
     FileVersion = 1;
 
-    constructor()
+    constructor(file)
     {
+        this.file = file;
         this.nodes = $state.raw([]);
         this.edges = $state.raw([]);
         this.OnChange = () => {};
@@ -249,6 +249,3 @@ class GraphState
         return [ ...this.GetPrompt(sourceNode.id, loop), result];
     }
 }
-
-const graph = new GraphState();
-export default graph;

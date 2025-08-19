@@ -1,22 +1,22 @@
 <script>
     
-    import Generate from '../nodes/Generate/GenerateParams.svelte';
-    import generate from '../nodes/Generate/GenerateParams.svelte.js';
-
+    import { getContext } from 'svelte';
+    import GenerateNode from '../nodes/Generate/GenerateNodeParams.svelte';
     import Settings from './Settings.svelte';
-    import settings from './Settings.svelte.js';
+
+    const appState = getContext("appState");
 
 </script>
 
-{#if settings.IsVisible || generate.IsVisible}
+{#if appState.SettingsIsVisible || appState.generateNodeParams.IsVisible}
 
     <div class="modal-container">
         <div class="modal-bg" style="opacity: 0.85;"></div>
         
-            {#if settings.IsVisible}
+            {#if appState.SettingsIsVisible}
                 <Settings />
-            {:else if generate.IsVisible}
-                <Generate />
+            {:else if appState.generateNodeParams.IsVisible}
+                <GenerateNode />
             {/if}
             
     </div>

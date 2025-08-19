@@ -1,8 +1,8 @@
-import { Plugin, Modal, Notice, TextFileView, PluginSettingTab, Setting } from 'obsidian';
+import { TextFileView } from 'obsidian';
 import { mount, unmount } from 'svelte'
 
-import App from '$lib/App.svelte';
-import graph from '$lib/graph/Graph.svelte.js';
+import App from '$lib/app/App.svelte';
+import AppState from '$lib/app/App.svelte.js';
 
 export default class CanvasView extends TextFileView  
 {
@@ -10,9 +10,8 @@ export default class CanvasView extends TextFileView
     {
         super(leaf);
         this.plugin = plugin;
-
-        const self = this;
-        graph.OnChange = () => self.requestSave();
+        this.appState = new AppState();
+        this.appState.graph.OnChange = () => this.requestSave();
     }
 
     getViewType() 
@@ -23,7 +22,7 @@ export default class CanvasView extends TextFileView
     async setViewData (fileContents, clear)
     {
         const graphJson = JSON.parse(fileContents);
-        await graph.LoadFromFile(graphJson);
+        await this.appState.graph.LoadFromFile(graphJson);
 
         if (this.graphView)
         {
@@ -34,12 +33,17 @@ export default class CanvasView extends TextFileView
         const viewRoot = this.contentEl;
         viewRoot.classList.add('canvas-llm');
         viewRoot.empty();
-        this.graphView = mount(App, { target: viewRoot });
+
+        this.graphView = mount(App, 
+        { 
+            target: viewRoot, 
+            props : {appState : this.appState} 
+        });
     }
 
     getViewData ()
     {
-        return graph.ToString();
+        return this.appState.graph.ToString();
     }
 
     clear ()

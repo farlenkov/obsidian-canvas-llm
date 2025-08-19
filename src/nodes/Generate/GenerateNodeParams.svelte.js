@@ -1,4 +1,4 @@
-class GenerateParams
+export default class GenerateNodeParams
 {
     NodeID = $state(0);
     ModelID = $state("");
@@ -21,6 +21,3 @@ class GenerateParams
         this.NodeID = 0;
     }
 }
-
-const params = new GenerateParams();
-export default params;

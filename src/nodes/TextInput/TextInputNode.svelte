@@ -1,15 +1,17 @@
 <script>
   
-  import { Handle, Position, NodeResizer, useNodeConnections } from '@xyflow/svelte';
-  import graph from '$lib/graph/Graph.svelte.js';
+	import { getContext } from 'svelte';
+  import { Handle, Position, NodeResizer } from '@xyflow/svelte';
   import CopyTextButton from '../Common/CopyTextButton.svelte';
+
+  const appState = getContext("appState");
 
   let {id, data, selected} = $props();
   let value = $state(data.value);
 
   function onChange ()
   {
-    graph.UpdateNode(id, {value: value});
+    appState.graph.UpdateNode(id, {value: value});
   }
 
 </script>
@@ -17,7 +19,7 @@
 <NodeResizer 
   minWidth={100} 
   minHeight={30} 
-  onResizeEnd={() => graph.OnChange()} />
+  onResizeEnd={() => appState.graph.OnChange()} />
 
 <Handle type="target" position={Position.Left} />
 <Handle type="source" position={Position.Right} />

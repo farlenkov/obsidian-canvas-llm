@@ -1,5 +1,4 @@
 import providers from "$lib/models/ProviderInfo.svelte.js"
-import models from '$lib/models/ModelInfo.svelte.js';
 
 class AiClient
 {

@@ -11,7 +11,6 @@ const DEFAULT_SETTINGS =
 class SettingsState
 {
     FileVersion = 1;
-    IsVisible = $state(false);
     Data = $state();
 
     async Init(plugin)
@@ -47,16 +46,6 @@ class SettingsState
     async Save()
     {
         await this.plugin.saveData(this.Data);
-    }
-
-    Show () 
-    {
-        this.IsVisible = true;
-    }
-
-    Hide ()
-    {
-        this.IsVisible = false;
     }
 
     // API KEYS

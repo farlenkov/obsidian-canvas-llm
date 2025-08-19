@@ -9,18 +9,14 @@
         MiniMap
     } from '@xyflow/svelte';
 
-    import { MapIcon, Upload, Download, Settings, CircleHelp } from 'lucide-svelte';
+    import { getContext } from 'svelte';
+    import { MapIcon, Settings } from 'lucide-svelte';
 
-    import graph from '$lib/graph/Graph.svelte.js';
-    import contextMenu from '$lib/menu/ContextMenu.svelte.js';
-
-    import MainMenu from '$lib/menu/MainMenu.svelte';
-    import ContextMenu from '$lib/menu/ContextMenu.svelte';
-    
+    import ContextMenu from '$lib/menu/ContextMenu.svelte';    
     import TextInputNode from '$lib/nodes/TextInput/TextInputNode.svelte';
     import GenerateNode from '$lib/nodes/Generate/GenerateNode.svelte';
-
-    import settings from '$lib/overlay/Settings.svelte.js';
+    
+    const appState = getContext("appState");
 
     const nodeTypes = 
     {
@@ -36,25 +32,24 @@
     {
         if (connection.isValid) 
         {
-            graph.RemovePrevEdge(connection);
+            appState.graph.RemovePrevEdge(connection);
             return;
         }
         
         await new Promise(res => setTimeout(res, 100));
-
-        contextMenu.ShowConnect(event, connection);
+        appState.contextMenu.ShowConnect(event, connection);
     }
 
 </script>
 
 <div 
     style:height="100%" 
-    bind:clientWidth={contextMenu.CanvasWidth} 
-    bind:clientHeight={contextMenu.CanvasHeight}>
+    bind:clientWidth={appState.contextMenu.CanvasWidth} 
+    bind:clientHeight={appState.contextMenu.CanvasHeight}>
 
     <SvelteFlow
-        bind:nodes = {graph.nodes}
-        bind:edges = {graph.edges}
+        bind:nodes = {appState.graph.nodes}
+        bind:edges = {appState.graph.edges}
         {nodeTypes}
         {zoomOnScroll}
         {preventScrolling}
@@ -62,20 +57,20 @@
         fitViewOptions = {{maxZoom:1,minZoom:1}}
         proOptions = {{hideAttribution:true}}
         snapGrid = {[20,20]}
-        onconnectstart = {() => contextMenu.Hide()}
+        onconnectstart = {() => appState.contextMenu.Hide()}
         onconnectend = {onConnectEnd}
-        ondelete = {(event) => graph.OnChange()}
+        ondelete = {(event) => appState.graph.OnChange()}
         
-        onpaneclick = {() => contextMenu.Hide()}
-        onnodeclick = {() => contextMenu.Hide()}
-        onedgeclick = {() => contextMenu.Hide()}
+        onpaneclick = {() => appState.contextMenu.Hide()}
+        onnodeclick = {() => appState.contextMenu.Hide()}
+        onedgeclick = {() => appState.contextMenu.Hide()}
 
-        onnodedragstart = {()   => contextMenu.Hide()}
-        onnodedragstop = {()    => graph.OnChange()}
+        onnodedragstart = {()   => appState.contextMenu.Hide()}
+        onnodedragstop = {()    => appState.graph.OnChange()}
 
-        onpanecontextmenu = {({ event })        => contextMenu.ShowPane(event)}
-        onnodecontextmenu = {({ event, node })  => contextMenu.ShowNode(event, node)}
-        onedgecontextmenu = {({ event, edge })  => contextMenu.ShowEdge(event, edge)}
+        onpanecontextmenu = {({ event })        => appState.contextMenu.ShowPane(event)}
+        onnodecontextmenu = {({ event, node })  => appState.contextMenu.ShowNode(event, node)}
+        onedgecontextmenu = {({ event, edge })  => appState.contextMenu.ShowEdge(event, edge)}
 
         onnodepointermove   = {({event}) => { zoomOnScroll = event.target.closest(".nozoom") == null }}
         onnodepointerleave  = {() => { zoomOnScroll = true }}>
@@ -84,13 +79,12 @@
             <ControlButton onclick={() => showMiniMap = !showMiniMap} title="MiniMap" class={'canvas-llm-controll-button'}>
                 <MapIcon size={24} />
             </ControlButton>
-            <ControlButton onclick={() => settings.Show()} title="Settings" class={'canvas-llm-controll-button'}>
+            <ControlButton onclick={() => appState.ShowSettings()} title="Settings" class={'canvas-llm-controll-button'}>
                 <Settings size={24} />
             </ControlButton>
         </Controls>
         
         <ContextMenu />
-        <!-- <MainMenu /> -->
 
         {#if showMiniMap}
             <MiniMap />

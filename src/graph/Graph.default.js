@@ -1,5 +1,5 @@
 import settings from '$lib/overlay/Settings.svelte.js';
-import {CreateNodeId, CreateEdgeId} from '$lib/utils/CreateId';
+import { CreateNodeId, CreateEdgeId } from '$lib/utils/CreateId';
 
 export default function creteDefaultGraph()
 {

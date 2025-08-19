@@ -1,4 +1,4 @@
-class ContextMenuState
+export default class ContextMenuState
 {
     IsVisible = $state(false);
     Node = $state(null);
@@ -60,6 +60,3 @@ class ContextMenuState
         }
     }
 }
-
-const contextMenu = new ContextMenuState();
-export default contextMenu;
