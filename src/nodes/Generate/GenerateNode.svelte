@@ -7,7 +7,6 @@
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
 
-    import settings from '$lib/overlay/Settings.svelte.js';
     import aiClient from '$lib/models/AiClient.svelte.js';
     import { mdToHtml } from '$lib/utils/Markdown.js';
 
@@ -45,7 +44,7 @@
             return;
         }
 
-        if (!settings.HasKey(provider.id))
+        if (!appState.settings.HasKey(provider.id))
         {
             appState.ShowSettings();
             return;
@@ -83,10 +82,7 @@
 
     function showParams()
     {
-        if (!data.provider || !data.model)
-            appState.generateNodeParams.Show(id, settings.Data.defaultProvider, settings.Data.defaultModel);
-        else
-            appState.generateNodeParams.Show(id, data.provider, data.model);
+        appState.generateParams.Show(id, data);
     }
 
     function clickNextPart()

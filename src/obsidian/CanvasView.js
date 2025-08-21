@@ -12,6 +12,7 @@ export default class CanvasView extends TextFileView
         this.plugin = plugin;
         this.appState = new AppState();
         this.appState.graph.OnChange = () => this.requestSave();
+        this.appState.app = plugin.app;
     }
 
     getViewType() 

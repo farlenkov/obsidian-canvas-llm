@@ -1,5 +1,5 @@
 import providers from "./ProviderInfo.svelte.js"
-import settings from '$lib/overlay/Settings.svelte.js';
+import settings from '$lib/settings/Settings.svelte.js';
 
 class ModelInfo
 {

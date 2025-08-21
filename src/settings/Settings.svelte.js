@@ -1,4 +1,6 @@
 import providers from "$lib/models/ProviderInfo.svelte.js"
+import CanvasModal from '$lib/obsidian/CanvasModal.js';
+import SettingsView from '$lib/settings/Settings.svelte';
 
 const DEFAULT_SETTINGS = 
 {
@@ -13,7 +15,7 @@ class SettingsState
     FileVersion = 1;
     Data = $state();
 
-    async Init(plugin)
+    async Init (plugin)
     {
         this.plugin = plugin;
         this.Data = Object.assign({}, DEFAULT_SETTINGS, await plugin.loadData());
@@ -43,9 +45,14 @@ class SettingsState
         // }
     }
 
-    async Save()
+    async Save ()
     {
         await this.plugin.saveData(this.Data);
+    }
+
+    Show (appState)
+    {
+        new CanvasModal(appState, SettingsView, "settings").open();
     }
 
     // API KEYS
@@ -111,7 +118,7 @@ class SettingsState
         }
     }
 
-    GetDefaultModel()
+    GetDefaultModel ()
     {
         if (!this.Data.recentModels ||
             this.Data.recentModels.length == 0)

@@ -1,15 +1,13 @@
 import GraphState from '$lib/graph/Graph.svelte.js';
 import ContextMenuState from '$lib/menu/ContextMenu.svelte.js';
-import GenerateNodeParams from '$lib/nodes/Generate/GenerateNodeParams.svelte.js';
+import GenerateParams from '$lib/nodes/Generate/GenerateParams.svelte.js';
 
-import settings from '$lib/overlay/Settings.svelte.js';
+import settings from '$lib/settings/Settings.svelte.js';
 import providers from '$lib/models/ProviderInfo.svelte.js';
 import models from '$lib/models/ModelInfo.svelte.js';
 
 export default class AppState
 {
-    SettingsIsVisible = $state(false);
-
     constructor()
     {
         // GLOBAL
@@ -22,16 +20,11 @@ export default class AppState
 
         this.graph = new GraphState();
         this.contextMenu = new ContextMenuState(),
-        this.generateNodeParams = new GenerateNodeParams()
+        this.generateParams = new GenerateParams(this)
     }
 
-    ShowSettings () 
+    ShowSettings()
     {
-        this.SettingsIsVisible = true;
-    }
-
-    HideSettings ()
-    {
-        this.SettingsIsVisible = false;
+        this.settings.Show(this);
     }
 }

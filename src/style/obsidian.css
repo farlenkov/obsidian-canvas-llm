@@ -3,3 +3,63 @@
 {
     padding: 0;
 }
+
+.canvas-llm
+{
+    .modal-close-button
+    {
+        z-index: 1;
+    }
+}
+
+.canvas-llm-generate-params,
+.canvas-llm-settings
+{
+    .modal-header
+    {
+        display: none;
+    }
+}
+
+.canvas-llm-generate-params
+{
+    .modal
+    {
+        width:      var(--modal-width);
+        height:     var(--modal-height);
+
+        max-width:  48em;
+        max-height: 40em;
+
+        padding: 0;
+
+        .modal-content
+        {
+            height: 98%;
+
+            .vertical-tab-header
+            {
+                border-inline-end: 1px solid var(--divider-color);
+            }
+
+            .vertical-tab-header,
+            .vertical-tab-content-container
+            {
+                padding-top: 3em;
+            }
+        }
+    }
+}
+
+.canvas-llm-settings
+{
+    .modal
+    {
+        width:      var(--modal-width);
+        /* height:     var(--modal-height); */
+
+        max-width:  30em;
+        /* max-height: 29em; */
+    }
+}
+

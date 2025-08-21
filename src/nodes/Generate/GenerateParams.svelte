@@ -6,9 +6,9 @@
     const RECENT_TAB = "recent";
     const FAVORITES_TAB = "favorites";
 
-    const appState = getContext("appState");
+    const { appState, modal } = $props();
 
-    let selectedProviderId = $state(appState.generateNodeParams.ProviderTab || appState.generateNodeParams.ProviderID);
+    let selectedProviderId = $state(appState.generateParams.ProviderTab || appState.generateParams.ProviderID);
     let selectedProvider = $derived(appState.providers.ById[selectedProviderId]);
     let selectedProviderName = $derived(selectedProvider == null ? selectedProviderId : selectedProvider.name);
     let selectedProviderPrice = $derived(selectedProvider == null ? false : selectedProvider.price);
@@ -28,15 +28,15 @@
 
     function clickModel (model)
     {
-        appState.graph.UpdateNode(appState.generateNodeParams.NodeID, {provider : model.providerId, model : model.id});
-        appState.generateNodeParams.ProviderTab = selectedProviderId;
+        appState.graph.UpdateNode(appState.generateParams.NodeID, {provider : model.providerId, model : model.id});
+        appState.generateParams.ProviderTab = selectedProviderId;
         appState.settings.AddRecentModel(model);
-        appState.generateNodeParams.Hide();
+        modal.close();
     }
 
     function checkFilter(model)
     {
-        if (selectedProviderPrice && appState.generateNodeParams.FilterFree)
+        if (selectedProviderPrice && appState.generateParams.FilterFree)
         {
             // if (typeof model.prompt !== 'number')
             //     return false;
@@ -48,7 +48,7 @@
                 return false;
         }
 
-        let nameFilter = appState.generateNodeParams.FilterName.trim();
+        let nameFilter = appState.generateParams.FilterName.trim();
 
         if (nameFilter && 
             model.id.toLowerCase().indexOf(nameFilter.toLowerCase()) < 0)
@@ -77,60 +77,7 @@
 
 </script>
 
-<div class='modal mod-sidebar-layout'>
-
-    <div class="modal-close-button" onclick={() => appState.generateNodeParams.Hide()}></div>
-
-    <div style="position: absolute; top:0; left:0; right:0; height:3em">
-        <div style="position: relative;width: 100%;height: 100%;">
-            <models-filter>
-
-                <models-buttons>
-
-                    <button 
-                        class="clickable-icon" 
-                        class:disabled={isUpdating || !hasKey}
-                        disabled={isUpdating || !hasKey}
-                        aria-label="Refresh models from {selectedProviderName}" 
-                        onclick={fetchModels}>
-                        <RefreshCcw size={16}/>  
-                    </button>
-
-                    <button 
-                        class="clickable-icon" 
-                        aria-label="Review models from {selectedProviderName}" 
-                        disabled={isSpecial}
-                        onclick={()=>{window.open(selectedProvider.models)}}>
-                        <SquareArrowOutUpRight size={16}/>  
-                    </button>
-
-                </models-buttons>
-
-                <input 
-                    type=text 
-                    class="models-filter-name inputbox2"
-                    class:disabled={!isSpecial && (!hasKey || !hasModels)}
-                    placeholder="Filter models by name"
-                    disabled={!hasKey || !hasModels}
-                    bind:value={appState.generateNodeParams.FilterName}>
-
-                <label 
-                    class="models-filter-free"
-                    class:disabled={!selectedProviderPrice || !hasKey || !hasModels}
-                    aria-label="Show only free models">
-                    <input 
-                        type="checkbox" 
-                        disabled={!selectedProviderPrice || !hasKey || !hasModels}
-                        bind:checked={appState.generateNodeParams.FilterFree}> Free
-                </label>
-
-
-            </models-filter>
-            
-        </div>
-    </div>
-        
-    <div class="modal-content vertical-tabs-container">
+    <div class="vertical-tabs-container">
 
         <div class="vertical-tab-header">
             <div class="vertical-tab-header-group">
@@ -188,7 +135,57 @@
                 
         </div>
 
-        <div class="vertical-tab-content-container">
+        <div style="position: relative;" class="vertical-tab-content-container">
+
+            <div style="position: absolute; top:0; left:0; right:0; height:3em">
+                <div style="position: relative;width: 100%;height: 100%;">
+                    <models-filter>
+
+                        <models-buttons>
+
+                            <button 
+                                class="clickable-icon" 
+                                class:disabled={isUpdating || !hasKey}
+                                disabled={isUpdating || !hasKey}
+                                aria-label="Refresh models from {selectedProviderName}" 
+                                onclick={fetchModels}>
+                                <RefreshCcw size={16}/>  
+                            </button>
+
+                            <button 
+                                class="clickable-icon" 
+                                aria-label="Review models from {selectedProviderName}" 
+                                disabled={isSpecial}
+                                onclick={()=>{window.open(selectedProvider.models)}}>
+                                <SquareArrowOutUpRight size={16}/>  
+                            </button>
+
+                        </models-buttons>
+
+                        <input 
+                            type=text 
+                            class="models-filter-name inputbox2"
+                            class:disabled={!isSpecial && (!hasKey || !hasModels)}
+                            placeholder="Filter models by name"
+                            disabled={!hasKey || !hasModels}
+                            bind:value={appState.generateParams.FilterName}>
+
+                        <label 
+                            class="models-filter-free"
+                            class:disabled={!selectedProviderPrice || !hasKey || !hasModels}
+                            aria-label="Show only free models">
+                            <input 
+                                type="checkbox" 
+                                disabled={!selectedProviderPrice || !hasKey || !hasModels}
+                                bind:checked={appState.generateParams.FilterFree}> Free
+                        </label>
+
+
+                    </models-filter>
+                    
+                </div>
+            </div>
+
             <div class="vertical-tab-content">
                 <div class="vertical-tab-header-group">
                     <div class="vertical-tab-header-group-title">
@@ -270,7 +267,7 @@
                                         <div onclick={()=>{clickModel(model)}} 
                                             class="vertical-tab-nav-item"
                                             aria-label="{getModelDesc(model)}"
-                                            class:is-active={appState.generateNodeParams.ModelID == model.id}>
+                                            class:is-active={appState.generateParams.ModelID == model.id}>
 
                                             {#if (model.prompt + model.completion) != 0}
                                                 {model.id}
@@ -297,20 +294,13 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
+     </div>
 
 <style>
 
-    .modal-close-button
+    .vertical-tabs-container
     {
-        z-index: 1;
-    }
-
-    .modal-content
-    {
-        padding-top: 3em;
-        padding-bottom: 1em;
+        /* padding-top: 1.5em; */
         height: 100%;
     }
 
@@ -340,15 +330,6 @@
     .vertical-tab-header-group
     {
         padding-top: 0;
-    }
-
-    .modal
-    {
-        width:      var(--modal-width);
-        height:     var(--modal-height);
-
-        max-width:  48em;
-        max-height: 40em;
     }
 
     label-free

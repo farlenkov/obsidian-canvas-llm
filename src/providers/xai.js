@@ -1,4 +1,4 @@
-import settings from '$lib/overlay/Settings.svelte.js';
+import settings from '$lib/settings/Settings.svelte.js';
 import Provider from './provider.js';
 
 class xAI extends Provider

@@ -1,7 +1,6 @@
-import { Plugin } from 'obsidian';
-
+import { Plugin, loadPdfJs } from 'obsidian';
 import CanvasView from './CanvasView.js';
-import settings from '$lib/overlay/Settings.svelte.js';
+import settings from '$lib/settings/Settings.svelte.js';
 import creteDefaultGraph from '$lib/graph/Graph.default.js';
 
 export default class CanvasPlugin extends Plugin 
