@@ -5,7 +5,7 @@
 	"main": "main.js",
 	"keywords": [],
 	"author": "",
-	"license": "MIT",
+	"license": "GPL-3.0",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "node esbuild.config.mjs production"
