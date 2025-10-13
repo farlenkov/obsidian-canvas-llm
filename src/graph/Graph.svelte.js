@@ -74,18 +74,6 @@ export default class GraphState
     
     RemoveNode(node) 
     {
-        // this.nodes.update((nodes) => 
-        // {
-        //     return nodes.filter((node2) => node2.id != node.id);
-        // });
-
-        // this.edges.update((edges) => 
-        // {
-        //     return edges.filter((edge) => 
-        //         edge.source != node.id && 
-        //         edge.target != node.id);
-        // });
-
         this.nodes = this.nodes.filter((node2) => 
             node2.id != node.id);
 
@@ -98,13 +86,6 @@ export default class GraphState
 
     RemoveEdge(edge) 
     {
-        // this.edges.update((edges) => 
-        // {
-        //     return edges.filter((edge2) => 
-        //         edge2.source != edge.source || 
-        //         edge2.target != edge.target);
-        // });
-
         this.edges = this.edges.filter((edge2) => 
             edge2.source != edge.source || 
             edge2.target != edge.target);
@@ -118,54 +99,13 @@ export default class GraphState
         newEdge[connection.fromHandle.type] = connection.fromHandle.nodeId;
         newEdge[connection.toHandle.type] = connection.toHandle.nodeId;
 
-        // this.edges.update((edges) => 
-        // {
-        //     for (let i = edges.length - 1; i >= 0; i--)
-        //     {
-        //         let oldEdge = edges[i];
-
-        //         if (!newEdge.id)
-        //         {
-        //             if (oldEdge.source == newEdge.source &&
-        //                 oldEdge.target == newEdge.target)
-        //             {
-        //                 newEdge.id = oldEdge.id;
-        //             }
-        //         }
-        //         else
-        //         {
-        //             if (oldEdge.target == newEdge.target)
-        //             {
-        //                 if (oldEdge.id != newEdge.id)
-        //                     edges.splice(i, 1);
-        //             }
-        //         }
-        //     }
-
-        //     return edges;
-        // });
-
         this.edges = this.edges.filter(oldEdge => 
         {
-            // console.log("oldEdge", oldEdge.id, oldEdge.source, ">", oldEdge.target);
-
-            // if (!newEdge.id)
-            // {
-            //     if (oldEdge.source == newEdge.source &&
-            //         oldEdge.target == newEdge.target)
-            //     {
-            //         newEdge.id = oldEdge.id;
-            //         console.log("set newEdge.id", newEdge.id);
-            //     }
-            // }
-            // else
-            // {
-                if (oldEdge.target == newEdge.target)
-                {
-                    if (oldEdge.source != newEdge.source)
-                        return false;
-                }
-            // }
+            if (oldEdge.target == newEdge.target)
+            {
+                if (oldEdge.source != newEdge.source)
+                    return false;
+            }
 
             return true;
         });
@@ -175,24 +115,10 @@ export default class GraphState
 
     UpdateNode (id, update)
     {
-        // this.nodes.update((nodes) => 
-        // {
-        //     const node = nodes.find((node) => node.id === id);
-
-        //     if (node)
-        //     {
-        //         node.data = { ...node.data, ...update };
-        //         // console.log("[UpdateNode]", node);
-        //     }
-            
-        //     return nodes;
-        // });
-
         this.nodes = this.nodes.map(node => 
         {
             if (node.id == id)
                 return { ...node, data : { ...node.data, ...update } };
-                // node.data = { ...node.data, ...update };
 
             return node;
         });
@@ -202,7 +128,7 @@ export default class GraphState
 
     ToString ()
     {
-        var data = 
+        const data = 
         {
             version : this.FileVersion,
             nodes : this.nodes,
@@ -212,40 +138,44 @@ export default class GraphState
         return JSON.stringify(data, null, '\t');
     }
 
-    GetPrompt (targetId, loop = {})
+    getBranch (targetId, loop = {})
     {
         loop[targetId] = true;
+        const targetNode = this.nodes.find((node) => node.id === targetId);
 
-        // GET EDGE
+        if (!targetNode)
+            return [];
     
         const sourceEdge = this.edges.find((edge) => edge.target === targetId);
     
         if (!sourceEdge)
-            return [];
-    
-        // GET NODE
-    
-        const sourceNode = this.nodes.find((node) => node.id === sourceEdge.source);
+            return [targetNode];
 
-        if (!sourceNode)
+        if (loop[sourceEdge.source])
+            return [targetNode];
+
+        return [...this.getBranch(sourceEdge.source, loop), targetNode];
+    }
+
+    getPrompt (targetId)
+    {
+        const branch = this.getBranch(targetId);
+        const result = [];
+
+        for (var i = 0; i < branch.length - 1; i++)
         {
-            console.log("[Graph: GetPrompt] Node not found: " + sourceEdge.source);
-            return [];
+            const node = branch[i];
+            let message = null;
+
+            switch (node.type)
+            {
+                case "textInput": message = { role : "user", content : [node.data.value]}; break;
+                case "generate": message = { role : "model", content : [node.data.markdowns[node.data.part]]}; break;
+            }
+
+            result.push(message);
         }
 
-        if (loop[sourceNode.id])
-            return [];
-    
-        // GET TEXT
-    
-        let result;
-    
-        switch (sourceNode.type)
-        {
-            case "textInput": result = { role : "user", content : [sourceNode.data.value]}; break;
-            case "generate": result = { role : "model", content : [sourceNode.data.markdowns[sourceNode.data.part]]}; break;
-        }
-    
-        return [ ...this.GetPrompt(sourceNode.id, loop), result];
+        return result;
     }
 }

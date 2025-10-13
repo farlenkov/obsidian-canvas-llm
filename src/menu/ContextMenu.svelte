@@ -96,27 +96,27 @@
     {#if appState.contextMenu.Node}
 
       <div class="context-menu-item- menu-item tappable is-warning" onclick={nodeRemove}>
-        <SquareXIcon size={24} color="red" class="menu-item-icon" />
+        <SquareXIcon size={24} class="menu-item-icon" />
         <div class="menu-item-title">Delete node</div>
       </div>
 
     {:else if appState.contextMenu.Edge}
 
       <div class="context-menu-item- menu-item tappable is-warning" onclick={edgeRemove}>
-        <SquareXIcon size={24} color="red" class="menu-item-icon" />
+        <SquareXIcon size={24} class="menu-item-icon" />
         <div class="menu-item-title">Delete edge</div>
       </div>
 
     {:else}
 
       <div class="context-menu-item- menu-item tappable" onclick={addTextInput}>
-        <TextCursorInputIcon size={24} color="#00abff" class="menu-item-icon" />
-        <div class="menu-item-title">Add TextInput</div>
+        <TextCursorInputIcon size={24} class="menu-item-icon" />
+        <div class="menu-item-title">Add text input</div>
       </div>
 
       <div class="context-menu-item- menu-item tappable" onclick={addGenerate}>
-        <SquarePlayIcon size={24} color="#00abff" class="menu-item-icon" />
-        <div class="menu-item-title">Add Generator</div>
+        <SquarePlayIcon size={24} class="menu-item-icon" />
+        <div class="menu-item-title">Add generator</div>
       </div>
 
     {/if}

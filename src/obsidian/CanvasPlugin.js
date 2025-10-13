@@ -61,18 +61,25 @@ export default class CanvasPlugin extends Plugin
         let counter = 0;
         let baseName = "Canvas LLM"
         let filePath = `${folderPath}/${baseName}.canvas-llm`;
-        
-        while (await this.app.vault.adapter.exists(filePath)) 
-        {
-            counter++;
-            filePath = `${folderPath}/${baseName} ${counter}.canvas-llm`;
-        }
+        let file = null;
 
         const graph = creteDefaultGraph();
+        const graphJson = JSON.stringify(graph, null, '\t');
 
-        const file = await this.app.vault.create(
-            filePath, 
-            JSON.stringify(graph, null, '\t'));
+        while (file == null)
+        {
+            try
+            {
+                file = await this.app.vault.create(
+                    filePath, 
+                    graphJson);
+            }
+            catch(ex)
+            {
+                counter++;
+                filePath = `${folderPath}/${baseName} ${counter}.canvas-llm`;
+            }
+        }
 
         const leaf = this.app.workspace.getLeaf();
         await leaf.openFile(file);

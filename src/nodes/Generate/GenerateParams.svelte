@@ -163,7 +163,7 @@
                         </models-buttons>
 
                         <input 
-                            type=text 
+                            type="text"
                             class="models-filter-name inputbox2"
                             class:disabled={!isSpecial && (!hasKey || !hasModels)}
                             placeholder="Filter models by name"

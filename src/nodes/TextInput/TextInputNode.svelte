@@ -31,7 +31,7 @@
       <node-header>
         <node-header-left>Input</node-header-left>
         <node-header-right>
-          <CopyTextButton text={value} />
+          <CopyTextButton nodeId={id} />
         </node-header-right>
 
       </node-header>

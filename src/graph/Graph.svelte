@@ -12,10 +12,10 @@
     import { getContext } from 'svelte';
     import { MapIcon, Settings } from 'lucide-svelte';
 
-    import ContextMenu from '$lib/menu/ContextMenu.svelte';    
+    import ContextMenu from '$lib/menu/ContextMenu.svelte';
     import TextInputNode from '$lib/nodes/TextInput/TextInputNode.svelte';
     import GenerateNode from '$lib/nodes/Generate/GenerateNode.svelte';
-    
+
     const appState = getContext("appState");
 
     const nodeTypes = 
@@ -36,14 +36,14 @@
             return;
         }
         
-        await new Promise(res => setTimeout(res, 100));
+        await sleep(100);
         appState.contextMenu.ShowConnect(event, connection);
     }
 
 </script>
 
 <div 
-    style:height="100%" 
+    class="graph-container" 
     bind:clientWidth={appState.contextMenu.CanvasWidth} 
     bind:clientHeight={appState.contextMenu.CanvasHeight}>
 
@@ -97,3 +97,10 @@
         
     </SvelteFlow>
 </div>
+
+<style>
+    .graph-container
+    {
+        height : 100%;
+    }
+</style>

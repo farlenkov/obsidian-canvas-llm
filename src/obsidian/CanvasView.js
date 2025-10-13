@@ -9,10 +9,23 @@ export default class CanvasView extends TextFileView
     constructor(leaf, plugin) 
     {
         super(leaf);
+
         this.plugin = plugin;
         this.appState = new AppState();
-        this.appState.graph.OnChange = () => this.requestSave();
+
+        this.appState.view = this;
+        this.appState.plugin = plugin;
         this.appState.app = plugin.app;
+        this.appState.leaf = plugin.leaf;
+
+        this.appState.graph.OnChange = () =>
+        {
+            if (!this.saveRequested)
+            {
+                this.saveRequested = true;
+                this.requestSave();
+            }
+        };
     }
 
     getViewType() 
@@ -44,7 +57,9 @@ export default class CanvasView extends TextFileView
 
     getViewData ()
     {
-        return this.appState.graph.ToString();
+        const data = this.appState.graph.ToString();
+        this.saveRequested = false;
+        return data;
     }
 
     clear ()

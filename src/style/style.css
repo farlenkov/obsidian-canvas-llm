@@ -26,4 +26,7 @@
     .hidden { visibility: hidden; }
     .hide { display: none !important; }
     .disabled { opacity: 0.25; }
+
+    .menu-item .menu-item-icon { color: #00abff; }
+    .menu-item.is-warning .menu-item-icon { color: red; }
 }

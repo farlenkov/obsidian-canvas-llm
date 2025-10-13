@@ -1,5 +1,4 @@
-.workspace-leaf-content .view-content,
-.workspace-leaf-content .view-content.canvas-llm
+.canvas-llm.view-content
 {
     padding: 0;
 }

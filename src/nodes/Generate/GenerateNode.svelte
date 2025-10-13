@@ -1,16 +1,17 @@
 <script>
 
-	import { getContext } from 'svelte';
+	import { getContext, onMount } from 'svelte';
     import { Play, Loader, XIcon } from 'lucide-svelte';
     import { Handle, Position, NodeResizer } from '@xyflow/svelte';
+    import { MarkdownRenderer } from 'obsidian';
     
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
 
     import aiClient from '$lib/models/AiClient.svelte.js';
-    import { mdToHtml } from '$lib/utils/Markdown.js';
 
     const appState = getContext("appState");
+    let bodyEl;
     
     let {id, data, selected} = $props();
     let inProgress = $state(false);
@@ -20,6 +21,10 @@
     let provider = $derived(appState.providers.ById[data.provider]);
     let model = $derived(provider ? provider.ModelById[data.model] : null);
 
+    onMount(async () => { renderHtml(); });
+
+    $effect(() => { renderHtml(); });
+    
     function getModelDesc()
     {
         if (model)
@@ -54,7 +59,7 @@
 
         try
         {
-            const nodes = appState.graph.GetPrompt(id);
+            const nodes = appState.graph.getPrompt(id);
 
             if (nodes.length == 0)
                 throw "Prompt is empty. Please connect some Input node.";
@@ -91,6 +96,23 @@
         data.part = nextPart;
         activeTab = nextPart;
         appState.graph.OnChange();
+    }
+
+    function renderHtml()
+    {
+        bodyEl.empty();
+
+        if (data.markdowns.length <= activeTab)
+            return;
+
+        const markdown = data.markdowns[activeTab];
+
+        MarkdownRenderer.render(
+            appState.app, 
+            markdown, 
+            bodyEl, 
+            appState.view.file.path, 
+            appState.view);
     }
 
 </script>
@@ -138,16 +160,17 @@
                         </button>
                     {/if}
 
-                    <CopyTextButton text={data.markdowns[activeTab]} />
+                    <CopyTextButton nodeId={id} />
                     <ParamsButton onclick={showParams} />
                 </node-header-right>
 
             </node-header>
 
             <node-body class="nodrag nozoom nomenu node-text markdown-rendered">
-                {#if data.markdowns.length > 0}
+                <!-- {#if data.markdowns.length > 0}
                     {@html mdToHtml(data.markdowns[activeTab])}
-                {/if}
+                {/if} -->
+                <div bind:this={bodyEl}></div>
 
                 {#if errorMessage}
                     <error>
