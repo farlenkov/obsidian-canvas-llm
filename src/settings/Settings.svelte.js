@@ -6,43 +6,20 @@ const DEFAULT_SETTINGS =
 {
     defaultModel : "gemini-2.0-flash",
     defaultProvider : "google",
-    recentModels : [],
-    launchCounter : 0
+    recentModels : []
 };
 
 class SettingsState
 {
-    FileVersion = 1;
+    fileVersion = 1;
     Data = $state();
 
     async Init (plugin)
     {
         this.plugin = plugin;
         this.Data = Object.assign({}, DEFAULT_SETTINGS, await plugin.loadData());
-        this.Data.launchCounter++;
-        this.Data.version = this.FileVersion;
+        this.Data.version = this.fileVersion;
         this.Save();
-
-        // CheckApiKey
-
-        // if (this.Data.launchCounter == 1)
-        // {
-        //     let needToShowSettings = true;
-
-        //     for (let i = 0; i < providers.List.length; i++)
-        //     {
-        //         let provider = providers.List[i];
-
-        //         if (this.HasKey(provider.id))
-        //         {
-        //             needToShowSettings = false;
-        //             break;
-        //         }
-        //     }
-
-        //     if (needToShowSettings)
-        //         this.Show();
-        // }
     }
 
     async Save ()

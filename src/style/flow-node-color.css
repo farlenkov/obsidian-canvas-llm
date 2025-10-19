@@ -1,0 +1,62 @@
+.canvas-llm
+{
+    /* DEFAULT */
+
+    .canvas-node-container
+    {
+        border-color: rgb(var(--canvas-color));
+    }
+
+    node-header
+    {
+        border-bottom-color: rgb(var(--canvas-color));
+    }
+
+    /* DEFAULT : SELECTED */
+
+    .svelte-flow__node.selected
+    {
+        node-header 
+        { 
+            border-bottom-color: var(--color-accent); 
+        }
+    }
+
+    /* INPUT */
+
+    .svelte-flow__node-textInput
+    {
+        .canvas-node-container
+        {
+            border-color: var(--color-orange);
+        }
+
+        .svelte-flow__handle 
+        {        
+            border-color: var(--color-orange);
+        }
+
+        node-content
+        {
+            node-header
+            {
+                border-bottom-color: var(--color-orange);
+
+                node-header-left 
+                {
+                    color: var(--color-orange);
+                }
+            }
+        }
+    }
+
+    /* INPUT : SELECTED */
+
+    .svelte-flow__node-textInput.selected
+    {
+        .canvas-node-container
+        {
+            border-color: var(--color-accent);
+        }
+    }
+}

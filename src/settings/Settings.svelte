@@ -10,7 +10,7 @@
     <div class="vertical-tab-content">
         <div class="vertical-tab-header-group">
             <div class="vertical-tab-header-group-title">
-                API Keys
+                API keys
             </div>
             <div class="vertical-tab-header-group-items">
 

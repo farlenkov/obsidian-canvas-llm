@@ -1,24 +1,25 @@
-import { CreateNodeId, CreateEdgeId } from '$lib/utils/CreateId';
+import { createNodeId, createEdgeId } from '$lib/utils/CreateId';
 import providers from '$lib/models/ProviderInfo.svelte.js';
 
 export default class GraphState
 {
-    FileVersion = 1;
-
     constructor(file)
     {
+        this.fileVersion = 1;
+
         this.file = file;
         this.nodes = $state.raw([]);
         this.edges = $state.raw([]);
-        this.OnChange = () => {};
+        this.onChange = () => {};
     }
 
-    async LoadFromFile(graphJson)
+    async loadFromFile(graphJson)
     {
         if (typeof graphJson === 'string')
             graphJson = JSON.parse(graphJson);
 
         await this.upgradeGraph(graphJson);
+
         this.nodes = graphJson.nodes;
         this.edges = graphJson.edges;
     }
@@ -26,7 +27,7 @@ export default class GraphState
     async upgradeGraph(graphJson)
     {
         if (!graphJson.version)
-            graphJson.version = this.FileVersion;
+            graphJson.version = this.fileVersion;
         
         graphJson.nodes.forEach(node => 
         {
@@ -54,25 +55,25 @@ export default class GraphState
         });
     }
 
-    AddNode(node)
+    addNode(node)
     {
         this.nodes = [...this.nodes, node];
-        this.OnChange();
+        this.onChange("addNode");
     }
 
-    AddEdge(sourceId, targetId)
+    addEdge(sourceId, targetId)
     {
         this.edges = [...this.edges, 
         {
             source : sourceId, 
             target: targetId, 
-            id : CreateEdgeId(sourceId, targetId)
+            id : createEdgeId(sourceId, targetId)
         }];
 
-        this.OnChange();
+        this.onChange("addEdge");
     }
     
-    RemoveNode(node) 
+    removeNode(node) 
     {
         this.nodes = this.nodes.filter((node2) => 
             node2.id != node.id);
@@ -81,19 +82,19 @@ export default class GraphState
             edge.source != node.id && 
             edge.target != node.id);
         
-        this.OnChange();
+        this.onChange("removeNode");
     }
 
-    RemoveEdge(edge) 
+    removeEdge(edge) 
     {
         this.edges = this.edges.filter((edge2) => 
             edge2.source != edge.source || 
             edge2.target != edge.target);
 
-        this.OnChange();
+        this.onChange("removeEdge");
     }
 
-    RemovePrevEdge(connection)
+    removePrevEdge(connection)
     {
         const newEdge = {};
         newEdge[connection.fromHandle.type] = connection.fromHandle.nodeId;
@@ -110,10 +111,10 @@ export default class GraphState
             return true;
         });
 
-        this.OnChange();
+        this.onChange("removePrevEdge");
     }
 
-    UpdateNode (id, update)
+    updateNode (id, update, note)
     {
         this.nodes = this.nodes.map(node => 
         {
@@ -123,14 +124,14 @@ export default class GraphState
             return node;
         });
 
-        this.OnChange();
+        this.onChange(note);
     }
 
-    ToString ()
+    toString ()
     {
         const data = 
         {
-            version : this.FileVersion,
+            version : this.fileVersion,
             nodes : this.nodes,
             edges : this.edges
         };

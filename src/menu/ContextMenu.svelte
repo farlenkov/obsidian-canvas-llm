@@ -4,14 +4,14 @@
     import { useSvelteFlow } from '@xyflow/svelte';
     import { SquareXIcon, TextCursorInputIcon, BotIcon, SquarePlayIcon } from 'lucide-svelte';
 
-    import { CreateNodeId, CreateEdgeId } from '$lib/utils/CreateId';
+    import { createNodeId, createEdgeId } from '$lib/utils/CreateId';
 
     const appState = getContext("appState");
     const { screenToFlowPosition } = useSvelteFlow();
 
     function addNode(newNode)
     {
-        newNode.id = CreateNodeId();
+        newNode.id = createNodeId();
         newNode.origin = [0.0, 0.0];
 
         newNode.position = screenToFlowPosition(
@@ -20,19 +20,19 @@
             y : appState.contextMenu.Event.clientY
         });
 
-        appState.graph.AddNode(newNode);
+        appState.graph.addNode(newNode);
 
         if (appState.contextMenu.Connection)
         {
             if (appState.contextMenu.Connection.fromHandle.type == "source")
             {
-                appState.graph.AddEdge(
+                appState.graph.addEdge(
                     appState.contextMenu.Connection.fromNode.id, 
                     newNode.id);
             }
             else
             {
-                appState.graph.AddEdge(
+                appState.graph.addEdge(
                     newNode.id, 
                     appState.contextMenu.Connection.fromNode.id);
             }
@@ -72,13 +72,13 @@
     
     function nodeRemove() 
     {
-        appState.graph.RemoveNode(appState.contextMenu.Node);
+        appState.graph.removeNode(appState.contextMenu.Node);
         appState.contextMenu.Hide();
     }
 
     function edgeRemove()
     {
-        appState.graph.RemoveEdge(appState.contextMenu.Edge);
+        appState.graph.removeEdge(appState.contextMenu.Edge);
         appState.contextMenu.Hide();
     }
 

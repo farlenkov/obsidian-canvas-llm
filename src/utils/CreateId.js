@@ -1,6 +1,6 @@
 let prevId = 0;
 
-export function CreateNodeId()
+export function createNodeId()
 {
     let newId = (new Date).getTime();
 
@@ -11,7 +11,7 @@ export function CreateNodeId()
     return newId.toString();
 }
 
-export function CreateEdgeId(sourceId, targetId)
+export function createEdgeId(sourceId, targetId)
 {
     return `xy-edge__${sourceId}-${targetId}`;
 }

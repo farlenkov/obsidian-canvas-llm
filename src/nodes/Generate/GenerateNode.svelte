@@ -73,12 +73,11 @@
                 markdowns : [...oldMarkdowns, ...markdowns]
             };
 
-            appState.graph.UpdateNode(id, update);
+            appState.graph.updateNode(id, update, "TextGenerate");
             activeTab = update.part;
         }
         catch (err)
         {
-            console.error("[Canvas LLM] Generate", data.provider, data.model, err);
             errorMessage = err;
         }
 
@@ -95,7 +94,7 @@
         const nextPart = (activeTab + 1) % data.markdowns.length;
         data.part = nextPart;
         activeTab = nextPart;
-        appState.graph.OnChange();
+        appState.graph.onChange("NextPart");
     }
 
     function renderHtml()
@@ -120,7 +119,7 @@
 <NodeResizer 
     minWidth={100} 
     minHeight={30} 
-    onResizeEnd={() => appState.graph.OnChange()} />
+    onResizeEnd={() => appState.graph.onChange("NodeResize")} />
 
 <Handle type="target" position={Position.Left} />
 <Handle type="source" position={Position.Right} />

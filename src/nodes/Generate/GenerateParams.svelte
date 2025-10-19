@@ -28,7 +28,7 @@
 
     function clickModel (model)
     {
-        appState.graph.UpdateNode(appState.generateParams.NodeID, {provider : model.providerId, model : model.id});
+        appState.graph.updateNode(appState.generateParams.NodeID, {provider : model.providerId, model : model.id}, "ModelChange");
         appState.generateParams.ProviderTab = selectedProviderId;
         appState.settings.AddRecentModel(model);
         modal.close();
@@ -82,7 +82,7 @@
         <div class="vertical-tab-header">
             <div class="vertical-tab-header-group">
                 <div class="vertical-tab-header-group-title">
-                    API Providers
+                    API providers
                 </div>
                 <div class="vertical-tab-header-group-items">                    
                     {#each appState.providers.List as provider}
@@ -135,10 +135,10 @@
                 
         </div>
 
-        <div style="position: relative;" class="vertical-tab-content-container">
+        <div class="relative vertical-tab-content-container">
 
-            <div style="position: absolute; top:0; left:0; right:0; height:3em">
-                <div style="position: relative;width: 100%;height: 100%;">
+            <div class="models-filter-wrap1">
+                <div class="models-filter-wrap2">
                     <models-filter>
 
                         <models-buttons>
@@ -181,8 +181,7 @@
                         </label>
 
 
-                    </models-filter>
-                    
+                    </models-filter>                   
                 </div>
             </div>
 
@@ -201,7 +200,7 @@
                         {/if}
 
                         {#if !isSpecial && !hasKey}
-                            <div style="padding: var(--size-4-1) var(--size-4-2);">
+                            <div class="no-api-key">
                                 You did not provide the API key for <b>{selectedProvider.name}</b>.
                                 <br>
                                 <br>
@@ -214,23 +213,21 @@
                                 <br>
                                 And paste your API key in settings:
                                 <br>
-                                <div style="display: inline-block;">
+                                <div class="open-settings-container">
                                     <button 
-                                        style="margin-top: 0.6em;"
                                         onclick={()=>{appState.ShowSettings()}}>
-                                        Open Settings
+                                        Open settings
                                     </button>
                                 </div>
                             </div>
                         {:else}
                             {#if !isSpecial && !hasModels}
-                                <div style="padding: var(--size-4-1) var(--size-4-2);">
+                                <div class="list-of-models">
                                     List of models for <b>{selectedProvider.name}</b> not downloaded yet.
                                     <br>
-                                    <div style="display: inline-block;">
+                                    <div class="button-container">
 
-                                        <button 
-                                            style="margin-top: 1em;"
+                                        <button
                                             disabled={isUpdating}
                                             onclick={fetchModels}>
                                             
@@ -244,7 +241,7 @@
                                     </div>
 
                                     {#if errorMessage}
-                                        <error style="margin-top: 1em;">
+                                        <error>
                                             {errorMessage}
                                             <button type="button" class="btn-dark" onclick={() => {errorMessage = null}}>
                                                 <XIcon size={24} strokeWidth={2}/>
@@ -330,6 +327,57 @@
     .vertical-tab-header-group
     {
         padding-top: 0;
+    }
+
+    .no-api-key
+    {
+        padding: var(--size-4-1) var(--size-4-2);
+    }
+
+    .open-settings-container
+    {
+        display: inline-block;
+
+        button 
+        {
+            margin-top: 0.6em;
+        }
+    }
+
+    .list-of-models
+    {
+        padding: var(--size-4-1) var(--size-4-2);
+
+        error
+        {
+            margin-top: 1em;
+        }
+
+        .button-container
+        {
+            display: inline-block;
+
+            button 
+            {
+                margin-top: 1em;
+            }
+        }
+    }
+
+    .models-filter-wrap1
+    {
+        position: absolute; 
+        top:0; 
+        left:0; 
+        right:0; 
+        height:3em;
+    }
+
+    .models-filter-wrap2
+    {
+        position: relative;
+        width: 100%;
+        height: 100%;
     }
 
     label-free

@@ -9,8 +9,12 @@ export default class Provider
             headers : this.GetFetchHeaders()
         };
         
+        // This logging is necessary because users want to see what is being sent to provider and what is being returned.
         console.log(`[Canvas LLM] FetchModels → ${this.name}`, options);
+
         const resp = await requestUrl(options);
+
+        // This logging is necessary because users want to see what is being sent to provider and what is being returned.
         console.log(`[Canvas LLM] FetchModels ← ${this.name}`, resp);
 
         const text = await resp.text;
@@ -57,8 +61,12 @@ export default class Provider
                 body : JSON.stringify(body)
             };
 
+            // This logging is necessary because users want to see what is being sent to provider and what is being returned.
             console.log(`[Canvas LLM] CallModel → ${this.name} / ${model.name}`, options);
+
             const resp = await requestUrl(options);
+            
+            // This logging is necessary because users want to see what is being sent to provider and what is being returned.
             console.log(`[Canvas LLM] CallModel ← ${this.name} / ${model.name}`, resp);
             
             const text = await resp.text;
@@ -70,6 +78,7 @@ export default class Provider
         } 
         catch (error) 
         {
+            // This logging is necessary because users want to see what is being sent to provider and what is being returned.
             console.error(`[Canvas LLM] CallModel ← ${this.name} / ${model.name}`, error);
             throw error;
         }

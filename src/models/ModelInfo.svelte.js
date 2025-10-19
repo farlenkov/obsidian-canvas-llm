@@ -13,7 +13,7 @@ class ModelInfo
     async readLocal ()
     {
         while (!settings.Data)
-            await new Promise((resolve) => setTimeout(resolve, 1));
+            await sleep(1);
 
         providers.List.forEach(provider => 
         {

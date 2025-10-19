@@ -18,13 +18,9 @@ export default class CanvasView extends TextFileView
         this.appState.app = plugin.app;
         this.appState.leaf = plugin.leaf;
 
-        this.appState.graph.OnChange = () =>
+        this.appState.graph.onChange = (eventName) =>
         {
-            if (!this.saveRequested)
-            {
-                this.saveRequested = true;
-                this.requestSave();
-            }
+            this.requestSave();
         };
     }
 
@@ -36,7 +32,7 @@ export default class CanvasView extends TextFileView
     async setViewData (fileContents, clear)
     {
         const graphJson = JSON.parse(fileContents);
-        await this.appState.graph.LoadFromFile(graphJson);
+        await this.appState.graph.loadFromFile(graphJson);
 
         if (this.graphView)
         {
@@ -57,8 +53,7 @@ export default class CanvasView extends TextFileView
 
     getViewData ()
     {
-        const data = this.appState.graph.ToString();
-        this.saveRequested = false;
+        const data = this.appState.graph.toString();
         return data;
     }
 

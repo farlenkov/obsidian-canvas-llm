@@ -32,7 +32,7 @@
     {
         if (connection.isValid) 
         {
-            appState.graph.RemovePrevEdge(connection);
+            appState.graph.removePrevEdge(connection);
             return;
         }
         
@@ -59,14 +59,15 @@
         snapGrid = {[20,20]}
         onconnectstart = {() => appState.contextMenu.Hide()}
         onconnectend = {onConnectEnd}
-        ondelete = {(event) => appState.graph.OnChange()}
+        ondelete = {(event) => appState.graph.onChange("ondelete")}
+        deleteKey = {null}
         
         onpaneclick = {() => appState.contextMenu.Hide()}
         onnodeclick = {() => appState.contextMenu.Hide()}
         onedgeclick = {() => appState.contextMenu.Hide()}
 
         onnodedragstart = {()   => appState.contextMenu.Hide()}
-        onnodedragstop = {()    => appState.graph.OnChange()}
+        onnodedragstop = {()    => appState.graph.onChange("onnodedragstop")}
 
         onpanecontextmenu = {({ event })        => appState.contextMenu.ShowPane(event)}
         onnodecontextmenu = {({ event, node })  => appState.contextMenu.ShowNode(event, node)}

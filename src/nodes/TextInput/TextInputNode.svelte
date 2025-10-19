@@ -11,7 +11,7 @@
 
   function onChange ()
   {
-    appState.graph.UpdateNode(id, {value: value});
+    appState.graph.updateNode(id, {value: value}, "TextInput");
   }
 
 </script>
@@ -19,7 +19,7 @@
 <NodeResizer 
   minWidth={100} 
   minHeight={30} 
-  onResizeEnd={() => appState.graph.OnChange()} />
+  onResizeEnd={() => appState.graph.onChange("NodeResize")} />
 
 <Handle type="target" position={Position.Left} />
 <Handle type="source" position={Position.Right} />

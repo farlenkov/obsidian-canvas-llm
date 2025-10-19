@@ -1,10 +1,10 @@
 import settings from '$lib/settings/Settings.svelte.js';
-import { CreateNodeId, CreateEdgeId } from '$lib/utils/CreateId';
+import { createNodeId, createEdgeId } from '$lib/utils/CreateId';
 
 export default function creteDefaultGraph()
 {
-    const node1 = CreateNodeId();
-    const node2 = CreateNodeId();
+    const node1 = createNodeId();
+    const node2 = createNodeId();
     const defaultModel = settings.GetDefaultModel();
 
     return {
@@ -34,7 +34,7 @@ export default function creteDefaultGraph()
         "edges": 
         [
             {
-                "id": CreateEdgeId(node1, node2),
+                "id": createEdgeId(node1, node2),
                 "source": node1,
                 "target": node2
             }

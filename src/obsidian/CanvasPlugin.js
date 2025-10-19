@@ -1,4 +1,4 @@
-import { Plugin, loadPdfJs } from 'obsidian';
+import { Plugin, normalizePath, loadPdfJs } from 'obsidian';
 import CanvasView from './CanvasView.js';
 import settings from '$lib/settings/Settings.svelte.js';
 import creteDefaultGraph from '$lib/graph/Graph.default.js';
@@ -56,31 +56,28 @@ export default class CanvasPlugin extends Plugin
         this.registerEvent(fileMenuEvent);
     }
 
+    async IsFileExists(filePath)
+    {
+        const normalizedFilePath = normalizePath(filePath);
+        const file = this.app.vault.getFileByPath(normalizedFilePath);
+        return file != null;
+    }
+
     async CreateNewCanvas(folderPath)
     {
         let counter = 0;
         let baseName = "Canvas LLM"
         let filePath = `${folderPath}/${baseName}.canvas-llm`;
-        let file = null;
+
+        while (await this.IsFileExists(filePath))
+        {
+            counter++;
+            filePath = `${folderPath}/${baseName} ${counter}.canvas-llm`;
+        }
 
         const graph = creteDefaultGraph();
         const graphJson = JSON.stringify(graph, null, '\t');
-
-        while (file == null)
-        {
-            try
-            {
-                file = await this.app.vault.create(
-                    filePath, 
-                    graphJson);
-            }
-            catch(ex)
-            {
-                counter++;
-                filePath = `${folderPath}/${baseName} ${counter}.canvas-llm`;
-            }
-        }
-
+        const file = await this.app.vault.create(filePath, graphJson);
         const leaf = this.app.workspace.getLeaf();
         await leaf.openFile(file);
     }

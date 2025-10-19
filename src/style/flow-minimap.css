@@ -1,0 +1,15 @@
+.svelte-flow__minimap
+{
+    background: var(--canvas-background);
+}
+
+.svelte-flow__minimap-mask
+{
+    fill: rgb(var(--canvas-color));
+    opacity: 0.5;
+}
+
+.svelte-flow__minimap-node
+{
+    fill: rgb(var(--canvas-color));
+}

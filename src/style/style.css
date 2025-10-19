@@ -2,7 +2,9 @@
 
 @import url(./obsidian.css);
 @import url(./flow-node.css);
+@import url(./flow-node-color.css);
 @import url(./flow-other.css);
+@import url(./flow-minimap.css);
 @import url(./form.css);
 @import url(./animate.css);
 @import url(./error.css);
