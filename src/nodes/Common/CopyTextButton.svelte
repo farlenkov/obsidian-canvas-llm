@@ -2,7 +2,7 @@
 
 	import { getContext } from 'svelte';
     import { Copy } from 'lucide-svelte';
-    const { nodeId } = $props();
+    const { nodeId, copyThink } = $props();
     const appState = getContext("appState");
 
     function onClick(ev)
@@ -15,7 +15,7 @@
         if (!ev.shiftKey)
         {
             const node = branch[branch.length-1];
-            const text = getText(node);
+            const text = getText(node, copyThink);
             navigator.clipboard.writeText(text);
         }
         else
@@ -36,19 +36,25 @@
         }
     }
 
-    function getText(node)
+    function getText(node, copyThink)
     {
         switch (node.type)
         {
-            case "textInput": return node.data.value; break;
-            case "generate": return node.data.markdowns[node.data.part]; break;
+            case "textInput": 
+                return node.data.value; 
+                break;
+                
+            case "generate": 
+                const result = node.data.results[node.data.part];
+                return copyThink ? result.think : result.text; 
+                break;
         }
     }
     
 </script>
 
 <button 
-    class="clickable-icon"
+    class="copy-text clickable-icon"
     aria-label="Copy text" 
     onclick={onClick}>
     <Copy size={16}/>  

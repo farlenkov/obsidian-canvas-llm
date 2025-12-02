@@ -39,6 +39,7 @@
                     align-items: center;
                     padding: 0.1em 0.25em 0.1em 0.5em; 
                     height: 100%;
+                    gap: 0.25em;
                 }
 
                 node-header-left
@@ -50,11 +51,18 @@
                 node-header-right 
                 { 
                     text-align: right; 
-                    padding-right: 0.2em; 
+                    padding-right: 0.4em; 
 
                     button 
                     {
                         height: 1.75em;
+                    }
+                    
+                    .clickable-icon
+                    {
+                        padding: var(--size-2-2) var(--size-2-2);
+                        margin-left: -0.1em;
+                        margin-right: -0.1em;
                     }
                 }
             }

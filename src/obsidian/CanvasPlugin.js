@@ -1,7 +1,7 @@
 import { Plugin, normalizePath, loadPdfJs } from 'obsidian';
 import CanvasView from './CanvasView.js';
 import settings from '$lib/settings/Settings.svelte.js';
-import creteDefaultGraph from '$lib/graph/Graph.default.js';
+import { defaultGraph } from '$lib/graph/Graph.default.js';
 
 export default class CanvasPlugin extends Plugin 
 {
@@ -75,7 +75,7 @@ export default class CanvasPlugin extends Plugin
             filePath = `${folderPath}/${baseName} ${counter}.canvas-llm`;
         }
 
-        const graph = creteDefaultGraph();
+        const graph = defaultGraph();
         const graphJson = JSON.stringify(graph, null, '\t');
         const file = await this.app.vault.create(filePath, graphJson);
         const leaf = this.app.workspace.getLeaf();

@@ -5,7 +5,7 @@ export default class GraphState
 {
     constructor(file)
     {
-        this.fileVersion = 1;
+        this.fileVersion = 2;
 
         this.file = file;
         this.nodes = $state.raw([]);
@@ -31,17 +31,23 @@ export default class GraphState
         
         graphJson.nodes.forEach(node => 
         {
+            // markdown to markdowns
+
             if (node.data.markdown)
             {
                 node.data.markdowns = [node.data.markdown];
                 delete node.data.markdown;
             }
+
+            // remove html & htmls
             
             if (node.data.html)
                 delete node.data.html;
 
             if (node.data.htmls)
                 delete node.data.htmls;
+
+            // model to provider
 
             if (node.data.model &&
                 !node.data.provider)
@@ -51,6 +57,33 @@ export default class GraphState
                     if (provider.ModelById[node.data.model])
                         node.data.provider = provider.id;
                 });
+            }
+
+            // markdowns to results
+
+            if (node.data.markdowns)
+            {
+                node.data.results = [];
+
+                node.data.markdowns.forEach(markdown => 
+                {
+                    const result = 
+                    {
+                        provider : node.data.provider,
+                        model : node.data.model,
+                        text : markdown
+                    };
+
+                    if (Array.isArray(markdown))
+                    {
+                        result.think = markdown[0];
+                        result.text = markdown[1];
+                    }
+
+                    node.data.results.push(result);
+                });
+
+                delete node.data.markdowns;
             }
         });
     }
@@ -171,7 +204,7 @@ export default class GraphState
             switch (node.type)
             {
                 case "textInput": message = { role : "user", content : [node.data.value]}; break;
-                case "generate": message = { role : "model", content : [node.data.markdowns[node.data.part]]}; break;
+                case "generate": message = { role : "model", content : [node.data.results[node.data.part].text]}; break;
             }
 
             result.push(message);

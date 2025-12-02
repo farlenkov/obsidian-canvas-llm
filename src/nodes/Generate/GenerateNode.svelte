@@ -1,7 +1,7 @@
 <script>
 
 	import { getContext, onMount } from 'svelte';
-    import { Play, Loader, XIcon } from 'lucide-svelte';
+    import { Play, Loader, XIcon, Lightbulb } from 'lucide-svelte';
     import { Handle, Position, NodeResizer } from '@xyflow/svelte';
     import { MarkdownRenderer } from 'obsidian';
     
@@ -12,15 +12,16 @@
 
     const appState = getContext("appState");
     let bodyEl;
-    
+
     let {id, data, selected} = $props();
     let inProgress = $state(false);
     let errorMessage = $state("");
     let activeTab = $state(data.part ?? 0);
-
+    let hasThink = $state(false);
+    let showThink = $state(false);
     let provider = $derived(appState.providers.ById[data.provider]);
     let model = $derived(provider ? provider.ModelById[data.model] : null);
-
+    
     onMount(async () => { renderHtml(); });
 
     $effect(() => { renderHtml(); });
@@ -65,12 +66,25 @@
                 throw "Prompt is empty. Please connect some Input node.";
             
             const { markdowns } = await aiClient.Call(data.provider, data.model, nodes);
-            const oldMarkdowns = data.markdowns.filter(md => md ? true : false);
+            const oldResults = data.results.filter(md => md ? true : false);
+
+            const result = 
+            { 
+                provider : data.provider, 
+                model : data.model,
+                text : markdowns[0]
+            };
+
+            if (markdowns.length > 1)
+            {
+                result.think = markdowns[0];
+                result.text = markdowns[1];
+            }
 
             const update = 
             {
-                part : oldMarkdowns.length,
-                markdowns : [...oldMarkdowns, ...markdowns]
+                part : oldResults.length,
+                results : [...oldResults, result]
             };
 
             appState.graph.updateNode(id, update, "TextGenerate");
@@ -91,9 +105,10 @@
 
     function clickNextPart()
     {
-        const nextPart = (activeTab + 1) % data.markdowns.length;
+        const nextPart = (activeTab + 1) % data.results.length;
         data.part = nextPart;
         activeTab = nextPart;
+        showThink = false;
         appState.graph.onChange("NextPart");
     }
 
@@ -101,14 +116,16 @@
     {
         bodyEl.empty();
 
-        if (data.markdowns.length <= activeTab)
+        if (data.results.length <= activeTab)
             return;
 
-        const markdown = data.markdowns[activeTab];
+        const result = data.results[activeTab];
+        const text = showThink ? result.think : result.text;
+        hasThink = result.think ? true : false;
 
         MarkdownRenderer.render(
             appState.app, 
-            markdown, 
+            text, 
             bodyEl, 
             appState.view.file.path, 
             appState.view);
@@ -140,35 +157,51 @@
                 </node-header-left>
 
                 <node-header-right>
-                    {#if data.markdowns.length > 1}
+                    {#if hasThink}
+                        {#if !showThink}
+                            <button 
+                                class="show-think clickable-icon"
+                                aria-label="Show reasoning"
+                                onclick={() => showThink = true}>
+                                <Lightbulb size={16}/>
+                            </button>
+                        {:else}
+                            <button 
+                                class="show-think clickable-icon color-text-accent"
+                                aria-label="Show message"
+                                onclick={() => showThink = false}>
+                                <Lightbulb size={16}/>
+                            </button>
+                        {/if}
+                    {/if}
+
+                    {#if data.results.length > 1}
                         <button 
                             class="next-part"
-                            aria-label="Switch part ({activeTab + 1}/{data.markdowns.length})" 
+                            aria-label="Switch part ({activeTab + 1}/{data.results.length})" 
                             onclick={clickNextPart}>
                             {activeTab + 1}
                         </button>
                     {/if}
 
                     {#if !inProgress}
-                        <button class="mod-cta" aria-label="Call LLM" onclick={clickGenerate}>
+                        <button class="call-llm mod-cta" aria-label="Call LLM" onclick={clickGenerate}>
                             <Play size={16}/>  
                         </button>
                     {:else}
-                        <button class="mod-cta" aria-label="In progress..." disabled>
+                        <button class="call-llm mod-cta" aria-label="In progress..." disabled>
                             <Loader size={16} class="rotate"/> 
                         </button>
                     {/if}
 
-                    <CopyTextButton nodeId={id} />
+                    <CopyTextButton nodeId={id} copyThink={showThink} />
                     <ParamsButton onclick={showParams} />
                 </node-header-right>
 
             </node-header>
 
             <node-body class="nodrag nozoom nomenu node-text markdown-rendered">
-                <!-- {#if data.markdowns.length > 0}
-                    {@html mdToHtml(data.markdowns[activeTab])}
-                {/if} -->
+
                 <div bind:this={bodyEl}></div>
 
                 {#if errorMessage}
@@ -188,12 +221,9 @@
 
 <style>
 
-  node-header-right .btn-main { margin-right: 0.5em;}
-
   button.next-part
   {
     padding: var(--size-4-1) var(--size-4-2);
-    margin-right: 0.25em;
   }
 
   error
@@ -210,13 +240,9 @@
     text-overflow: ellipsis;
   }
 
-  node-header-right
+  node-header-right .mod-cta
   {
-    .mod-cta
-    {
-      margin-right: 0.5em;
-      padding: var(--size-4-1) var(--size-4-2);
-    }
+    padding: var(--size-4-1) var(--size-4-2);
   }
 
 </style>

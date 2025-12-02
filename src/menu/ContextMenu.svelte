@@ -4,6 +4,7 @@
     import { useSvelteFlow } from '@xyflow/svelte';
     import { SquareXIcon, TextCursorInputIcon, BotIcon, SquarePlayIcon } from 'lucide-svelte';
 
+    import { defaultTextInput, defaultGenerate } from '$lib/graph/Graph.default.js';
     import { createNodeId, createEdgeId } from '$lib/utils/CreateId';
 
     const appState = getContext("appState");
@@ -43,31 +44,12 @@
 
     function addTextInput()
     {
-        addNode
-        ({
-          type:"textInput", 
-          width: 260, 
-          height: 120, 
-          data : { value : "" }
-        });
+        addNode(defaultTextInput());
     }
 
     function addGenerate()
     {
-        const defaultModel = appState.settings.GetDefaultModel();
-
-        addNode
-        ({
-          type:"generate", 
-          width: 460, 
-          height: 340, 
-          data : 
-          { 
-            markdowns : [], 
-            provider : defaultModel.providerId, 
-            model : defaultModel.id 
-          }
-        });
+        addNode(defaultGenerate());
     }
     
     function nodeRemove() 

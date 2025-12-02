@@ -1,7 +1,7 @@
 import settings from '$lib/settings/Settings.svelte.js';
 import { createNodeId, createEdgeId } from '$lib/utils/CreateId';
 
-export default function creteDefaultGraph()
+export function defaultGraph()
 {
     const node1 = createNodeId();
     const node2 = createNodeId();
@@ -25,7 +25,7 @@ export default function creteDefaultGraph()
                 "width": 460,
                 "height": 340,
                 "data": {
-                    "markdowns": [],
+                    "results": [],
                     "model": defaultModel.id,
                     "provider": defaultModel.providerId
                 }
@@ -39,4 +39,31 @@ export default function creteDefaultGraph()
                 "target": node2
             }
         ]};
+}
+
+export function defaultTextInput()
+{
+    return {
+        type : "textInput", 
+        width : 260, 
+        height : 120, 
+        data : { value : "" }
+    };
+}
+
+export function defaultGenerate()
+{
+    const defaultModel = settings.GetDefaultModel();
+
+    return {
+        type : "generate", 
+        width : 460, 
+        height : 340, 
+        data : 
+        { 
+            results : [], 
+            provider : defaultModel.providerId, 
+            model : defaultModel.id 
+        }
+    };
 }

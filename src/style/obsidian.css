@@ -9,6 +9,11 @@
     {
         z-index: 1;
     }
+
+    .color-text-accent
+    {
+        color:var(--text-accent)
+    }
 }
 
 .canvas-llm-generate-params,

@@ -150,6 +150,9 @@ export default class Provider
             if (choice.message.reasoning)
                 result.push(choice.message.reasoning);
 
+            else if (choice.message.reasoning_content)
+                result.push(choice.message.reasoning_content);
+
             if (choice.message.content)
                 result.push(choice.message.content);
         });

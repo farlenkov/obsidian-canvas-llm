@@ -7,7 +7,7 @@
 
 <button 
     type="button" 
-    class="clickable-icon" 
+    class="show-params clickable-icon" 
     aria-label="Open node params" 
     {onclick}>
     <Settings size={16}/> 
