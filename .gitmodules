@@ -1,0 +1,8 @@
+[submodule "src/svelte-llm"]
+	path = src/svelte-llm
+	url = git@github.com:farlenkov/javascript-submodules.git
+	branch = svelte-llm
+[submodule "src/svelte-obsidian"]
+	path = src/svelte-obsidian
+	url = git@github.com:farlenkov/javascript-submodules.git
+	branch = svelte-obsidian
