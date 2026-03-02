@@ -6,10 +6,11 @@
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import ParamsButton from '../Common/ParamsButton.svelte';
     import FileSelectModal from './FileSelectModal.js';
+    import NodeTypes from '../Type/NodeTypes.js';
 
-    const ALLOWED_EXTENSIONS = ['md', 'fountain'];
+    const ALLOWED_EXTENSIONS = ['md', 'docx', 'fountain'];
     const appState = getContext("appState");
-    const counter = ++appState.counter;
+    const nodeType = NodeTypes.ById.fileInput;
 
     let {id, data, selected} = $props();
     let filePath = $state(data.path);
@@ -21,7 +22,6 @@
     {
         if (filePath) 
             renderHtml("onMount()"); 
-
     });
 
     function onFileChange(file)
@@ -59,12 +59,10 @@
 
     function handleDrop(e) 
     {
-        // console.log("handleDrop", e);
         e.preventDefault();
         isDragOver = false;
 
         const raw = e.dataTransfer.getData('text/plain');
-        // console.log("raw", raw);
         
         if (!raw) 
             return;
@@ -72,7 +70,6 @@
         const url = new URL(raw);
         const fileUrl = url.searchParams.get('file');
         const filePath = decodeURIComponent(fileUrl);
-        // console.log("filePath", filePath);
         
         if (!filePath) 
             return;
@@ -80,8 +77,6 @@
         const file = 
             appState.app.vault.getAbstractFileByPath(filePath) ?? 
             appState.app.vault.getAbstractFileByPath(filePath + '.md');
-
-        // console.log("file", file);
         
         if (!file) 
             return;
@@ -97,17 +92,15 @@
         if (!filePath)
             return;
 
-        const file = appState.app.vault.getAbstractFileByPath(filePath);
-
-        if (!file)
-            return;
-
-        const text = await appState.app.vault.read(file);
+        const text = await nodeType.getText(appState.app, filePath);
 
         if (!bodyEl)
             return;
         
         bodyEl.empty();
+        
+        if (!text)
+            return;
         
         MarkdownRenderer.render(
             appState.app, 
