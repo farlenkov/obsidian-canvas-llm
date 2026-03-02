@@ -9,20 +9,16 @@
         MiniMap
     } from '@xyflow/svelte';
 
-    import { getContext } from 'svelte';
+    import { getContext, onMount } from 'svelte';
     import { MapIcon, Settings } from 'lucide-svelte';
 
     import ContextMenu from '$lib/menu/ContextMenu.svelte';
-    import TextInputNode from '$lib/nodes/TextInput/TextInputNode.svelte';
-    import GenerateNode from '$lib/nodes/Generate/GenerateNode.svelte';
+    import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
 
     const appState = getContext("appState");
 
-    const nodeTypes = 
-    {
-        textInput : TextInputNode,
-        generate : GenerateNode
-    }
+    const nodeTypesIndex = {};
+    nodeTypes.List.forEach(nodeType => nodeTypesIndex[nodeType.id] = nodeType.view);
     
     let showMiniMap = $state(false);
     let zoomOnScroll = $state(true);
@@ -50,13 +46,13 @@
     <SvelteFlow
         bind:nodes = {appState.graph.nodes}
         bind:edges = {appState.graph.edges}
-        {nodeTypes}
         {zoomOnScroll}
         {preventScrolling}
         fitView
         fitViewOptions = {{maxZoom:1,minZoom:1}}
         proOptions = {{hideAttribution:true}}
         snapGrid = {[20,20]}
+        nodeTypes = {nodeTypesIndex}
         onconnectstart = {() => appState.contextMenu.Hide()}
         onconnectend = {onConnectEnd}
         ondelete = {(event) => appState.graph.onChange("ondelete")}

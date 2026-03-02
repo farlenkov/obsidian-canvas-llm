@@ -1,5 +1,6 @@
-import { createNodeId, createEdgeId } from '$lib/utils/CreateId';
-import providers from '$lib/models/ProviderInfo.svelte.js';
+import { createNodeId, createEdgeId } from '$lib/graph/CreateId';
+import providers from '$lib/svelte-llm/models/ProviderInfo.svelte.js';
+import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
 
 export default class GraphState
 {
@@ -191,7 +192,7 @@ export default class GraphState
         return [...this.getBranch(sourceEdge.source, loop), targetNode];
     }
 
-    getPrompt (targetId)
+    async getPrompt (targetId, app)
     {
         const branch = this.getBranch(targetId);
         const result = [];
@@ -199,13 +200,8 @@ export default class GraphState
         for (var i = 0; i < branch.length - 1; i++)
         {
             const node = branch[i];
-            let message = null;
-
-            switch (node.type)
-            {
-                case "textInput": message = { role : "user", content : [node.data.value]}; break;
-                case "generate": message = { role : "model", content : [node.data.results[node.data.part].text]}; break;
-            }
+            const nodeType = nodeTypes.ById[node.type];
+            const message = await nodeType.getMessage(app, node);
 
             result.push(message);
         }

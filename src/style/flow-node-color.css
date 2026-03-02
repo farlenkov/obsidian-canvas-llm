@@ -22,7 +22,7 @@
         }
     }
 
-    /* INPUT */
+    /* TEXT INPUT */
 
     .svelte-flow__node-textInput
     {
@@ -50,9 +50,45 @@
         }
     }
 
+    /* FILE INPUT */
+
+    .svelte-flow__node-fileInput
+    {
+        .canvas-node-container
+        {
+            border-color: var(--color-purple);
+        }
+
+        .svelte-flow__handle 
+        {        
+            border-color: var(--color-purple);
+        }
+
+        node-content
+        {
+            node-header
+            {
+                border-bottom-color: var(--color-purple);
+
+                node-header-left 
+                {
+                    color: var(--color-purple);
+                }
+            }
+        }
+    }
+
     /* INPUT : SELECTED */
 
     .svelte-flow__node-textInput.selected
+    {
+        .canvas-node-container
+        {
+            border-color: var(--color-accent);
+        }
+    }
+
+    .svelte-flow__node-fileInput.selected
     {
         .canvas-node-container
         {

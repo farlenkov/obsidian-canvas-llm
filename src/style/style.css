@@ -1,5 +1,8 @@
 @import '@xyflow/svelte/dist/style.css';
 
+@import url(../svelte-llm/style/style.css);
+@import url(../svelte-obsidian/style/style.css);
+
 @import url(./obsidian.css);
 @import url(./flow-node.css);
 @import url(./flow-node-color.css);

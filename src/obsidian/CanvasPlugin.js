@@ -1,15 +1,21 @@
 import { Plugin, normalizePath, loadPdfJs } from 'obsidian';
+import * as obsidian from 'obsidian';
 import CanvasView from './CanvasView.js';
-import settings from '$lib/settings/Settings.svelte.js';
+import settings from '$lib/svelte-llm/settings/Settings.svelte.js';
 import { defaultGraph } from '$lib/graph/Graph.default.js';
+import { createNewFile } from '$lib/svelte-obsidian/src/CreateNewFile.js';
+
+const FILE_EXT = 'canvas-llm';
 
 export default class CanvasPlugin extends Plugin 
 {
     async onload() 
     {
         settings.Init(this);
+
         this.RegisterCanvasView();
         this.RegisterMenuItem();
+        this.RegisterFileRenameHandler();
 
         this.addRibbonIcon(
             'workflow', 
@@ -25,7 +31,7 @@ export default class CanvasPlugin extends Plugin
     async RegisterCanvasView()
     {
         this.registerExtensions(
-            ['canvas-llm'], 
+            [FILE_EXT], 
             'canvas-llm-view');
 
         this.registerView(
@@ -56,29 +62,40 @@ export default class CanvasPlugin extends Plugin
         this.registerEvent(fileMenuEvent);
     }
 
-    async IsFileExists(filePath)
+    RegisterFileRenameHandler()
     {
-        const normalizedFilePath = normalizePath(filePath);
-        const file = this.app.vault.getFileByPath(normalizedFilePath);
-        return file != null;
+        const fileRenameEvent = this.app.vault.on(
+            'rename', 
+            async (file, oldPath) => 
+            {
+                console.log('rename', oldPath, file.path);
+                // Находим все свои файлы, которые ссылаются на oldPath
+                // const myFiles = this.app.vault.getFiles().filter(f => f.extension === FILE_EXT);
+                
+                // for (const myFile of myFiles) 
+                // {
+                //     const content = await this.app.vault.read(myFile);
+                    
+                //     if (content.includes(oldPath)) 
+                //     {
+                //         const newContent = content.replaceAll(oldPath, file.path);
+                //         await this.app.vault.modify(myFile, newContent);
+                //     }
+                // }
+            });
+
+        this.registerEvent(fileRenameEvent);
     }
 
     async CreateNewCanvas(folderPath)
     {
-        let counter = 0;
-        let baseName = "Canvas LLM"
-        let filePath = `${folderPath}/${baseName}.canvas-llm`;
-
-        while (await this.IsFileExists(filePath))
-        {
-            counter++;
-            filePath = `${folderPath}/${baseName} ${counter}.canvas-llm`;
-        }
-
         const graph = defaultGraph();
-        const graphJson = JSON.stringify(graph, null, '\t');
-        const file = await this.app.vault.create(filePath, graphJson);
-        const leaf = this.app.workspace.getLeaf();
-        await leaf.openFile(file);
+
+        await createNewFile(
+            this.app, 
+            folderPath,
+            "Canvas LLM",
+            FILE_EXT,
+            graph);
     }
 }

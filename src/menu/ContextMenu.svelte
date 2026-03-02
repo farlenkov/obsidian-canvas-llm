@@ -2,16 +2,17 @@
   
     import { getContext } from 'svelte';
     import { useSvelteFlow } from '@xyflow/svelte';
-    import { SquareXIcon, TextCursorInputIcon, BotIcon, SquarePlayIcon } from 'lucide-svelte';
+    import { SquareXIcon } from 'lucide-svelte';
 
-    import { defaultTextInput, defaultGenerate } from '$lib/graph/Graph.default.js';
-    import { createNodeId, createEdgeId } from '$lib/utils/CreateId';
+    import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
+    import { createNodeId, createEdgeId } from '$lib/graph/CreateId';
 
     const appState = getContext("appState");
     const { screenToFlowPosition } = useSvelteFlow();
 
-    function addNode(newNode)
+    function addNode(nodeType)
     {
+        let newNode = nodeType.getDefault();
         newNode.id = createNodeId();
         newNode.origin = [0.0, 0.0];
 
@@ -40,16 +41,6 @@
         }
 
         appState.contextMenu.Hide();
-    }
-
-    function addTextInput()
-    {
-        addNode(defaultTextInput());
-    }
-
-    function addGenerate()
-    {
-        addNode(defaultGenerate());
     }
     
     function nodeRemove() 
@@ -91,15 +82,14 @@
 
     {:else}
 
-      <div class="context-menu-item- menu-item tappable" onclick={addTextInput}>
-        <TextCursorInputIcon size={24} class="menu-item-icon" />
-        <div class="menu-item-title">Add text input</div>
-      </div>
+      {#each nodeTypes.List as nodeType}
 
-      <div class="context-menu-item- menu-item tappable" onclick={addGenerate}>
-        <SquarePlayIcon size={24} class="menu-item-icon" />
-        <div class="menu-item-title">Add generator</div>
-      </div>
+        <div class="context-menu-item- menu-item tappable" onclick={() => addNode(nodeType)}>
+          <svelte:component this={nodeType.icon} size={24} class="menu-item-icon" />
+          <div class="menu-item-title">Add {nodeType.name}</div>
+        </div>
+
+      {/each}
 
     {/if}
 

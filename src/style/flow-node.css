@@ -104,15 +104,28 @@
         }
     }
 
+    .svelte-flow__node-fileInput 
+    {        
+        node-content
+        {
+            node-body 
+            {
+                padding: 0.4em 0.6em;
+                overflow: auto;
+
+                ol
+                {
+                    list-style: decimal !important;
+                    list-style-type: decimal !important;
+                }
+            }
+        }
+    }
+
     .svelte-flow__node-generate 
     {        
         node-content
         {
-            node-header 
-            {
-                /* background: linear-gradient(90deg, #222f39 0%, rgba(0,0,0,1) 100%); */
-            }
-            
             node-body 
             {
                 padding: 0.4em 0.6em;

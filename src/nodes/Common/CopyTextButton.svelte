@@ -2,10 +2,12 @@
 
 	import { getContext } from 'svelte';
     import { Copy } from 'lucide-svelte';
+    import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
+
     const { nodeId, copyThink } = $props();
     const appState = getContext("appState");
 
-    function onClick(ev)
+    async function onClick(ev)
     {
         if (!navigator.clipboard)
             return;
@@ -15,8 +17,9 @@
         if (!ev.shiftKey)
         {
             const node = branch[branch.length-1];
-            const text = getText(node, copyThink);
-            navigator.clipboard.writeText(text);
+            const nodeType = nodeTypes.ById[node.type];
+            const nodeText = await nodeType.getText(appState.app, node, copyThink);
+            navigator.clipboard.writeText(nodeText);
         }
         else
         {
@@ -25,29 +28,16 @@
             for (var i = 0; i < branch.length; i++)
             {
                 const node = branch[i];
+                const nodeType = nodeTypes.ById[node.type];
+                const nodeText = await nodeType.getText(appState.app, node);
 
                 if (!text)
-                    text = getText(node);
+                    text = nodeText;
                 else
-                    text += "\n\n---\n\n" + getText(node);
+                    text += "\n\n---\n\n" + nodeText;
             }
 
             navigator.clipboard.writeText(text);
-        }
-    }
-
-    function getText(node, copyThink)
-    {
-        switch (node.type)
-        {
-            case "textInput": 
-                return node.data.value; 
-                break;
-                
-            case "generate": 
-                const result = node.data.results[node.data.part];
-                return copyThink ? result.think : result.text; 
-                break;
         }
     }
     

@@ -51,7 +51,7 @@ async function copyStatic()
             external: ["obsidian"],
             format: "cjs",
             target: "es2018",
-            logLevel: "info",
+            logLevel: "info",//"error",//
             sourcemap: prod ? false : "inline",
             treeShaking: true,
             outfile: `${outdir}/main.js`,

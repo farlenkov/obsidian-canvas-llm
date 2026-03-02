@@ -2,9 +2,15 @@ import GraphState from '$lib/graph/Graph.svelte.js';
 import ContextMenuState from '$lib/menu/ContextMenu.svelte.js';
 import GenerateParams from '$lib/nodes/Generate/GenerateParams.svelte.js';
 
-import settings from '$lib/settings/Settings.svelte.js';
-import providers from '$lib/models/ProviderInfo.svelte.js';
-import models from '$lib/models/ModelInfo.svelte.js';
+import ModelSelectState from '$lib/svelte-llm/settings/ModelSelect.svelte.js';
+
+import GenericModal from '$lib/svelte-obsidian/src/GenericModal.js';
+
+import SettingsView from '$lib/svelte-llm/settings/Settings.svelte';
+import settings from '$lib/svelte-llm/settings/Settings.svelte.js';
+
+import providers from '$lib/svelte-llm/models/ProviderInfo.svelte.js';
+import models from '$lib/svelte-llm/models/ModelInfo.svelte.js';
 
 export default class AppState
 {
@@ -21,10 +27,15 @@ export default class AppState
         this.graph = new GraphState();
         this.contextMenu = new ContextMenuState(),
         this.generateParams = new GenerateParams(this)
+        this.modelSelectState = new ModelSelectState();
     }
 
     ShowSettings()
     {
-        this.settings.Show(this);
+        new GenericModal(
+            this, 
+            SettingsView, 
+            ["canvas-llm", "canvas-llm-settings"])
+            .open();
     }
 }

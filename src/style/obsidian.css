@@ -49,7 +49,12 @@
             .vertical-tab-header,
             .vertical-tab-content-container
             {
-                padding-top: 3em;
+                /* padding-top: 3em; */
+            }
+
+            .vertical-tab-header
+            {
+                padding-top: 2.25em;
             }
         }
     }
@@ -59,10 +64,10 @@
 {
     .modal
     {
-        width:      var(--modal-width);
+        /* width:      var(--modal-width); */
         /* height:     var(--modal-height); */
 
-        max-width:  30em;
+        /* max-width:  30em; */
         /* max-height: 29em; */
     }
 }

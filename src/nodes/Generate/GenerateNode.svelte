@@ -8,7 +8,7 @@
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
 
-    import aiClient from '$lib/models/AiClient.svelte.js';
+    import aiClient from '$lib/svelte-llm/models/AiClient.svelte.js';
 
     const appState = getContext("appState");
     let bodyEl;
@@ -22,9 +22,12 @@
     let provider = $derived(appState.providers.ById[data.provider]);
     let model = $derived(provider ? provider.ModelById[data.model] : null);
     
-    onMount(async () => { renderHtml(); });
-
-    $effect(() => { renderHtml(); });
+    onMount(() => 
+    { 
+        renderHtml(
+            "onMount()",
+            data.results); 
+    });
     
     function getModelDesc()
     {
@@ -60,7 +63,7 @@
 
         try
         {
-            const nodes = appState.graph.getPrompt(id);
+            const nodes = await appState.graph.getPrompt(id, appState.app);
 
             if (nodes.length == 0)
                 throw "Prompt is empty. Please connect some Input node.";
@@ -76,10 +79,7 @@
             };
 
             if (markdowns.length > 1)
-            {
-                result.think = markdowns[0];
-                result.text = markdowns[1];
-            }
+                result.think = markdowns[1];
 
             const update = 
             {
@@ -89,6 +89,10 @@
 
             appState.graph.updateNode(id, update, "TextGenerate");
             activeTab = update.part;
+
+            renderHtml(
+                "clickGenerate()", 
+                update.results);
         }
         catch (err)
         {
@@ -109,17 +113,30 @@
         data.part = nextPart;
         activeTab = nextPart;
         showThink = false;
+
         appState.graph.onChange("NextPart");
+
+        renderHtml(
+            "clickNextPart()",
+            data.results);
     }
 
-    function renderHtml()
+    function getSwitchPartLabel()
+    {
+        return `Switch part (${activeTab + 1}/${data.results.length}) \n ${data.results[activeTab].model}`;
+    }
+
+    function renderHtml(note, results)
     {
         bodyEl.empty();
 
-        if (data.results.length <= activeTab)
+        if (!results)
             return;
 
-        const result = data.results[activeTab];
+        if (results.length <= activeTab)
+            return;
+
+        const result = results[activeTab];
         const text = showThink ? result.think : result.text;
         hasThink = result.think ? true : false;
 
@@ -175,10 +192,10 @@
                         {/if}
                     {/if}
 
-                    {#if data.results.length > 1}
+                    {#if data.results?.length > 1}
                         <button 
                             class="next-part"
-                            aria-label="Switch part ({activeTab + 1}/{data.results.length})" 
+                            aria-label={getSwitchPartLabel()}
                             onclick={clickNextPart}>
                             {activeTab + 1}
                         </button>

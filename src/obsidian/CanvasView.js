@@ -18,10 +18,7 @@ export default class CanvasView extends TextFileView
         this.appState.app = plugin.app;
         this.appState.leaf = plugin.leaf;
 
-        this.appState.graph.onChange = (eventName) =>
-        {
-            this.requestSave();
-        };
+        this.appState.graph.onChange = () => this.requestSave();
     }
 
     getViewType() 
@@ -33,12 +30,8 @@ export default class CanvasView extends TextFileView
     {
         const graphJson = JSON.parse(fileContents);
         await this.appState.graph.loadFromFile(graphJson);
-
-        if (this.graphView)
-        {
-            unmount(this.graphView);
-            delete this.graphView;
-        }
+        
+        this.unmountView();
         
         const viewRoot = this.contentEl;
         viewRoot.classList.add('canvas-llm');
@@ -46,27 +39,36 @@ export default class CanvasView extends TextFileView
 
         this.graphView = mount(App, 
         { 
-            target: viewRoot, 
-            props : {appState : this.appState} 
+            target : viewRoot, 
+            props : { appState : this.appState } 
         });
     }
 
-    getViewData ()
+    getViewData()
     {
-        const data = this.appState.graph.toString();
-        return data;
+        return this.appState.graph.toString();
     }
 
-    clear ()
+    async onClose()
+    {
+        this.clear();
+    }
+
+    clear()
+    {
+        this.unmountView();
+
+        const viewRoot = this.contentEl;
+        viewRoot.classList.remove('canvas-llm');
+        viewRoot.empty();
+    }
+
+    unmountView()
     {
         if (this.graphView)
         {
             unmount(this.graphView);
             delete this.graphView;
         }
-
-        const viewRoot = this.contentEl;
-        viewRoot.classList.remove('canvas-llm');
-        viewRoot.empty();
     }
 }

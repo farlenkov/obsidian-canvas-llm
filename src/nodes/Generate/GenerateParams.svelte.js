@@ -1,13 +1,9 @@
-import CanvasModal from '$lib/obsidian/CanvasModal.js';
+import GenericModal from '$lib/svelte-obsidian/src/GenericModal.js';
 import GenerateParamsView from '$lib/nodes/Generate/GenerateParams.svelte';
 
 export default class GenerateParams
 {
     NodeID = $state(0);
-    ModelID = $state("");
-    ProviderID = $state("");
-    ProviderTab = $state("");
-
     FilterName = $state("");
     FilterFree = $state(false);
 
@@ -18,18 +14,14 @@ export default class GenerateParams
 
     Show (nodeId, data) 
     {
-        if (!data.provider || !data.model)
-        {
-            this.ModelID = appState.settings.Data.defaultModel;
-            this.ProviderID = appState.settings.Data.defaultProvider;
-        }
-        else
-        {
-            this.ModelID = data.model;
-            this.ProviderID = data.provider;
-        }
-
         this.NodeID = nodeId;
-        new CanvasModal(this.appState, GenerateParamsView, "generate-params").open();
+        this.appState.modelSelectState.ModelID = data.model || appState.settings.Data.defaultModel;
+        this.appState.modelSelectState.ProviderID = data.provider || appState.settings.Data.defaultProvider;
+
+        new GenericModal(
+            this.appState, 
+            GenerateParamsView, 
+            ["svelte-obsidian", "canvas-llm", "canvas-llm-generate-params"])
+            .open();
     }
 }
