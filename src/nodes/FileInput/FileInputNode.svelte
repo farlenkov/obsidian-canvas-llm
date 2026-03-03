@@ -16,20 +16,37 @@
     let filePath = $state(data.path);
     let fileName = $state(data.name);
     let isDragOver = $state(false);
+    let isNotFound = $state(false);
     let bodyEl;
+
+    if (appState.settings.Data.supportPdf)
+        ALLOWED_EXTENSIONS.push('pdf');
 
     onMount(() => 
     {
         if (filePath) 
-            renderHtml("onMount()"); 
+            renderHtml();
+
+        appState.plugin.onModify.push(onModify);
+
+        return () => 
+        {
+            appState.plugin.onModify = appState.plugin.onModify.filter(fn => fn !== onModify);
+        };
     });
+
+    function onModify(file)
+    {
+        if (file.path === filePath)
+            renderHtml();
+    }
 
     function onFileChange(file)
     {
         fileName = file.name;
         filePath = file.path;
 
-        renderHtml("onFileChange()");
+        renderHtml();
         
         appState.graph.updateNode(
             id, 
@@ -87,8 +104,10 @@
         onFileChange(file);
     }
 
-    async function renderHtml(note)
+    async function renderHtml()
     {
+        isNotFound = false;
+        
         if (!filePath)
             return;
 
@@ -100,8 +119,11 @@
         bodyEl.empty();
         
         if (!text)
+        {
+            isNotFound = true;
             return;
-        
+        }
+
         MarkdownRenderer.render(
             appState.app, 
             text, 
@@ -145,7 +167,17 @@
             </node-header>
 
             <node-body class="nodrag nozoom nomenu node-text markdown-rendered">
+
                 <div bind:this={bodyEl}></div>
+
+                {#if isNotFound}
+                    <error>
+                        File not found:
+                        <br/>
+                        "{filePath}"
+                    </error>
+                {/if}
+
             </node-body>
 
         </node-content>
@@ -164,6 +196,14 @@
     {
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    error
+    {
+        position: fixed;
+        top: 2.05em;
+        left: 1px;
+        right: 1px;
     }
 
 </style>

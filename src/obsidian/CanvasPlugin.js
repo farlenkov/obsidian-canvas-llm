@@ -1,4 +1,4 @@
-import { Plugin, normalizePath, loadPdfJs } from 'obsidian';
+import { Plugin } from 'obsidian';
 import * as obsidian from 'obsidian';
 import CanvasView from './CanvasView.js';
 import settings from '$lib/svelte-llm/settings/Settings.svelte.js';
@@ -9,6 +9,8 @@ const FILE_EXT = 'canvas-llm';
 
 export default class CanvasPlugin extends Plugin 
 {
+    onModify = [];
+
     async onload() 
     {
         settings.Init(this);
@@ -16,6 +18,7 @@ export default class CanvasPlugin extends Plugin
         this.RegisterCanvasView();
         this.RegisterMenuItem();
         this.RegisterFileRenameHandler();
+        this.RegisterFileModifyHandler();
 
         this.addRibbonIcon(
             'workflow', 
@@ -25,7 +28,7 @@ export default class CanvasPlugin extends Plugin
 
     async onunload() 
     {
-        
+
     }
 
     async RegisterCanvasView()
@@ -68,23 +71,47 @@ export default class CanvasPlugin extends Plugin
             'rename', 
             async (file, oldPath) => 
             {
-                console.log('rename', oldPath, file.path);
-                // Находим все свои файлы, которые ссылаются на oldPath
-                // const myFiles = this.app.vault.getFiles().filter(f => f.extension === FILE_EXT);
+                const canvasFiles = this.app.vault
+                    .getFiles()
+                    .filter(f => f.extension === FILE_EXT);
                 
-                // for (const myFile of myFiles) 
-                // {
-                //     const content = await this.app.vault.read(myFile);
+                for (const canvasFile of canvasFiles) 
+                {
+                    const text = await this.app.vault.read(canvasFile);
                     
-                //     if (content.includes(oldPath)) 
-                //     {
-                //         const newContent = content.replaceAll(oldPath, file.path);
-                //         await this.app.vault.modify(myFile, newContent);
-                //     }
-                // }
+                    if (text.includes(oldPath)) 
+                    {
+                        const canvas = JSON.parse(text);
+
+                        for (const node of canvas.nodes)
+                        {
+                            if (node.data?.path === oldPath)
+                            {
+                                node.data.path = file.path;
+                                node.data.name = file.name;
+                            }
+                        }
+
+                        const newText = JSON.stringify(canvas, null, '\t');
+                        await this.app.vault.modify(canvasFile, newText);
+                    }
+                }
             });
 
         this.registerEvent(fileRenameEvent);
+    }
+
+    RegisterFileModifyHandler()
+    {
+        const fileModifyEvent = this.app.vault.on(
+            'modify', 
+            (file) => 
+            {
+                for (const callback of this.onModify)
+                    callback(file);
+            });
+
+        this.registerEvent(fileModifyEvent);
     }
 
     async CreateNewCanvas(folderPath)

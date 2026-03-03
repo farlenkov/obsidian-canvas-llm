@@ -203,7 +203,8 @@ export default class GraphState
             const nodeType = nodeTypes.ById[node.type];
             const message = await nodeType.getMessage(app, node);
 
-            result.push(message);
+            if (message)
+                result.push(message);
         }
 
         return result;

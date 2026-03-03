@@ -1,3 +1,4 @@
+import { loadPdfJs } from 'obsidian';
 import { FileUp } from 'lucide-svelte';
 import mammoth from "mammoth";
 import TurndownService from "turndown";
@@ -41,6 +42,10 @@ export default class FileInputNodeType extends NodeType
               text = await this.readDocx(app, file);
               break;
 
+            case 'pdf':
+              text = await this.readPdf(app, file);
+              break;
+
             default:
               text = await app.vault.read(file);
               break;  
@@ -70,5 +75,29 @@ export default class FileInputNodeType extends NodeType
             .replace(/[ \t]+/g, " ");
         
         return markdown;
+    }
+
+    async readPdf(app, file)
+    {
+        const arrayBuffer = await app.vault.readBinary(file);
+        const uint8Array = new Uint8Array(arrayBuffer);
+        const pdfjsLib = await loadPdfJs();
+    
+        const loadingTask = pdfjsLib.getDocument({ data: uint8Array });        
+        const pdf = await loadingTask.promise;
+        const outline = await pdf.getOutline();
+
+        return this.outlineToString("", "", outline);
+    }
+
+    outlineToString(result, tab, outline)
+    {
+        for (const item of outline)
+        {
+            result = result + `${tab}- [ ] ${item.title}\n`;
+            result = this.outlineToString(result, tab + "\t", item.items);
+        }
+
+        return result;
     }
 }

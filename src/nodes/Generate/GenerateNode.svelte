@@ -63,12 +63,12 @@
 
         try
         {
-            const nodes = await appState.graph.getPrompt(id, appState.app);
+            const messages = await appState.graph.getPrompt(id, appState.app);
 
-            if (nodes.length == 0)
-                throw "Prompt is empty. Please connect some Input node.";
+            if (messages.length == 0)
+                throw "Prompt is empty. Please connect some Input node with content.";
             
-            const { markdowns } = await aiClient.Call(data.provider, data.model, nodes);
+            const { markdowns } = await aiClient.Call(data.provider, data.model, messages);
             const oldResults = data.results.filter(md => md ? true : false);
 
             const result = 
