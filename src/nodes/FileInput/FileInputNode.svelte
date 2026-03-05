@@ -8,7 +8,7 @@
     import FileSelectModal from './FileSelectModal.js';
     import NodeTypes from '../Type/NodeTypes.js';
 
-    const ALLOWED_EXTENSIONS = ['md', 'docx', 'fountain'];
+    const ALLOWED_EXTENSIONS = ['md', 'canvas', 'docx', 'fountain'];
     const appState = getContext("appState");
     const nodeType = NodeTypes.ById.fileInput;
 
@@ -111,7 +111,7 @@
         if (!filePath)
             return;
 
-        const text = await nodeType.getText(appState.app, filePath);
+        const text = await nodeType.getPreview(appState.app, filePath);
 
         if (!bodyEl)
             return;

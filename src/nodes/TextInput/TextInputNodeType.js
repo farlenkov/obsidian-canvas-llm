@@ -18,16 +18,20 @@ export default class TextInputNodeType extends NodeType
             data : { value : "" }
         };
     }
-        
-    async getText(app, node)
+
+    async getPreview(app, node)
     {
-        const text = node.data.value;
-        return text;
+        return await this.getContent(app, node);
+    }
+
+    async getContent(app, node)
+    {
+        return node.data.value;
     }
         
     async getMessage(app, node)
     {
-        const text = await this.getText(app, node);
+        const text = await this.getContent(app, node);
         return { role : "user", content : [text] };
     }
 }

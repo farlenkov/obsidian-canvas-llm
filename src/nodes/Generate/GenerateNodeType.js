@@ -26,8 +26,13 @@ export default class GenerateNodeType extends NodeType
             }
         };
     }
-    
-    async getText(app, node, getThink)
+
+    async getPreview(app, node)
+    {
+        throw 'not implemented'
+    }
+
+    async getContent(app, node, getThink)
     {
         const result = node.data.results[node.data.part];
         const text = getThink ? result.think : result.text;
@@ -36,7 +41,7 @@ export default class GenerateNodeType extends NodeType
     
     async getMessage(app, node)
     {
-        const text = await this.getText(app, node);
+        const text = await this.getContent(app, node);
         return { role : "model", content : [text] };
     }
 }

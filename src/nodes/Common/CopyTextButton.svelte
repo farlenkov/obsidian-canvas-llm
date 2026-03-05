@@ -18,7 +18,7 @@
         {
             const node = branch[branch.length-1];
             const nodeType = nodeTypes.ById[node.type];
-            const nodeText = await nodeType.getText(appState.app, node, copyThink);
+            const nodeText = await nodeType.getContent(appState.app, node, copyThink);
             navigator.clipboard.writeText(nodeText);
         }
         else
@@ -29,7 +29,7 @@
             {
                 const node = branch[i];
                 const nodeType = nodeTypes.ById[node.type];
-                const nodeText = await nodeType.getText(appState.app, node);
+                const nodeText = await nodeType.getContent(appState.app, node);
 
                 if (!text)
                     text = nodeText;
