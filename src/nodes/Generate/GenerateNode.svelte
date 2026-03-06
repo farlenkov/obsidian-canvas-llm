@@ -24,9 +24,7 @@
     
     onMount(() => 
     { 
-        renderHtml(
-            "onMount()",
-            data.results); 
+        renderHtml(data.results); 
     });
     
     function getModelDesc()
@@ -90,9 +88,7 @@
             appState.graph.updateNode(id, update, "TextGenerate");
             activeTab = update.part;
 
-            renderHtml(
-                "clickGenerate()", 
-                update.results);
+            renderHtml(update.results);
         }
         catch (err)
         {
@@ -115,10 +111,13 @@
         showThink = false;
 
         appState.graph.onChange("NextPart");
+        renderHtml(data.results);
+    }
 
-        renderHtml(
-            "clickNextPart()",
-            data.results);
+    function clickThink(value)
+    {
+        showThink = value;
+        renderHtml(data.results);
     }
 
     function getSwitchPartLabel()
@@ -126,7 +125,7 @@
         return `Switch part (${activeTab + 1}/${data.results.length}) \n ${data.results[activeTab].model}`;
     }
 
-    function renderHtml(note, results)
+    function renderHtml(results)
     {
         bodyEl.empty();
 
@@ -179,14 +178,14 @@
                             <button 
                                 class="show-think clickable-icon"
                                 aria-label="Show reasoning"
-                                onclick={() => showThink = true}>
+                                onclick={() => clickThink(true)}>
                                 <Lightbulb size={16}/>
                             </button>
                         {:else}
                             <button 
                                 class="show-think clickable-icon color-text-accent"
                                 aria-label="Show message"
-                                onclick={() => showThink = false}>
+                                onclick={() => clickThink(false)}>
                                 <Lightbulb size={16}/>
                             </button>
                         {/if}
