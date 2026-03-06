@@ -142,7 +142,6 @@ export default class FileReader
         }
 
         result += `${tabs}</canvas>`;
-        console.log(result);
         return result;
     }
 

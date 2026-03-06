@@ -15,7 +15,7 @@
 
     <ModelSelect
         onModelSelected={onModelSelected}
-        onShowSettings={() => appState.showSettings()}
+        onShowSettings={() => appState.ShowSettings()}
         modelSelectState={appState.modelSelectState} />
 
 <style>
