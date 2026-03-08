@@ -1,0 +1,11 @@
+.canvas-llm
+{
+    .menu-item
+    {
+        .menu-item-icon-textInput { color: var(--color-orange); }
+        .menu-item-icon-fileInput { color: var(--color-purple); }
+        .menu-item-icon-generate  { color: #00abff; }
+    } 
+
+    .menu-item.is-warning .menu-item-icon { color: red; }
+}

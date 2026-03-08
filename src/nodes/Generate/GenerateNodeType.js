@@ -7,6 +7,7 @@ export default class GenerateNodeType extends NodeType
 {
     id = "generate";
     name = "Generator";
+    desc = "Add node for LLM calls";
     view = GenerateNode;
     icon = SquarePlayIcon;
 

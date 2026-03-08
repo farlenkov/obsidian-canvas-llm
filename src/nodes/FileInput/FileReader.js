@@ -94,23 +94,17 @@ export default class FileReader
     {
         const text = await this.app.vault.read(file);
         const canvas = JSON.parse(text);
-        const idMap = {};
-        const includedNodes = {};
+        let result = `${tabs}<canvas "name"="${this.escapeXmlAttr(file.basename)}">\n\n`;
 
         tabs = tabs ? tabs : "";
 
-        for (let i = 0; i < canvas.nodes.length; i++)
-            idMap[canvas.nodes[i].id] = i + 1;
-
-        let result = `${tabs}<canvas "name"="${this.escapeXmlAttr(file.basename)}">\n\n`;
+        // NODES > CARDS
 
         for (const node of canvas.nodes)
         {
-            includedNodes[node.id] = true;
-
             if (node.type === 'text')
             {
-                result += `${tabs}\t<card "id"="${idMap[node.id]}">\n${node.text}\n${tabs}\t</card>\n\n`;
+                result += `${tabs}\t<card "id"="${node.id}">\n${node.text}\n${tabs}\t</card>\n\n`;
             }
             else if (node.type === 'file')
             {
@@ -118,27 +112,27 @@ export default class FileReader
                 const text2 = await this.read(node.file, tabs + '\t\t');
 
                 if (text2)
-                    result += `${tabs}\t<card "id"="${idMap[node.id]}" "name"="${file2.basename}">\n${text2}\n${tabs}\t</card>\n\n`;
+                    result += `${tabs}\t<card "id"="${node.id}" "name"="${file2.basename}">\n${text2}\n${tabs}\t</card>\n\n`;
                 else
-                    result += `${tabs}\t<card "id"="${idMap[node.id]}">\nFile: \`${node.file}\`\n${tabs}\t</card>\n\n`;             
+                    result += `${tabs}\t<card "id"="${node.id}">\nFile: \`${node.file}\`\n${tabs}\t</card>\n\n`;             
             }
         }
 
+        // EDGES
+
         for (const edge of canvas.edges)
         {
-            if (!includedNodes[edge.fromNode] ||
-                !includedNodes[edge.toNode])
-                continue;
-
             const type = edge.toEnd === 'none'
                 ? "Nondirectional"
                 : edge.fromEnd === 'arrow'
                     ? "Bidirectional"
                     : "Unidirectional";
 
-            const label = edge.label ? ` "label"="${edge.label}" ` : "";
+            const label = edge.label 
+                ? ` "label"="${edge.label}" ` 
+                : "";
 
-            result += `${tabs}\t<edge "fromCard"="${idMap[edge.fromNode]}" "toCard"="${idMap[edge.toNode]}" "type"="${type}"${label}/>\n`;
+            result += `${tabs}\t<edge "fromCard"="${edge.fromNode}" "toCard"="${edge.toNode}" "type"="${type}"${label}/>\n`;
         }
 
         result += `${tabs}</canvas>`;

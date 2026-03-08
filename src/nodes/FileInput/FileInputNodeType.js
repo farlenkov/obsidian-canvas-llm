@@ -9,6 +9,7 @@ export default class FileInputNodeType extends NodeType
 {
     id = "fileInput";
     name = "File input";
+    desc = "Add node for file attachment";
     view = FileInputNode;
     icon = FileUp;
 

@@ -84,9 +84,17 @@
 
       {#each nodeTypes.List as nodeType}
 
-        <div class="context-menu-item- menu-item tappable" onclick={() => addNode(nodeType)}>
-          <svelte:component this={nodeType.icon} size={24} class="menu-item-icon" />
-          <div class="menu-item-title">Add {nodeType.name}</div>
+        <div 
+          class="context-menu-item- menu-item tappable" 
+          aria-label="{nodeType.desc}"
+          onclick={() => addNode(nodeType)}>
+
+          <svelte:component 
+              this={nodeType.icon} 
+              size={24} 
+              class="menu-item-icon menu-item-icon-{nodeType.id}" />
+
+          <div class="menu-item-title">{nodeType.name}</div>
         </div>
 
       {/each}

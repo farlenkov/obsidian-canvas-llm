@@ -6,6 +6,7 @@ export default class TextInputNodeType extends NodeType
 {
     id = "textInput";
     name = "Text input";
+    desc = "Add node for basic text prompts";
     view = TextInputNode;
     icon = TextCursorInputIcon;
 
