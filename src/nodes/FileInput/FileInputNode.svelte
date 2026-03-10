@@ -1,5 +1,5 @@
 <script>
-  
+
     import { getContext, onMount } from 'svelte';
     import { MarkdownRenderer } from 'obsidian';
     import { Handle, Position, NodeResizer } from '@xyflow/svelte';
@@ -7,10 +7,11 @@
     import ParamsButton from '../Common/ParamsButton.svelte';
     import FileSelectModal from './FileSelectModal.js';
     import NodeTypes from '../Type/NodeTypes.js';
+    import FileReader from './FileReader';
 
-    const ALLOWED_EXTENSIONS = ['md', 'canvas', 'docx', 'fountain'];
     const appState = getContext("appState");
     const nodeType = NodeTypes.ById.fileInput;
+    const fileReader = new FileReader();
 
     let {id, data, selected} = $props();
     let filePath = $state(data.path);
@@ -18,9 +19,6 @@
     let isDragOver = $state(false);
     let isNotFound = $state(false);
     let bodyEl;
-
-    if (appState.settings.Data.supportPdf)
-        ALLOWED_EXTENSIONS.push('pdf');
 
     onMount(() => 
     {
@@ -47,7 +45,7 @@
         filePath = file.path;
 
         renderHtml();
-        
+
         appState.graph.updateNode(
             id, 
             {path: file.path, name: file.name}, 
@@ -58,7 +56,7 @@
     {
         new FileSelectModal(
             appState.app, 
-            ALLOWED_EXTENSIONS,
+            fileReader.supportedExtensions,
             (file) => { onFileChange(file); })
             .open();
     }
@@ -80,25 +78,25 @@
         isDragOver = false;
 
         const raw = e.dataTransfer.getData('text/plain');
-        
+
         if (!raw) 
             return;
 
         const url = new URL(raw);
         const fileUrl = url.searchParams.get('file');
         const filePath = decodeURIComponent(fileUrl);
-        
+
         if (!filePath) 
             return;
 
         const file = 
             appState.app.vault.getAbstractFileByPath(filePath) ?? 
             appState.app.vault.getAbstractFileByPath(filePath + '.md');
-        
+
         if (!file) 
             return;
 
-        if (!ALLOWED_EXTENSIONS.includes(file.extension)) 
+        if (!fileReader.supportedExtensions.includes(file.extension)) 
             return;
 
         onFileChange(file);
@@ -107,7 +105,7 @@
     async function renderHtml()
     {
         isNotFound = false;
-        
+
         if (!filePath)
             return;
 
@@ -115,9 +113,9 @@
 
         if (!bodyEl)
             return;
-        
+
         bodyEl.empty();
-        
+
         if (!text)
         {
             isNotFound = true;
@@ -158,7 +156,7 @@
                     aria-label={filePath || "Drag and drop some file here..."}>
                     {fileName || "File not selected"}
                 </node-header-left>
-                
+
                 <node-header-right>
                     <CopyTextButton nodeId={id} />
                     <ParamsButton onclick={onClickSelectFile} />
@@ -185,7 +183,7 @@
 </div>
 
 <style>
-  
+
     .drag-over 
     {
         outline: 2px dashed var(--color-accent);

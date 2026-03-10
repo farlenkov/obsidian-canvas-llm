@@ -26,6 +26,7 @@
                 display: flex;
                 flex-direction: row;
                 justify-content: space-between;
+                min-width: 0;
 
                 border-bottom-width: 1px;
                 border-bottom-style: solid;
@@ -45,7 +46,8 @@
                 node-header-left
                 {
                     font: var(--font-interface-theme);
-                    color: var(--text-accent)
+                    color: var(--text-accent);
+                    white-space: nowrap;
                 }
                 
                 node-header-right 
@@ -106,27 +108,19 @@
 
     .svelte-flow__node-fileInput 
     {        
-        node-content
-        {
-            node-body 
-            {
-                padding: 0.4em 0.6em;
-                overflow: auto;
-
-                ol
-                {
-                    list-style: decimal !important;
-                    list-style-type: decimal !important;
-                }
-            }
-        }
+        
     }
 
     .svelte-flow__node-generate 
     {        
+        
+    }
+
+    .svelte-flow__node
+    {        
         node-content
         {
-            node-body 
+            node-body.markdown-rendered
             {
                 padding: 0.4em 0.6em;
                 overflow: auto;

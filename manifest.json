@@ -1,7 +1,7 @@
 {
   "id": "canvas-llm",
   "name": "Canvas LLM",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "minAppVersion": "0.15.0",
   "description": "A canvas-like UI to talk with LLMs.",
   "author": "Mike Farlenkov",

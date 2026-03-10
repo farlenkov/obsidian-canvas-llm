@@ -2,14 +2,30 @@ import { loadPdfJs } from 'obsidian';
 import mammoth from "mammoth";
 import TurndownService from "turndown";
 
+const turndown = new TurndownService();
+
 export default class FileReader
 {
     openedFiles = {};
+
+    fileReaders = 
+    {
+        'md'      : async (file, tabs) => await this.readTextFile(file, tabs, "note"),
+        'xml'     : async (file, tabs) => await this.readTextFile(file, tabs, "file"),
+        'html'    : async (file, tabs) => await this.readTextFile(file, tabs, "file"),
+        'json'    : async (file, tabs) => await this.readTextFile(file, tabs, "file"),
+        'fountain': async (file, tabs) => await this.readTextFile(file, tabs, "screenplay"),
+
+        'canvas' : async (file, tabs) => await this.readCanvas(file, tabs),
+        'docx'   : async (file, tabs) => await this.readDocx(file, tabs),
+        'pdf'    : async (file, tabs) => await this.readPdf(file, tabs)
+    };
 
     constructor (app, isPreview)
     {
         this.app = app;
         this.isPreview = isPreview;
+        this.supportedExtensions = Object.keys(this.fileReaders);
     }
 
     async read(path, tabs)
@@ -22,117 +38,117 @@ export default class FileReader
         if (this.openedFiles[path])
             return;
 
+        tabs = tabs ? tabs : "";
         this.openedFiles[path] = true;
-        let text;
 
-        switch (file.extension)
-        {
-            case 'docx':
-              text = await this.readDocx(file);
-              break;
-
-            case 'pdf':
-              text = await this.readPdf(file);
-              break;
-
-            case 'canvas':
-              text = this.isPreview 
-                ? await this.readCanvasPreview(file) 
-                : await this.readCanvas(file, tabs);
-              break;
-
-            case 'md':
-            case 'json':
-            case 'xml':
-            case 'html':
-            case 'fountain':
-              text = await this.app.vault.read(file);
-              break;
-        }
+        const reader = this.fileReaders[file.extension];
+        const text = reader ? await reader(file, tabs) : "";
 
         delete this.openedFiles[path];
         return text;
     }
 
-    async readDocx(file)
+    async readTextFile(file, tabs, type)
+    {
+        const text = await this.app.vault.read(file);
+        return this.renderFile(type, tabs, file, text);
+    }
+
+    async readDocx(file, tabs)
     {
         const fileBuffer = await this.app.vault.readBinary(file);
         const result = await mammoth.convertToHtml({arrayBuffer: fileBuffer});
         const html = result.value;
-        const turndown = new TurndownService();
 
         const markdown = turndown.turndown(html)
             .replace(/\n{3,}/g, "\n\n")
             .replace(/[ \t]+/g, " ");
 
-        return markdown;
-    }
-
-    async readCanvasPreview(file)
-    {
-        const text = await this.app.vault.read(file);
-        const canvas = JSON.parse(text);
-        let result = "";
-
-        for (let i = 0; i < canvas.nodes.length; i++)
-        {
-            const node = canvas.nodes[i];
-            
-            if (node.type === 'text')
-                result += node.text;
-            else if (node.type === 'file')
-                result += `\`\`\`\n${node.file}\n\`\`\``;                
-
-            if (i < canvas.nodes.length - 1)
-                result += "\n\n ≻ — — — — — ≺ \n\n";
-        }
-
-        return result;
+        return this.renderFile("document", tabs, file, markdown);
     }
 
     async readCanvas(file, tabs)
     {
         const text = await this.app.vault.read(file);
         const canvas = JSON.parse(text);
-        let result = `${tabs}<canvas "name"="${this.escapeXmlAttr(file.basename)}">\n\n`;
 
-        tabs = tabs ? tabs : "";
+        let result = "";
 
-        // NODES > CARDS
+        // PREVIEW
 
-        for (const node of canvas.nodes)
+        if (this.isPreview)
         {
-            if (node.type === 'text')
-            {
-                result += `${tabs}\t<card "id"="${node.id}">\n${node.text}\n${tabs}\t</card>\n\n`;
-            }
-            else if (node.type === 'file')
-            {
-                const file2 = this.app.vault.getAbstractFileByPath(node.file);
-                const text2 = await this.read(node.file, tabs + '\t\t');
+            if (!canvas.nodes || 
+                !canvas.nodes.length)
+                return "[empty canvas]";
 
-                if (text2)
-                    result += `${tabs}\t<card "id"="${node.id}" "name"="${file2.basename}">\n${text2}\n${tabs}\t</card>\n\n`;
-                else
-                    result += `${tabs}\t<card "id"="${node.id}">\nFile: \`${node.file}\`\n${tabs}\t</card>\n\n`;             
+            for (let i = 0; i < canvas.nodes.length; i++)
+            {
+                const node = canvas.nodes[i];
+
+                if (node.type === 'text')
+                    result += node.text;
+                else if (node.type === 'file')
+                    result += `\`\`\`\n${node.file}\n\`\`\``;
+
+                if (i < canvas.nodes.length - 1)
+                    result += "\n\n ≻ — — — — — ≺ \n\n";
             }
+
+            return result;
         }
 
-        // EDGES
+        // FULL CONTENT
 
-        for (const edge of canvas.edges)
+        result += `${tabs}<canvas "name"="${this.escapeXmlAttr(file.basename)}">\n\n`;
+
+        if (canvas.nodes)
         {
-            const type = edge.toEnd === 'none'
-                ? "Nondirectional"
-                : edge.fromEnd === 'arrow'
-                    ? "Bidirectional"
-                    : "Unidirectional";
+            // COLLECT REQUIRED IDS
 
-            const label = edge.label 
-                ? ` "label"="${edge.label}" ` 
-                : "";
+            const requiredIds = {};
 
-            result += `${tabs}\t<edge "fromCard"="${edge.fromNode}" "toCard"="${edge.toNode}" "type"="${type}"${label}/>\n`;
+            for (const edge of canvas.edges)
+            {
+                requiredIds[edge.fromNode] = true;
+                requiredIds[edge.toNode] = true;
+            }
+
+            // NODES > CARDS
+
+            for (const node of canvas.nodes)
+            {
+                if (node.type === 'text')
+                {
+                    result += this.renderCard(node.id, requiredIds, tabs, node.text);
+                }
+                else if (node.type === 'file')
+                {
+                    const text2 = await this.read(node.file, tabs + '\t\t');
+
+                    if (text2)
+                        result += this.renderCard(node.id, requiredIds, tabs, text2);
+                    else
+                        result += this.renderCard(node.id, requiredIds, tabs, `File: \`${node.file}\``);
+                }
+            }
+
+            // EDGES
+
+            for (const edge of canvas.edges)
+            {
+                const type = edge.toEnd === 'none'
+                    ? "Nondirectional"
+                    : edge.fromEnd === 'arrow'
+                        ? "Bidirectional"
+                        : "Unidirectional";
+
+                const label = edge.label 
+                    ? ` "label"="${edge.label}" ` 
+                    : "";
+
+                result += `${tabs}\t<edge "fromCard"="${edge.fromNode}" "toCard"="${edge.toNode}" "type"="${type}"${label}/>\n`;
+            }
         }
 
         result += `${tabs}</canvas>`;
@@ -148,8 +164,9 @@ export default class FileReader
         const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
         const pdf = await loadingTask.promise;
         const outline = await pdf.getOutline();
+        const text = this.pdfOutlineToString("", "", outline);
 
-        return this.pdfOutlineToString("", "", outline);
+        return this.renderFile('pdf-outline', tabs, file, text);
     }
 
     pdfOutlineToString(result, tabs, outline)
@@ -163,6 +180,21 @@ export default class FileReader
         return result;
     }
 
+    renderCard(id, requiredIds, tabs, text)
+    {
+        if (requiredIds[id])
+            return `${tabs}\t<card "id"="${id}">\n${text}\n${tabs}\t</card>\n\n`;
+        else
+            return `${tabs}\t<card>\n${text}\n${tabs}\t</card>\n\n`;
+    }
+
+    renderFile(type, tabs, file, text)
+    {
+        return this.isPreview 
+            ? text
+            : `${tabs}<${type} "name"="${this.escapeXmlAttr(file.name)}">\n${text}\n${tabs}</${type}>`;
+    }
+
     escapeXmlAttr(value) 
     {
         return value
@@ -172,4 +204,4 @@ export default class FileReader
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
     }
-} 
+}

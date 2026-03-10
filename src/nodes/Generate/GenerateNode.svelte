@@ -3,15 +3,14 @@
 	import { getContext, onMount } from 'svelte';
     import { Play, Loader, XIcon, Lightbulb } from 'lucide-svelte';
     import { Handle, Position, NodeResizer } from '@xyflow/svelte';
-    import { MarkdownRenderer } from 'obsidian';
     
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
+    import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
 
     import aiClient from '$lib/svelte-llm/models/AiClient.svelte.js';
 
     const appState = getContext("appState");
-    let bodyEl;
 
     let {id, data, selected} = $props();
     let inProgress = $state(false);
@@ -19,6 +18,7 @@
     let activeTab = $state(data.part ?? 0);
     let hasThink = $state(false);
     let showThink = $state(false);
+    let textToRender = $state("");
     let provider = $derived(appState.providers.ById[data.provider]);
     let model = $derived(provider ? provider.ModelById[data.model] : null);
     
@@ -127,24 +127,15 @@
 
     function renderHtml(results)
     {
-        bodyEl.empty();
-
-        if (!results)
+        if (!results || results.length <= activeTab)
+        {
+            textToRender = "";
             return;
-
-        if (results.length <= activeTab)
-            return;
+        }
 
         const result = results[activeTab];
-        const text = showThink ? result.think : result.text;
+        textToRender = showThink ? result.think : result.text;
         hasThink = result.think ? true : false;
-
-        MarkdownRenderer.render(
-            appState.app, 
-            text, 
-            bodyEl, 
-            appState.view.file.path, 
-            appState.view);
     }
 
 </script>
@@ -218,7 +209,7 @@
 
             <node-body class="nodrag nozoom nomenu node-text markdown-rendered">
 
-                <div bind:this={bodyEl}></div>
+                <MarkdownRenderer markdown={textToRender} />
 
                 {#if errorMessage}
                     <error>

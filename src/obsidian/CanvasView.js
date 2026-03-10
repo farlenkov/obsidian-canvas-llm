@@ -34,7 +34,7 @@ export default class CanvasView extends TextFileView
         this.unmountView();
         
         const viewRoot = this.contentEl;
-        viewRoot.classList.add('canvas-llm');
+        viewRoot.classList.add('canvas-llm', 'svelte-obsidian');
         viewRoot.empty();
 
         this.graphView = mount(App, 
@@ -59,7 +59,7 @@ export default class CanvasView extends TextFileView
         this.unmountView();
 
         const viewRoot = this.contentEl;
-        viewRoot.classList.remove('canvas-llm');
+        viewRoot.classList.remove('canvas-llm', 'svelte-obsidian');
         viewRoot.empty();
     }
 

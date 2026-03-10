@@ -1,9 +1,7 @@
-
 import { FileUp } from 'lucide-svelte';
 import NodeType from '../Type/NodeType.js';
 import FileInputNode from './FileInputNode.svelte';
 import FileReader from './FileReader.js';
-
 
 export default class FileInputNodeType extends NodeType
 {
