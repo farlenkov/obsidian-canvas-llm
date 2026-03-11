@@ -85,11 +85,6 @@
         border: 1px solid rgb(var(--canvas-color));
     }
 
-    .svelte-flow__node.selected .svelte-flow__handle
-    {
-        border-color: var(--color-accent);
-    }
-
     .svelte-flow__handle:hover
     {
         background: #ffd754;

@@ -142,7 +142,6 @@
 
 <div 
     class="canvas-node" 
-    class:is-selected={selected}
     class:drag-over={isDragOver}
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}

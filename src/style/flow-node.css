@@ -46,7 +46,6 @@
                 node-header-left
                 {
                     font: var(--font-interface-theme);
-                    color: var(--text-accent);
                     white-space: nowrap;
                 }
                 

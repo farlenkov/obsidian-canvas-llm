@@ -9,7 +9,7 @@
         MiniMap
     } from '@xyflow/svelte';
 
-    import { getContext, onMount } from 'svelte';
+    import { getContext } from 'svelte';
     import { MapIcon, Settings } from 'lucide-svelte';
 
     import ContextMenu from '$lib/menu/ContextMenu.svelte';
@@ -39,7 +39,7 @@
 </script>
 
 <div 
-    class="graph-container" 
+    class="graph-container"
     bind:clientWidth={appState.contextMenu.CanvasWidth} 
     bind:clientHeight={appState.contextMenu.CanvasHeight}>
 

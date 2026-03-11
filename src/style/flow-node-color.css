@@ -1,15 +1,18 @@
 .canvas-llm
 {
-    /* DEFAULT */
+    /* DEFAULT : NOT SELECTED*/
 
-    .canvas-node-container
+    .svelte-flow__node
     {
-        border-color: rgb(var(--canvas-color));
-    }
+        .canvas-node-container
+        {
+            border-color: rgb(var(--canvas-color));
+        }
 
-    node-header
-    {
-        border-bottom-color: rgb(var(--canvas-color));
+        node-header
+        {
+            border-bottom-color: rgb(var(--canvas-color));
+        }
     }
 
     /* DEFAULT : SELECTED */
@@ -20,32 +23,46 @@
         { 
             border-bottom-color: var(--color-accent); 
         }
+
+        .canvas-node-container
+        {
+            border-color: var(--color-accent);
+        }
     }
 
     /* TEXT INPUT */
 
-    .svelte-flow__node-textInput
+    .svelte-flow__node-textInput:not(.selected)
     {
-        .canvas-node-container
-        {
-            border-color: var(--color-orange);
-        }
-
-        .svelte-flow__handle 
+        .svelte-flow__handle.edit-mode 
         {        
             border-color: var(--color-orange);
         }
 
-        node-content
+        .canvas-node.edit-mode
         {
-            node-header
+            .canvas-node-container
             {
-                border-bottom-color: var(--color-orange);
+                border-color: var(--color-orange);
+            }
 
-                node-header-left 
+            node-content
+            {
+                node-header
                 {
-                    color: var(--color-orange);
+                    border-bottom-color: var(--color-orange);
                 }
+            }
+        }
+    }
+
+    .svelte-flow__node-textInput
+    {
+        .canvas-node.edit-mode
+        {
+            node-header-left 
+            {
+                color: var(--color-orange);
             }
         }
     }
@@ -78,7 +95,20 @@
         }
     }
 
-    /* INPUT : SELECTED */
+    .svelte-flow__node-generate 
+    {        
+        node-header-left
+        {
+            color: var(--text-accent);
+        }
+    }
+
+    /* SELECTED */
+
+    .svelte-flow__node.selected .svelte-flow__handle
+    {
+        border-color: var(--color-accent);
+    }
 
     .svelte-flow__node-textInput.selected
     {

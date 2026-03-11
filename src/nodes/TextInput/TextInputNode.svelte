@@ -2,7 +2,7 @@
 
     import { getContext } from 'svelte';
 
-    import { SquarePen, SquareChartGantt } from 'lucide-svelte';
+    import { SquarePen, Eye } from 'lucide-svelte';
     import { Handle, Position, NodeResizer } from '@xyflow/svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
@@ -32,25 +32,33 @@
     minHeight={30} 
     onResizeEnd={() => appState.graph.onChange("NodeResize")} />
 
-<Handle type="target" position={Position.Left} />
-<Handle type="source" position={Position.Right} />
+<Handle type="target" position={Position.Left} class={readMode ? "" : "edit-mode"} />
+<Handle type="source" position={Position.Right} class={readMode ? "" : "edit-mode"} />
 
-<div class="canvas-node" class:is-selected={selected}>
+<div 
+    class="canvas-node" 
+    class:edit-mode={!readMode}>
+
     <div class="canvas-node-container">
-
         <node-content>
             <node-header>
-                <node-header-left>Input</node-header-left>
+                <node-header-left>
+                    {readMode ? "Note" : "Input"}
+                </node-header-left>
                 <node-header-right>
 
                     <button 
                         type="button"
                         class="show-markdown clickable-icon"
-                        class:color-text-accent={!readMode}
+                        // class:color-text-accent={!readMode}
                         aria-label={readMode ? "Switch to edit mode" : "Switch to read mode"}
                         onclick={clickToggleReadMode}>
 
-                        <SquarePen size={16} />
+                        {#if readMode}
+                            <SquarePen size={16} />
+                        {:else}
+                            <Eye size={18} />
+                        {/if}
                     </button>
 
                     <CopyTextButton nodeId={id} />
@@ -75,7 +83,6 @@
             {/if}
 
         </node-content>
-
     </div>
 </div>
 

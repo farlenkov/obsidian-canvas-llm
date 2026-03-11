@@ -148,7 +148,7 @@
 <Handle type="target" position={Position.Left} />
 <Handle type="source" position={Position.Right} />
 
-<div class="canvas-node" class:is-selected={selected}>
+<div class="canvas-node">
     <div class="canvas-node-container">
 
         <node-content>

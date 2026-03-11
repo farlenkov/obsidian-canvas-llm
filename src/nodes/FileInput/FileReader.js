@@ -100,7 +100,7 @@ export default class FileReader
 
         // FULL CONTENT
 
-        result += `${tabs}<canvas "name"="${this.escapeXmlAttr(file.basename)}">\n\n`;
+        result += `${tabs}<canvas "name"="${this.escapeXmlAttr(file.basename)}">\n`;
 
         if (canvas.nodes)
         {
@@ -183,9 +183,9 @@ export default class FileReader
     renderCard(id, requiredIds, tabs, text)
     {
         if (requiredIds[id])
-            return `${tabs}\t<card "id"="${id}">\n${text}\n${tabs}\t</card>\n\n`;
+            return `${tabs}\t<card "id"="${id}">\n${text}\n${tabs}\t</card>\n`;
         else
-            return `${tabs}\t<card>\n${text}\n${tabs}\t</card>\n\n`;
+            return `${tabs}\t<card>\n${text}\n${tabs}\t</card>\n`;
     }
 
     renderFile(type, tabs, file, text)
