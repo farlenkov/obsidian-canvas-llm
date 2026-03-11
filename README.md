@@ -47,13 +47,13 @@ You'll need your own API keys to use them. But don't worry — some providers, l
 Alibaba, Anthropic, DeepSeek, Google, Groq, Ollama, OpenAI, OpenRouter, SambaNova, xAI.
 ## Installation
 ### From Community Plugins
-1. Open Obsidian Settings → Community Plugins
-2. Search for "Canvas LLM"
-3. Install and enable
+1. Open Obsidian → `Settings` → `Community Plugins` → `Browse`.
+2. Search for `"Canvas LLM"`.
+3. Install and enable.
 ### Manual
 1. Download [latest release](https://github.com/farlenkov/obsidian-canvas-llm/releases/latest) (files `main.js`, `styles.css`, `manifest.json`).
 2. Copy this files to your Obsidian plugins directory: `vault/.obsidian/plugins/canvas-llm`.
-3. Enable the plugin in `Obsidian` → `Settings` → `Community Plugins` → `Canvas LLM`.
+3. Enable the plugin in Obsidian → `Settings` → `Community Plugins` → `Canvas LLM`.
 ## Credits
 Canvas LLM is powered by [Svelte Flow](https://svelteflow.dev) from [xyflow](https://xyflow.com).
 ## License
