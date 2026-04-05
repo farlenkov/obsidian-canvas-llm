@@ -49,7 +49,7 @@ Alibaba, Anthropic, DeepSeek, Google, Groq, Ollama, OpenAI, OpenRouter, SambaNov
 ### 🧩 Template Mode
 Use `{{ input }}` placeholders in `Text input` and `File input` nodes to create dynamic input handles.
 
-## Mode Screenshots
+## More Screenshots
 
 Example of use `File input` node and `Template` mode:
 
