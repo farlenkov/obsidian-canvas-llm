@@ -48,6 +48,13 @@ You'll need your own API keys to use them. But don't worry — some providers, l
 Alibaba, Anthropic, DeepSeek, Google, Groq, Ollama, OpenAI, OpenRouter, SambaNova, xAI.
 ### 🧩 Template Mode
 Use `{{ input }}` placeholders in `Text input` and `File input` nodes to create dynamic input handles.
+
+## Mode Screenshots
+
+Example of use `File input` node and `Template` mode:
+
+![File input and Template mode example](assets/screenshots/file_input_template.png)
+
 ## Installation
 ### From Community Plugins
 1. Open Obsidian → `Settings` → `Community Plugins` → `Browse`.
