@@ -30,12 +30,13 @@ As you can see in the screenshot above, you can type prompts into `Input` cards 
 
 As you can see, Canvas LLM provides a visual, non-linear way to interact with LLMs using branching conversations. This is especially useful for complex research projects, where navigating through a traditional chat UI becomes inefficient and overwhelming.
 ## Features
-
 ### ⌨️ Text Input Node
 Node for basic text prompts.
 ### 📄 File Input Node
 Node for file attachment.
 Currently supported file types: `.md`, `.canvas`, `.docx`, `.fountain`.
+### 🌐 Web Input Node
+Embedded browser to extract and use web content in your prompt flow.
 ### ⚡ Generate Node
 Node to actually call LLM.
 
@@ -45,6 +46,8 @@ You'll need your own API keys to use them. But don't worry — some providers, l
 
 **Supported providers:**  
 Alibaba, Anthropic, DeepSeek, Google, Groq, Ollama, OpenAI, OpenRouter, SambaNova, xAI.
+### 🧩 Template Mode
+Use `{{ input }}` placeholders in `Text input` and `File input` nodes to create dynamic input handles.
 ## Installation
 ### From Community Plugins
 1. Open Obsidian → `Settings` → `Community Plugins` → `Browse`.
