@@ -1,12 +1,26 @@
+import NodeState from '../Common/NodeState.svelte.js';
 import { loadPdfJs } from 'obsidian';
+import { EPub } from "epub2";
 import mammoth from "mammoth";
 import TurndownService from "turndown";
 
-const turndown = new TurndownService();
+const turndown = new TurndownService
+({
+    headingStyle: "atx",
+    bulletListMarker: "-",
+    codeBlockStyle: "fenced"
+});
 
-export default class FileReader
+export default class FileInputNodeState extends NodeState
 {
-    openedFiles = {};
+    constructor(id, data, appState, updateNodeInternals)
+    {
+        super(id, data, appState, updateNodeInternals);
+
+        this.preview = $state([]);
+        this.openedFiles = {};
+        this.supportedExtensions = Object.keys(this.fileReaders);
+    }
 
     fileReaders = 
     {
@@ -18,15 +32,10 @@ export default class FileReader
 
         'canvas' : async (file, tabs) => await this.readCanvas(file, tabs),
         'docx'   : async (file, tabs) => await this.readDocx(file, tabs),
-        'pdf'    : async (file, tabs) => await this.readPdf(file, tabs)
+        // 'epub'   : async (file, tabs) => await this.readEpub(file, tabs),
+        'pdf'    : async (file, tabs) => await this.readPdf(file, tabs),
+        'md3'    : async (file, tabs) => await this.readMd3(file, tabs)
     };
-
-    constructor (app, isPreview)
-    {
-        this.app = app;
-        this.isPreview = isPreview;
-        this.supportedExtensions = Object.keys(this.fileReaders);
-    }
 
     async read(path, tabs)
     {
@@ -42,9 +51,9 @@ export default class FileReader
         this.openedFiles[path] = true;
 
         const reader = this.fileReaders[file.extension];
-        const text = reader ? await reader(file, tabs) : "";
-
+        const text = await reader(file, tabs);
         delete this.openedFiles[path];
+
         return text;
     }
 
@@ -67,39 +76,33 @@ export default class FileReader
         return this.renderFile("document", tabs, file, markdown);
     }
 
+    // async readEpub(file, tabs)
+    // {
+    //     const fileBuffer = await this.app.vault.readBinary(file);
+    //     const epub = await EPub.createAsync(file.path);
+    //     const chapters = [];
+
+    //     for (const item of epub.flow) 
+    //     {
+    //         const [html] = await epub.getChapterRawAsync(item.id);
+    //         const markdown = td.turndown(html);
+    //         console.log(markdown);
+    //         return;
+    //         chapters.push(markdown);
+    //     }
+
+    //     return chapters.join("\n\n---\n\n"); // join chapters with divider
+    // }
+
     async readCanvas(file, tabs)
     {
         const text = await this.app.vault.read(file);
         const canvas = JSON.parse(text);
 
-        let result = "";
-
-        // PREVIEW
-
-        if (this.isPreview)
-        {
-            if (!canvas.nodes || 
-                !canvas.nodes.length)
-                return "[empty canvas]";
-
-            for (let i = 0; i < canvas.nodes.length; i++)
-            {
-                const node = canvas.nodes[i];
-
-                if (node.type === 'text')
-                    result += node.text;
-                else if (node.type === 'file')
-                    result += `\`\`\`\n${node.file}\n\`\`\``;
-
-                if (i < canvas.nodes.length - 1)
-                    result += "\n\n ≻ — — — — — ≺ \n\n";
-            }
-
-            return result;
-        }
-
         // FULL CONTENT
 
+        let preview = [];
+        let result = "";        
         result += `${tabs}<canvas "name"="${this.escapeXmlAttr(file.basename)}">\n`;
 
         if (canvas.nodes)
@@ -121,6 +124,7 @@ export default class FileReader
                 if (node.type === 'text')
                 {
                     result += this.renderCard(node.id, requiredIds, tabs, node.text);
+                    preview.push(node.text);
                 }
                 else if (node.type === 'file')
                 {
@@ -130,6 +134,8 @@ export default class FileReader
                         result += this.renderCard(node.id, requiredIds, tabs, text2);
                     else
                         result += this.renderCard(node.id, requiredIds, tabs, `File: \`${node.file}\``);
+
+                    preview.push(`\`📜 ${node.file}\``);
                 }
             }
 
@@ -151,11 +157,35 @@ export default class FileReader
             }
         }
 
+        if (!tabs)
+            this.preview = preview;
+
         result += `${tabs}</canvas>`;
         return result;
     }
 
-    async readPdf(file)
+    async readMd3(file, tabs)
+    {
+        const text = await this.app.vault.read(file);
+        const tree = JSON.parse(text);
+
+        let result = `### ${tree.name}`;
+        result += this.md3OutlineToString(result, "", tree.children); 
+        return this.renderFile('book', tabs, file, result);
+    }
+
+    md3OutlineToString(result, tabs, tree)
+    {
+        for (const item of tree)
+        {
+            result = result + `\n${tabs}- ${item.name}`;
+            result = this.md3OutlineToString(result, tabs + "\t", item.children);
+        }
+
+        return result;
+    }
+
+    async readPdf(result, tabs)
     {
         const arrayBuffer = await this.app.vault.readBinary(file);
         const uint8Array = new Uint8Array(arrayBuffer);
@@ -190,9 +220,17 @@ export default class FileReader
 
     renderFile(type, tabs, file, text)
     {
-        return this.isPreview 
-            ? text
-            : `${tabs}<${type} "name"="${this.escapeXmlAttr(file.name)}">\n${text}\n${tabs}</${type}>`;
+        if (!tabs)
+        {
+            // NOT CANVAS
+            this.preview = [text];
+            return text;
+        }
+        else
+        {
+            // IN CANVAS
+            return `${tabs}<${type} "name"="${this.escapeXmlAttr(file.name)}">\n${text}\n${tabs}</${type}>`;
+        }
     }
 
     escapeXmlAttr(value) 

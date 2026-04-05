@@ -24,25 +24,6 @@ export default class GenerateNodeType extends NodeType
                 results : [], 
                 provider : defaultModel.providerId, 
                 model : defaultModel.id 
-            }
-        };
-    }
-
-    async getPreview(app, node)
-    {
-        throw 'not implemented'
-    }
-
-    async getContent(app, node, getThink)
-    {
-        const result = node.data.results[node.data.part];
-        const text = getThink ? result.think : result.text;
-        return text;
-    }
-    
-    async getMessage(app, node)
-    {
-        const text = await this.getContent(app, node);
-        return { role : "model", content : [text] };
+            }};
     }
 }

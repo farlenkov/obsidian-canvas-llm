@@ -49,6 +49,7 @@
     .svelte-flow__resize-control 
     {
         opacity: 0;
+        z-index: 1;
     }
 
     .svelte-flow__resize-control.handle

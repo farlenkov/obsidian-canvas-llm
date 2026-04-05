@@ -1,9 +1,8 @@
 import { Plugin } from 'obsidian';
-import * as obsidian from 'obsidian';
 import CanvasView from './CanvasView.js';
 import settings from '$lib/svelte-llm/settings/Settings.svelte.js';
 import { defaultGraph } from '$lib/graph/Graph.default.js';
-import { createNewFile } from '$lib/svelte-obsidian/src/CreateNewFile.js';
+import { createNewFile } from '$lib/svelte-obsidian/src/File.js';
 
 const FILE_EXT = 'canvas-llm';
 

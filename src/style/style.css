@@ -15,14 +15,6 @@
 
 .canvas-llm
 {
-    h1,h2,h3,h4 { margin-bottom: 0.5em; }
-    h1 { font-size: 1.5em; }
-    h2 { font-size: 1.4em; }
-    h3 { font-size: 1.3em; }
-    h4 { font-size: 1.2em; }
-
-    p { margin-bottom: 1em; margin-top: 0;}
-
     .relative { position: relative; }
     .max-size { width: 100%; height: 100%; }
     .center-h { display: flex; justify-content: center; }

@@ -48,7 +48,7 @@ async function copyStatic()
             banner: { js: banner },
             entryPoints: ["src/app/main.js"],
             bundle: true,
-            external: ["obsidian"],
+            external: ["electron", "obsidian", "path", "events", "timers", "fs", "zlib", "crypto", "url"],
             format: "cjs",
             target: "es2018",
             logLevel: "info",//"error",//

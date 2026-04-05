@@ -36,7 +36,8 @@
             {
                 appState.graph.addEdge(
                     newNode.id, 
-                    appState.contextMenu.Connection.fromNode.id);
+                    appState.contextMenu.Connection.fromNode.id,
+                    appState.contextMenu.Connection.fromHandle.id);
             }
         }
 

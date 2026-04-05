@@ -16,23 +16,6 @@ export default class TextInputNodeType extends NodeType
             type : this.id, 
             width : 260, 
             height : 120, 
-            data : { value : "" }
-        };
-    }
-
-    async getPreview(app, node)
-    {
-        return await this.getContent(app, node);
-    }
-
-    async getContent(app, node)
-    {
-        return node.data.value;
-    }
-        
-    async getMessage(app, node)
-    {
-        const text = await this.getContent(app, node);
-        return { role : "user", content : [text] };
+            data : { value : "" }};
     }
 }

@@ -4,6 +4,7 @@
     {
         .menu-item-icon-textInput { color: var(--color-orange); }
         .menu-item-icon-fileInput { color: var(--color-purple); }
+        .menu-item-icon-webInput { color: var(--color-purple); }
         .menu-item-icon-generate  { color: #00abff; }
     } 
 

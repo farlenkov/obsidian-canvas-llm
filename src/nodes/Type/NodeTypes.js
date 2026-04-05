@@ -1,5 +1,6 @@
 import TextInputNodeType    from '../TextInput/TextInputNodeType.js';
 import FileInputNodeType    from '../FileInput/FileInputNodeType.js';
+import WebInputNodeType    from '../WebInput/WebInputNodeType.js';
 import GenerateNodeType     from '../Generate/GenerateNodeType.js';
 
 class NodeTypes
@@ -10,6 +11,7 @@ class NodeTypes
         [
             new TextInputNodeType(),
             new FileInputNodeType(),
+            new WebInputNodeType(),
             new GenerateNodeType()
         ];
 

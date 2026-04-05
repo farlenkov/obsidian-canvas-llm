@@ -2,17 +2,21 @@
 
 	import { getContext, onMount } from 'svelte';
     import { Play, Loader, XIcon, Lightbulb } from 'lucide-svelte';
-    import { Handle, Position, NodeResizer } from '@xyflow/svelte';
+    import { useUpdateNodeInternals } from '@xyflow/svelte';
     
+    import NodeState from '../Common/NodeState.svelte.js';
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
+    import NodeResizer from '../Common/NodeResizer.svelte';
+    import Handles from '../Common/Handles.svelte';
 
     import aiClient from '$lib/svelte-llm/models/AiClient.svelte.js';
 
+    const {id, data, selected} = $props();
     const appState = getContext("appState");
+    const nodeState = new NodeState(id, data, appState, useUpdateNodeInternals());  
 
-    let {id, data, selected} = $props();
     let inProgress = $state(false);
     let errorMessage = $state("");
     let activeTab = $state(data.part ?? 0);
@@ -24,8 +28,22 @@
     
     onMount(() => 
     { 
-        renderHtml(data.results); 
+        renderHtml(data.results);
+
+        appState.graph.getNodeContent[id] = getMessage;
+        return () => delete appState.graph.getNodeContent[id];
     });
+
+    async function getMessage()
+    {
+        if (!data.results ||
+            data.results.length === 0)
+            return { role : "model", content : "" };
+
+        const result = data.results[data.part];
+        const text = result.text; // getThink ? result.think : result.text;
+        return { role : "model", content : text };
+    }
     
     function getModelDesc()
     {
@@ -61,7 +79,9 @@
 
         try
         {
-            const messages = await appState.graph.getPrompt(id, appState.app);
+            const messages = (await appState.graph
+                .getMessages(id, appState.app))
+                .slice(0, -1);
 
             if (messages.length == 0)
                 throw "Prompt is empty. Please connect some Input node with content.";
@@ -142,11 +162,9 @@
 
 <NodeResizer 
     minWidth={100} 
-    minHeight={30} 
-    onResizeEnd={() => appState.graph.onChange("NodeResize")} />
+    minHeight={30} />
 
-<Handle type="target" position={Position.Left} />
-<Handle type="source" position={Position.Right} />
+<Handles />
 
 <div class="canvas-node">
     <div class="canvas-node-container">
@@ -201,7 +219,7 @@
                         </button>
                     {/if}
 
-                    <CopyTextButton nodeId={id} copyThink={showThink} />
+                    <CopyTextButton {nodeState} copyThink={showThink} />
                     <ParamsButton onclick={showParams} />
                 </node-header-right>
 

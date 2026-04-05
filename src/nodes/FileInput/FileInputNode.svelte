@@ -1,24 +1,25 @@
 <script>
 
     import { getContext, onMount } from 'svelte';
-    import { MarkdownRenderer } from 'obsidian';
-    import { Handle, Position, NodeResizer } from '@xyflow/svelte';
-    import CopyTextButton from '../Common/CopyTextButton.svelte';
+    import { useUpdateNodeInternals } from '@xyflow/svelte';
+
+    import NodeState from './FileInputNode.svelte.js';
     import ParamsButton from '../Common/ParamsButton.svelte';
+    import CopyTextButton from '../Common/CopyTextButton.svelte';
+    import TemplatingButton from '../Common/TemplatingButton.svelte';
+    import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
+    import NodeResizer from '../Common/NodeResizer.svelte';
+    import Handles from '../Common/Handles.svelte';
     import FileSelectModal from './FileSelectModal.js';
-    import NodeTypes from '../Type/NodeTypes.js';
-    import FileReader from './FileReader';
 
+    const {id, data, selected} = $props();
     const appState = getContext("appState");
-    const nodeType = NodeTypes.ById.fileInput;
-    const fileReader = new FileReader();
+    const nodeState = new NodeState(id, data, appState, useUpdateNodeInternals());  
 
-    let {id, data, selected} = $props();
-    let filePath = $state(data.path);
     let fileName = $state(data.name);
+    let filePath = $state(data.path);
     let isDragOver = $state(false);
     let isNotFound = $state(false);
-    let bodyEl;
 
     onMount(() => 
     {
@@ -26,12 +27,27 @@
             renderHtml();
 
         appState.plugin.onModify.push(onModify);
+        appState.graph.getNodeContent[id] = getMessage;
 
         return () => 
         {
             appState.plugin.onModify = appState.plugin.onModify.filter(fn => fn !== onModify);
+            delete appState.graph.getNodeContent[id];
         };
     });
+
+    async function getMessage()
+    {
+        const text = await readFiles();
+        return { role : "user", content : text };
+    }
+
+    async function readFiles()
+    {
+        const text = await nodeState.read(filePath);
+        nodeState.parsePlaceholders(text);
+        return text;
+    }
 
     function onModify(file)
     {
@@ -41,22 +57,21 @@
 
     function onFileChange(file)
     {
-        fileName = file.name;
-        filePath = file.path;
-
-        renderHtml();
-
         appState.graph.updateNode(
             id, 
-            {path: file.path, name: file.name}, 
+            { name : file.name, path : file.path }, 
             "FileInput");
+
+        fileName = file.name;
+        filePath = file.path;
+        renderHtml();
     } 
 
     function onClickSelectFile ()
     {
         new FileSelectModal(
             appState.app, 
-            fileReader.supportedExtensions,
+            nodeState.supportedExtensions,
             (file) => { onFileChange(file); })
             .open();
     }
@@ -96,7 +111,7 @@
         if (!file) 
             return;
 
-        if (!fileReader.supportedExtensions.includes(file.extension)) 
+        if (!nodeState.supportedExtensions.includes(file.extension)) 
             return;
 
         onFileChange(file);
@@ -107,38 +122,29 @@
         isNotFound = false;
 
         if (!filePath)
+        {
+            nodeState.parsePlaceholders("");
             return;
+        }
 
-        const text = await nodeType.getPreview(appState.app, filePath);
+        await readFiles();
 
-        if (!bodyEl)
-            return;
-
-        bodyEl.empty();
-
-        if (!text)
+        if (!nodeState.preview ||
+            nodeState.preview.length == 0)
         {
             isNotFound = true;
             return;
         }
-
-        MarkdownRenderer.render(
-            appState.app, 
-            text, 
-            bodyEl, 
-            filePath, 
-            appState.view);
     }
 
 </script>
 
 <NodeResizer 
     minWidth={100} 
-    minHeight={30} 
-    onResizeEnd={() => appState.graph.onChange("NodeResize")} />
+    minHeight={30}
+    placeholders={nodeState.allIns} />
 
-<Handle type="target" position={Position.Left} />
-<Handle type="source" position={Position.Right} />
+<Handles placeholders={nodeState.isTemplate ? nodeState.allIns : []} />
 
 <div 
     class="canvas-node" 
@@ -157,15 +163,14 @@
                 </node-header-left>
 
                 <node-header-right>
-                    <CopyTextButton nodeId={id} />
-                    <ParamsButton onclick={onClickSelectFile} />
+                    <TemplatingButton {nodeState} />
+                    <CopyTextButton {nodeState} />
+                    <ParamsButton onclick={onClickSelectFile} label="Select file" />
                 </node-header-right>
 
             </node-header>
 
             <node-body class="nodrag nozoom nomenu node-text markdown-rendered">
-
-                <div bind:this={bodyEl}></div>
 
                 {#if isNotFound}
                     <error>
@@ -173,6 +178,16 @@
                         <br/>
                         "{filePath}"
                     </error>
+                {:else}
+                    {#if nodeState.preview.length === 1}
+                        <MarkdownRenderer markdown={nodeState.preview[0]} />
+                    {:else}
+                        {#each nodeState.preview as text}
+                            <card>
+                                <MarkdownRenderer markdown={text} />
+                            </card>
+                        {/each}
+                    {/if}
                 {/if}
 
             </node-body>
@@ -180,27 +195,3 @@
         </node-content>
     </div>
 </div>
-
-<style>
-
-    .drag-over 
-    {
-        outline: 2px dashed var(--color-accent);
-        border-radius: 0.5em;
-    }
-
-    node-header-left
-    {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    error
-    {
-        position: fixed;
-        top: 2.05em;
-        left: 1px;
-        right: 1px;
-    }
-
-</style>

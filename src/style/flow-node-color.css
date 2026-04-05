@@ -95,6 +95,36 @@
         }
     }
 
+    /* WEB INPUT */
+
+    .svelte-flow__node-webInput
+    {
+        .canvas-node-container
+        {
+            border-color: var(--color-purple);
+        }
+
+        .svelte-flow__handle 
+        {        
+            border-color: var(--color-purple);
+        }
+
+        node-content
+        {
+            node-header
+            {
+                border-bottom-color: var(--color-purple);
+
+                node-header-left 
+                {
+                    color: var(--color-purple);
+                }
+            }
+        }
+    }
+
+    /* GENERATE */
+
     .svelte-flow__node-generate 
     {        
         node-header-left
@@ -110,19 +140,10 @@
         border-color: var(--color-accent);
     }
 
-    .svelte-flow__node-textInput.selected
+    .svelte-flow__node-textInput.selected .canvas-node-container,
+    .svelte-flow__node-fileInput.selected .canvas-node-container,
+    .svelte-flow__node-webInput.selected .canvas-node-container
     {
-        .canvas-node-container
-        {
-            border-color: var(--color-accent);
-        }
-    }
-
-    .svelte-flow__node-fileInput.selected
-    {
-        .canvas-node-container
-        {
-            border-color: var(--color-accent);
-        }
+        border-color: var(--color-accent);
     }
 }

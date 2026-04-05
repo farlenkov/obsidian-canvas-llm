@@ -13,5 +13,6 @@ export function createNodeId()
 
 export function createEdgeId(sourceId, targetId)
 {
-    return `xy-edge__${sourceId}-${targetId}`;
+    return createNodeId();
+    // return `xy-edge__${sourceId}-${targetId}`;
 }
