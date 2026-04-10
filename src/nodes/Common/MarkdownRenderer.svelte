@@ -34,4 +34,4 @@
 
 <div 
     bind:this={bodyEl}
-    class={className}></div>
+    class={"markdown-renderer " + (className ?? "")}></div>

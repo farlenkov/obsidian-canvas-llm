@@ -1,7 +1,8 @@
 import TextInputNodeType    from '../TextInput/TextInputNodeType.js';
 import FileInputNodeType    from '../FileInput/FileInputNodeType.js';
-import WebInputNodeType    from '../WebInput/WebInputNodeType.js';
+import WebInputNodeType     from '../WebInput/WebInputNodeType.js';
 import GenerateNodeType     from '../Generate/GenerateNodeType.js';
+import DialogueNodeType     from '../Dialogue/DialogueNodeType.js';
 
 class NodeTypes
 {
@@ -12,7 +13,8 @@ class NodeTypes
             new TextInputNodeType(),
             new FileInputNodeType(),
             new WebInputNodeType(),
-            new GenerateNodeType()
+            new GenerateNodeType(),
+            new DialogueNodeType()
         ];
 
         this.ById = {};

@@ -1,0 +1,27 @@
+.canvas-llm
+{
+    .svelte-flow__node-webInput
+    {
+        node-content
+        {
+            node-body
+            {
+                display: flex;
+                flex-direction: column;
+
+                input
+                {
+                    display: block;
+                    padding: 0.2em 0.3em;
+                    margin: 0.2em;
+                }
+
+                webview 
+                {
+                    width: 100%;
+                    height: 100%;
+                }
+            }
+        }
+    }
+}

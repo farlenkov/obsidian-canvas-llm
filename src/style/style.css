@@ -5,6 +5,11 @@
 
 @import url(./obsidian.css);
 @import url(./flow-node.css);
+@import url(./flow-node-text.css);
+@import url(./flow-node-file.css);
+@import url(./flow-node-web.css);
+@import url(./flow-node-generate.css);
+@import url(./flow-node-dialogue.css);
 @import url(./flow-node-color.css);
 @import url(./flow-other.css);
 @import url(./flow-minimap.css);

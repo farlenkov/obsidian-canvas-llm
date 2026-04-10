@@ -9,54 +9,14 @@
     {
         z-index: 1;
     }
-
-    .color-text-accent
-    {
-        color:var(--text-accent)
-    }
 }
 
-.canvas-llm-generate-params,
+.svelte-llm-model-select-container,
 .canvas-llm-settings
 {
     .modal-header
     {
         display: none;
-    }
-}
-
-.canvas-llm-generate-params
-{
-    .modal
-    {
-        width:      var(--modal-width);
-        height:     var(--modal-height);
-
-        max-width:  48em;
-        max-height: 40em;
-
-        padding: 0;
-
-        .modal-content
-        {
-            height: 98%;
-
-            .vertical-tab-header
-            {
-                border-inline-end: 1px solid var(--divider-color);
-            }
-
-            .vertical-tab-header,
-            .vertical-tab-content-container
-            {
-                /* padding-top: 3em; */
-            }
-
-            .vertical-tab-header
-            {
-                padding-top: 2.25em;
-            }
-        }
     }
 }
 

@@ -6,20 +6,18 @@
 
     function onModelSelected(model)
     {
-        appState.graph.updateNode(appState.generateParams.NodeID, {provider : model.providerId, model : model.id}, "ModelChange");
+        appState.graph.updateNode(
+            appState.generateParams.NodeID, 
+            {provider : model.providerId, model : model.id}, 
+            "ModelChange");
+        
         appState.settings.AddRecentModel(model);
         modal.close();
     }
 
 </script>
 
-    <ModelSelect
-        onModelSelected={onModelSelected}
-        onShowSettings={() => appState.ShowSettings()}
-        modelSelectState={appState.modelSelectState} />
-
-<style>
-
-    
-
-</style>
+<ModelSelect
+    onModelSelected={onModelSelected}
+    onShowSettings={() => appState.showSettings()}
+    modelSelectState={appState.modelSelectState} />

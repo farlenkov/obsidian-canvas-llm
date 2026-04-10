@@ -12,6 +12,37 @@ export default class NodeState
         this.placeholders = new PlaceholderSet();
         this.isTemplate = $state(data.template ?? false);
         this.allIns = $state([]);
+
+        this.error = $state(false);
+    }
+
+    async getCopy(shiftKey)
+    {
+        const branch = await this.appState.graph.getMessages(
+            this.id, 
+            this.appState.app);
+
+        if (!shiftKey)
+        {
+            const message = branch[branch.length-1];
+            return message.content;
+        }
+        else
+        {
+            let result = "";
+
+            for (let message of branch)
+            {
+                const messageText = message.content;
+
+                if (!result)
+                    result = messageText;
+                else
+                    result += "\n\n---\n\n" + messageText;
+            }
+
+            return result;
+        }
     }
 
     toggleTemplate()

@@ -71,7 +71,7 @@
 
         if (!appState.settings.HasKey(provider.id))
         {
-            appState.ShowSettings();
+            appState.showSettings();
             return;
         }
         

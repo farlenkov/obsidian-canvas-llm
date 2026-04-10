@@ -76,7 +76,7 @@
             <ControlButton onclick={() => showMiniMap = !showMiniMap} title="MiniMap" class={'canvas-llm-controll-button'}>
                 <MapIcon size={24} />
             </ControlButton>
-            <ControlButton onclick={() => appState.ShowSettings()} title="Settings" class={'canvas-llm-controll-button'}>
+            <ControlButton onclick={() => appState.showSettings()} title="Settings" class={'canvas-llm-controll-button'}>
                 <Settings size={24} />
             </ControlButton>
         </Controls>

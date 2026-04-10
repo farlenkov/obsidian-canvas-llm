@@ -47,10 +47,10 @@
 <NodeResizer 
     minWidth={100} 
     minHeight={30} 
-    placeholders={nodeState.allIns} />
+    inputs={nodeState.allIns} />
 
 <Handles 
-    placeholders={nodeState.isTemplate ? nodeState.allIns : []}
+    inputs={nodeState.isTemplate ? nodeState.allIns : []}
     class={isRead ? "" : "edit-mode"} />
 
 <div 

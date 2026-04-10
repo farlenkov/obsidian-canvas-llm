@@ -72,114 +72,9 @@
             {
                 display: block;
                 position: relative;
-                font: var(--font-text-theme)
+                font: var(--font-text-theme);
             }
 
-            .node-text
-            {
-                cursor: text !important;
-                user-select: text !important;
-            }
-        }
-    }
-
-    .svelte-flow__node-textInput
-    {
-        node-body
-        {
-            padding: 0;
-
-            textarea
-            {
-                background: transparent;
-                padding: 0.4em 0.6em;
-                box-shadow: none;
-                border: none;
-                width: 100%;
-                height: 100%;
-                resize: none;
-                outline: none;
-                font-size: inherit;
-                text-align: left;
-            }
-        }
-    }
-
-    .svelte-flow__node-fileInput 
-    {
-        .drag-over 
-        {
-            outline: 2px dashed var(--color-accent);
-            border-radius: 0.5em;
-        }
-
-        node-content
-        {
-            node-header-left
-            {
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            node-body
-            {
-                error
-                {
-                    position: fixed;
-                    top: 2.05em;
-                    left: 1px;
-                    right: 1px;
-                }
-
-                card
-                {
-                    display: block;
-                    background-color: var(--nav-item-background-active);
-                    border-radius: 0.5em;
-                    margin-bottom: 0.5em;
-                    padding: 0.5em;
-                }
-
-                card > div > *:first-child { margin-top: 0; }
-                card > div > *:last-child { margin-bottom: 0; }
-            }
-        }
-    }
-
-    .svelte-flow__node-webInput
-    {
-        node-content
-        {
-            node-body
-            {
-                display: flex;
-                flex-direction: column;
-
-                input
-                {
-                    display: block;
-                    padding: 0.2em 0.3em;
-                    margin: 0.2em;
-                }
-
-                webview 
-                {
-                    width: 100%;
-                    height: 100%;
-                }
-            }
-        }
-    }
-
-    .svelte-flow__node-generate 
-    {
-
-    }
-
-    .svelte-flow__node
-    {
-        node-content
-        {
             node-body.markdown-rendered
             {
                 padding: 0.4em 0.6em;
@@ -190,6 +85,15 @@
                     list-style: decimal !important;
                     list-style-type: decimal !important;
                 }
+            }
+
+            node-body .markdown-renderer  > *:first-child {  margin-top: 0; }
+            node-body .markdown-renderer  > *:last-child {  margin-bottom: 0; }
+
+            .node-text
+            {
+                cursor: text !important;
+                user-select: text !important;
             }
         }
     }

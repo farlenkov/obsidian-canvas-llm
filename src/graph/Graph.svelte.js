@@ -229,6 +229,9 @@ export default class GraphState
 
     async getMessage (node, app, usedNodes)
     {
+        if (typeof node !== 'object')
+            node = this.nodes.find((node2) => node2.id === node);
+        
         const message = await this.getNodeContent[node.id]();
 
         usedNodes = usedNodes || {};

@@ -142,9 +142,9 @@
 <NodeResizer 
     minWidth={100} 
     minHeight={30}
-    placeholders={nodeState.allIns} />
+    inputs={nodeState.allIns} />
 
-<Handles placeholders={nodeState.isTemplate ? nodeState.allIns : []} />
+<Handles inputs={nodeState.isTemplate ? nodeState.allIns : []} />
 
 <div 
     class="canvas-node" 

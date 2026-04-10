@@ -2,7 +2,7 @@
 
     import { Handle, Position } from '@xyflow/svelte';
 
-    let { placeholders, class: className } = $props();
+    let { inputs, class: className } = $props();
 
 </script>
 
@@ -18,14 +18,28 @@
     aria-label="○ → Next message"
     class={className} />
 
-{#each placeholders as placeholder, index}
+{#each inputs as input, index}
 
-    <Handle 
-        type="target" 
-        id={placeholder} 
-        position={Position.Left} 
-        class={className} 
-        aria-label={`{{ ${placeholder} }}`}
-        style="top:{3 + index}em !important"/>
+    {#if typeof input === 'string'}
+
+        <Handle 
+            type="target" 
+            id={input} 
+            position={Position.Left} 
+            class={className} 
+            aria-label={`${input}`}
+            style="top:{3 + index}em !important"/>
+
+    {:else}
+
+        <Handle 
+            type="target" 
+            id={Object.keys(input)[0]} 
+            position={Position.Left} 
+            class={className} 
+            aria-label={`${input[Object.keys(input)[0]]}`}
+            style="top:{3 + index}em !important"/>
+
+    {/if}
 
 {/each}

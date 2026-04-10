@@ -19,4 +19,13 @@
             margin: -.5em -.5em 0 0; 
         }
     }
+
+    node-body error
+    {
+        position: fixed;
+        top: 2.05em;
+        left: 1px;
+        right: 1px;
+        z-index: 2;
+    }
 }

@@ -4,11 +4,11 @@
     import { NodeResizer } from '@xyflow/svelte';
 
     const appState = getContext("appState");
-    let { placeholders, minWidth, minHeight } = $props();
+    let { inputs, minWidth, minHeight } = $props();
 
 </script>
 
 <NodeResizer 
     minWidth={minWidth} 
-    minHeight={minHeight + (placeholders ? placeholders.length * 15 + 16 : 0)} 
+    minHeight={minHeight + (inputs ? inputs.length * 15 + 16 : 0)} 
     onResizeEnd={() => appState.graph.onChange("NodeResize")} />

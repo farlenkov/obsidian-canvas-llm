@@ -160,10 +160,9 @@
 
 <NodeResizer 
     minWidth={100} 
-    minHeight={30} 
-    placeholders={[]} />
+    minHeight={30} />
 
-<Handles placeholders={[]} />
+<Handles />
 
 <div class="canvas-node">
 

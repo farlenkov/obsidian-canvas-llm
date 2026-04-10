@@ -1,0 +1,172 @@
+.canvas-llm
+{
+    .svelte-flow__node-dialogue 
+    {
+        node-content
+        {
+            node-body.markdown-rendered
+            {
+                padding: 0;
+                overflow: auto;
+            }
+        }
+
+        .dialogue-message
+        {
+            border: 1px solid var(--divider-color);
+            background-color: var(--background-primary-alt);
+            background: var(--background-primary-alt);
+            background: linear-gradient(0deg, var(--background-secondary), var(--background-primary-alt));
+
+            margin: 0.5em;
+
+            .dialogue-message-head
+            {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+
+                position: sticky;
+                top: 0;
+                z-index: 1;
+
+                border-bottom: 1px solid var(--divider-color);
+                background-color: var(--background-secondary-alt);
+                padding: 0.25em 0.5em;
+
+                .dialogue-message-num { filter: brightness(0.65); }
+
+                .dialogue-message-role
+                {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    gap: 0.4em;
+                }
+
+                .dialogue-message-buttons
+                {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: end;
+
+                    .dialogue-message-variants
+                    {
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                    }
+                }
+            }
+            
+            .dialogue-message-body
+            {
+                padding: 0.6em 0.75em;
+                user-select: text;
+
+                pre
+                {
+                    color: var(--code-normal);
+                    border: 1px solid var(--divider-color);
+                    border-radius: var(--radius-s);
+                    background-color: var(--background-primary);
+                    padding: 0.2em 0.5em;
+
+                    code
+                    {
+                        white-space: pre-wrap;
+                        overflow-wrap: break-word;
+                    }
+                }
+            }
+        }
+
+        .dialogue-message:nth-child(odd)
+        {
+            .dialogue-message-head      { border-bottom: 1px solid var(--color-orange); }
+            .dialogue-message-role-name { color: var(--color-orange); }
+        }
+
+        .dialogue-message:nth-child(even)    
+        {
+            .dialogue-message-head      { border-bottom: 1px solid var(--color-cyan); }
+            .dialogue-message-role-name { color: var(--color-cyan); }
+        }
+
+        .dialogue-message-next
+        {
+            display: flex;
+            flex-direction: row;
+            justify-content: center; 
+            padding: 0.5em 0 1em 0;
+
+            button
+            {
+                display: flex;
+                flex-direction: row;
+                justify-content: center; 
+                align-items: center;
+                gap: 0.5em;
+            }
+        }
+    }
+}
+
+.canvas-llm-dialogue-params
+{
+    .modal
+    {
+        width:      var(--modal-width);
+        height:     var(--modal-height);
+
+        max-width:  25em;
+        max-height: 14.5em;
+
+        .role-list
+        {
+            display: flex;
+            flex-direction: column;
+            gap: 1.75em;
+            margin-top: 1em;
+
+            .role-item
+            {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                justify-content: space-between;
+                gap: 0.2em;
+
+                .role-label-and-model
+                {
+                    display: flex;
+                    justify-content: space-between;
+                }
+
+                .role-label
+                {
+                    align-items: center;
+                    filter: brightness(0.65);
+                    min-width: 4em;
+                }
+
+                .role-name
+                {
+
+                }
+
+                .role-model
+                {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+
+                    .role-model-label
+                    {
+                        text-align: right;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -6,6 +6,7 @@
         .menu-item-icon-fileInput { color: var(--color-purple); }
         .menu-item-icon-webInput { color: var(--color-purple); }
         .menu-item-icon-generate  { color: #00abff; }
+        .menu-item-icon-dialogue  { color: #00abff; }
     } 
 
     .menu-item.is-warning .menu-item-icon { color: red; }

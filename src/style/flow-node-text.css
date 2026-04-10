@@ -1,0 +1,24 @@
+.canvas-llm
+{
+    .svelte-flow__node-textInput
+    {
+        node-body
+        {
+            padding: 0;
+
+            textarea
+            {
+                background: transparent;
+                padding: 0.4em 0.6em;
+                box-shadow: none;
+                border: none;
+                width: 100%;
+                height: 100%;
+                resize: none;
+                outline: none;
+                font-size: inherit;
+                text-align: left;
+            }
+        }
+    }
+}
