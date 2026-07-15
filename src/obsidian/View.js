@@ -6,6 +6,9 @@ import AppState from '$lib/app/App.svelte.js';
 
 export default class CanvasView extends TextFileView  
 {
+    static VIEW_TYPE = "canvas-llm-view";
+    static FILE_EXT = 'canvas-llm';
+
     constructor(leaf, plugin) 
     {
         super(leaf);
@@ -18,12 +21,12 @@ export default class CanvasView extends TextFileView
         this.appState.app = plugin.app;
         this.appState.leaf = plugin.leaf;
 
-        this.appState.graph.onChange = () => this.requestSave();
+        this.appState.graph.onChange.on(() => this.requestSave());
     }
 
     getViewType() 
     {
-        return 'canvas-llm-view';
+        return CanvasView.VIEW_TYPE;
     }
 
     async setViewData (fileContents, clear)
@@ -37,7 +40,7 @@ export default class CanvasView extends TextFileView
         viewRoot.classList.add('canvas-llm', 'svelte-obsidian');
         viewRoot.empty();
 
-        this.graphView = mount(App, 
+        this.appView = mount(App, 
         { 
             target : viewRoot, 
             props : { appState : this.appState } 
@@ -49,9 +52,35 @@ export default class CanvasView extends TextFileView
         return this.appState.graph.toString();
     }
 
-    async onClose()
+    // onload() // Override this to load your component
+    // {
+    //     console.log("onload", this);
+    // }
+    
+    // onunload() // Override this to unload your component
+    // {
+    //     console.log("onunload", this);
+    // }
+
+    async onClose() // Override
     {
+        // console.log("onClose", this);
+        this.plugin.onFileClose(this.file);
         this.clear();
+    }
+
+    async onLoadFile(file)
+    {
+        // console.log("onLoadFile", this, file);
+        super.onLoadFile(file);
+        this.plugin.onFileOpen(file);
+
+    }
+    async onUnloadFile(file)
+    {
+        // console.log("onUnloadFile", this, file);
+        super.onUnloadFile(file);
+        this.plugin.onFileClose(file);
     }
 
     clear()
@@ -65,10 +94,10 @@ export default class CanvasView extends TextFileView
 
     unmountView()
     {
-        if (this.graphView)
+        if (this.appView)
         {
-            unmount(this.graphView);
-            delete this.graphView;
+            unmount(this.appView);
+            delete this.appView;
         }
     }
 }

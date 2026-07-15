@@ -11,4 +11,4 @@
 <NodeResizer 
     minWidth={minWidth} 
     minHeight={minHeight + (inputs ? inputs.length * 15 + 16 : 0)} 
-    onResizeEnd={() => appState.graph.onChange("NodeResize")} />
+    onResizeEnd={() => appState.graph.onChange.emit("NodeResize")} />

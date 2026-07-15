@@ -3,7 +3,7 @@
 	import { getContext, onMount } from 'svelte';
     import { MarkdownRenderer } from 'obsidian';
 
-    const { markdown, className } = $props();
+    const { markdown, className, label } = $props();
     const appState = getContext("appState");
     let bodyEl;
 
@@ -33,5 +33,6 @@
 </script>
 
 <div 
+    aria-label={label}
     bind:this={bodyEl}
     class={"markdown-renderer " + (className ?? "")}></div>

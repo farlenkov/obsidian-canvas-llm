@@ -12,8 +12,14 @@ export default class NodeState
         this.placeholders = new PlaceholderSet();
         this.isTemplate = $state(data.template ?? false);
         this.allIns = $state([]);
-
         this.error = $state(false);
+
+        this.upgradeNode(id, data);
+    }
+
+    upgradeNode(id, data)
+    {
+
     }
 
     async getCopy(shiftKey)
@@ -54,11 +60,7 @@ export default class NodeState
 
     parsePlaceholders(text)
     {
-        const usedIns = this.appState.graph.edges
-            .filter((edge) => 
-                edge.targetHandle && 
-                edge.target === this.id)
-            .map(e => e.targetHandle);
+        const usedIns = this.getUsedIns();
 
         this.allIns = this.placeholders
             .clear()
@@ -67,5 +69,14 @@ export default class NodeState
             .get();
 
         this.updateNodeInternals(this.id);
+    }
+
+    getUsedIns()
+    {
+        return this.appState.graph.edges
+            .filter((edge) => 
+                edge.targetHandle && 
+                edge.target === this.id)
+            .map(e => e.targetHandle);
     }
 }

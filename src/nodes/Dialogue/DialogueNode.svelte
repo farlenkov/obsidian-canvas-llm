@@ -3,6 +3,7 @@
     import { getContext, onMount } from 'svelte';
     import { Play, XIcon, ArrowUpToLine, ArrowDownToLine } from 'lucide-svelte';
     import { useUpdateNodeInternals } from '@xyflow/svelte';
+    import { delay } from '$lib/svelte-obsidian/src/Async.js';
 
     import NodeState from './DialogueNode.svelte.js';
     import ParamsButton from '../Common/ParamsButton.svelte';
@@ -13,21 +14,49 @@
     import RunButton from './RunButton.svelte';
     import Message from './Message.svelte';
     import Modal from '$lib/svelte-obsidian/src/Modal.js';
-    import DialogueParamsView from './DialogueParams.svelte';
+    import ParamsView from './Params.svelte'
 
     const {id, data, selected} = $props();
     const appState = getContext("appState");
     const nodeState = new NodeState(id, data, appState, useUpdateNodeInternals());
 
-    let nodeBody;
+    nodeState.onStartEdit.on(scrollToBottom);
 
     onMount(() => 
     {
-        setTimeout(() => { nodeBody.scrollTop = nodeBody?.scrollHeight }, 100);
-
+        scrollToBottom();
         appState.graph.getNodeContent[id] = getMessage;
-        return () => delete appState.graph.getNodeContent[id];
+        appState.graph.onChange.add(onGraphChange);
+
+        return () => 
+        {
+            delete appState.graph.getNodeContent[id]
+            appState.graph.onChange.del(onGraphChange);
+        };
     });
+
+    function onGraphChange(type)
+    {
+        if (type === "removeEdge")
+            nodeState.updateHandles();
+    }
+
+    function scrollToBottom(timeout = 100)
+    {
+        delay(timeout, () => 
+        {
+            if (!nodeState.nodeBody)
+                return;
+
+            // nodeBody.scrollTo
+            // ({
+            //     top: nodeBody.scrollHeight,
+            //     behavior: 'smooth'
+            // });
+            
+            nodeState.nodeBody.scrollTop = nodeState.nodeBody.scrollHeight;
+        });
+    }
 
     async function getMessage()
     {
@@ -38,7 +67,7 @@
     function showParams()
     {
         new Modal(
-            DialogueParamsView, 
+            ParamsView, 
             {
                 app : nodeState.app, 
                 nodeState
@@ -55,10 +84,13 @@
     {
         setTimeout(() => 
         {
-            const lastMessageEL = nodeBody.querySelector('.dialogue-message:last-of-type');
+            const lastMessageEL = nodeState.nodeBody?.querySelector('.dialogue-message:last-of-type');
 
             if (lastMessageEL)
-                nodeBody.scrollTop = lastMessageEL.offsetTop;
+            {
+                // console.log("[onMessageAdd]", "offsetTop:", lastMessageEL.offsetTop, "scrollHeight:", nodeBody.scrollHeight)
+                nodeState.nodeBody.scrollTop = lastMessageEL.offsetTop;
+            }
 
         }, 100);
     }
@@ -69,9 +101,7 @@
     minWidth={320} 
     minHeight={30} />
 
-<Handles inputs = {[
-    { "role1" : (nodeState.roles[0].name || nodeState.ROLE_LABELS[0]) + " (system prompt)" }, 
-    { "role2" : (nodeState.roles[1].name || nodeState.ROLE_LABELS[1]) + " (system prompt)" }]} />
+<Handles inputs = {nodeState.nodeHandles} />
 
 <div class="canvas-node" class:error={nodeState.error}>
     <div class="canvas-node-container">
@@ -79,17 +109,17 @@
 
             <node-header>
                 <node-header-left aria-label={nodeState.nodeTooltip}>
-                    Dialogue
+                    🗪 Dialogue
                 </node-header-left>
                 <node-header-right>
                     
                     <GenericButton 
-                        onclick={ev => nodeBody.scrollTop = 0} 
+                        onclick={ev => nodeState.nodeBody.scrollTop = 0} 
                         icon={ArrowUpToLine} 
                         label="Scroll to top" />
                     
                     <GenericButton 
-                        onclick={ev => nodeBody.scrollTop = nodeBody.scrollHeight} 
+                        onclick={ev => nodeState.nodeBody.scrollTop = nodeState.nodeBody.scrollHeight} 
                         icon={ArrowDownToLine} 
                         label="Scroll to bottom" />
 
@@ -98,7 +128,7 @@
                 </node-header-right>
             </node-header>
 
-            <node-body class="nodrag nozoom nomenu node-text markdown-rendered" bind:this={nodeBody}>
+            <node-body class="nodrag nozoom nomenu node-text markdown-rendered" bind:this={nodeState.nodeBody}>
 
                 {#if nodeState.error}
                     <error>
@@ -114,18 +144,28 @@
                 {#each nodeState.currentThread as message, messageNum}
                     <Message {message} {messageNum} {nodeState}/>
                 {/each}
-                
-                <div class="dialogue-message-next">
-                    <RunButton
-                        inProgress={nodeState.inProgress}
-                        label1="Generate" 
-                        label2="Generating..." 
-                        label3={nodeState.hasMessages ? "CONTINUE" : "START"}
-                        label4="GENERATING..."
-                        class="mod-cta",
-                        onclick={() => nodeState.generate()}
-                        Icon={Play} />
-                </div>
+
+                {#if !nodeState.editId}                
+                    {#if nodeState.roles[nodeState.currentThread.length % 2].bot}
+
+                        <div class="dialogue-message-next">
+                            <RunButton
+                                inProgress={nodeState.inProgress}
+                                label1="Generate" 
+                                label2="Generating..." 
+                                label3={nodeState.hasMessages ? "CONTINUE" : "START"}
+                                label4="GENERATING..."
+                                class="mod-cta",
+                                onclick={() => nodeState.generate()}
+                                Icon={Play} />
+                        </div>
+
+                    {:else}
+
+                        <Message {nodeState} messageNum={nodeState.currentThread.length+1} />
+
+                    {/if}
+                {/if}
 
             </node-body>
 

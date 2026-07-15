@@ -170,7 +170,7 @@
         <node-content>
             <node-header>
                 <node-header-left>
-                    {title || "Web" }
+                    {title || "🌐 Web" }
                 </node-header-left>
                 <node-header-right>
 

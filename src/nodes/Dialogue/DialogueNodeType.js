@@ -24,12 +24,14 @@ export default class DialogueNodeType extends NodeType
                 [{
                     "provider" : "openai",
                     "model" : "gpt-5.4-nano",
-                    "name" : ""
+                    "name" : "",
+                    "bot" : true
                 },
                 {
                     "provider" : "openai",
                     "model" : "gpt-5.4-nano",
-                    "name" : ""
+                    "name" : "",
+                    "bot" : true
                 }]
             }};
     }

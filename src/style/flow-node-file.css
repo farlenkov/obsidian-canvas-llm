@@ -34,6 +34,46 @@
                     margin-bottom: 0.5em;
                     padding: 0.5em;
                 }
+
+                card.folder,
+                card.file
+                {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+
+                    .left
+                    {
+                        display: flex;
+                        align-items: center;
+                        justify-content: left;
+                        gap: 0.15em;
+                    }
+
+                    .right
+                    {
+                        padding-right: 0.2em;
+
+                        .extension
+                        {
+                            color: var(--color-base-50);
+                            font-size: 0.95em;
+                            border-radius: var(--nav-tag-radius);
+                            background-color: var(--nav-tag-background)
+                        }
+                    }
+                }
+
+                card.folder
+                {
+                    color: var(--color-base-50); 
+                    background-color: color-mix(in srgb, var(--nav-item-background-active) 80%, black 20%);
+                }
+
+                card.file
+                {
+                    
+                }
             }
         }
     }

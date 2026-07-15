@@ -1,11 +1,44 @@
 <script>
 
-    import { RefreshCcw, ChevronLeft, ChevronRight, Lightbulb } from 'lucide-svelte';
+    import { onMount } from 'svelte';
+    import { RefreshCcw, ChevronLeft, ChevronRight, Lightbulb, ArrowUp, SquarePen, X } from 'lucide-svelte';
+    import { delay } from '$lib/svelte-obsidian/src/Async.js';
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import RunButton from './RunButton.svelte';
 
     const {nodeState, message, messageNum} = $props();
+    
+    let textarea;
+
+    onMount(() => 
+    {
+        textareaResize(100, true);
+    });
+
+    function startEdit(message)
+    {
+        nodeState.startEdit(message);
+        textareaResize(1);
+    }
+
+    function resetEdit()
+    {
+        nodeState.resetEdit();
+        textareaResize(100);
+    }
+
+    function submitEdit()
+    {
+        nodeState.submitEdit();
+        textareaResize(100);
+    }
+
+    function submitInput()
+    {
+        nodeState.submitInput();
+        textareaResize(100);
+    }
 
     async function clickCopy(ev)
     {
@@ -13,88 +46,221 @@
         navigator.clipboard.writeText(copyText);
     }
 
-    function getRoleName(message)
+    let resizeCounter = 1;
+
+    function textareaResize(timeout, skipScroll) 
     {
-        const role = nodeState.roles[message.role];
-        const roleName = role.name || nodeState.ROLE_LABELS[message.role];
-        return roleName;
+        delay (timeout, () =>
+        {
+            if (!textarea)
+                return;
+
+            if (nodeState.savedScrollTop)
+                skipScroll = true;
+
+            if (!skipScroll)
+            {
+                nodeState.savedScrollTop = nodeState.nodeBody?.scrollTop;
+
+                nodeState.wasAtBottom = nodeState.nodeBody 
+                    ? nodeState.nodeBody.scrollHeight - nodeState.nodeBody.clientHeight - nodeState.nodeBody.scrollTop < 30
+                    : false;
+            }
+            
+            textarea.style.height = "auto";
+            textarea.style.height = textarea.scrollHeight + "px";
+
+            if (skipScroll)
+                return;
+
+            const counter = resizeCounter++;
+            console.log(counter, ">", nodeState.wasAtBottom, nodeState.savedScrollTop);
+
+            requestAnimationFrame(() => 
+            {
+                if (!nodeState.nodeBody)
+                    return;
+                
+                nodeState.nodeBody.scrollTop = nodeState.savedScrollTop + (nodeState.wasAtBottom ? 100 : 0);
+                console.log(counter, "<", nodeState.wasAtBottom, nodeState.savedScrollTop);
+
+                delete nodeState.savedScrollTop;
+                delete nodeState.wasAtBottom;
+            });
+        });
     }
 
 </script>
 
-<div class="dialogue-message">
-    <div class="dialogue-message-head">
-        <div 
-            class="dialogue-message-role"
-            aria-label={message.model}>
-                <span class="dialogue-message-num">#{messageNum+1}</span> 
-                <span class="dialogue-message-role-name">{@html getRoleName(message)}</span>
-        </div>
-        <div class="dialogue-message-buttons">
+{#if message}
 
-            {#if nodeState.hasVariations(message.parentId)}
-                <div class="dialogue-message-variants">
+    <div 
+        class="dialogue-message"
+        class:edit={message.id === nodeState.editId}>
+        <div class="dialogue-message-head">
+            <div 
+                class="dialogue-message-role"
+                aria-label={message.model}>
+                    <span class="dialogue-message-num">#{messageNum+1}</span> 
+                    <span class="dialogue-message-role-name">{@html nodeState.getRoleName(message.role)}</span>
+            </div>
+            <div class="dialogue-message-buttons">
+
+                
+                {#if message.id !== nodeState.editId}
+
+                    {#if nodeState.hasVariations(nodeState.parentIds[message.id])}
+                        <div class="dialogue-message-variants">
+
+                            <button 
+                                class="clickable-icon"
+                                aria-label="Prev variation"
+                                disabled={nodeState.inProgress}
+                                onclick={() => nodeState.switchVariation(message, -1)}>
+                                <ChevronLeft size={16}/>
+                            </button>
+
+                            {nodeState.variantNum[message.id]}
+                            / 
+                            {nodeState.messages[nodeState.parentIds[message.id]].length}
+
+                            <button 
+                                class="clickable-icon"
+                                aria-label="Next variation"
+                                disabled={nodeState.inProgress}
+                                onclick={() => nodeState.switchVariation(message, 1)}>
+                                <ChevronRight size={16}/>
+                            </button>
+
+                        </div>
+                    {/if}
+
+                    {#if message.think}
+                        {#if !nodeState.thinkSwitch[message.id]}
+                            <button 
+                                class="clickable-icon"
+                                aria-label="Show reasoning"
+                                onclick={() => nodeState.thinkSwitch[message.id] = true}>
+                                <Lightbulb size={16}/>
+                            </button>
+                        {:else}
+                            <button 
+                                class="clickable-icon color-text-accent"
+                                aria-label="Show message"
+                                onclick={() => delete nodeState.thinkSwitch[message.id]}>
+                                <Lightbulb size={16}/>
+                            </button>
+                        {/if}
+                    {/if}
 
                     <button 
                         class="clickable-icon"
-                        aria-label="Prev variation"
+                        aria-label="Edit message"
                         disabled={nodeState.inProgress}
-                        onclick={() => nodeState.switchVariation(message, -1)}>
-                        <ChevronLeft size={16}/>
+                        onclick={() => startEdit(message)}>
+                        <SquarePen size={16}/>
                     </button>
 
-                    {nodeState.VariantNum[message.id]}
-                    / 
-                    {nodeState.messages[message.parentId].length}
+                    <CopyTextButton 
+                        label="Copy message" 
+                        onclick={clickCopy} />
 
-                    <button 
-                        class="clickable-icon"
-                        aria-label="Next variation"
-                        disabled={nodeState.inProgress}
-                        onclick={() => nodeState.switchVariation(message, 1)}>
-                        <ChevronRight size={16}/>
-                    </button>
-
-                </div>
-            {/if}
-
-            {#if message.think}
-                {#if !nodeState.thinkSwitch[message.id]}
-                    <button 
-                        class="clickable-icon"
-                        aria-label="Show reasoning"
-                        onclick={() => nodeState.thinkSwitch[message.id] = true}>
-                        <Lightbulb size={16}/>
-                    </button>
                 {:else}
+
                     <button 
-                        class="clickable-icon color-text-accent"
-                        aria-label="Show message"
-                        onclick={() => delete nodeState.thinkSwitch[message.id]}>
-                        <Lightbulb size={16}/>
+                        class="clickable-icon" 
+                        aria-label="Cancel edit"
+                        onclick={resetEdit}>
+                        <X size={16} />
                     </button>
+
+                    <button 
+                        class="mod-cta" 
+                        aria-label="Save message"
+                        onclick={submitEdit}>
+                        <ArrowUp size={16} />
+                    </button>
+
                 {/if}
-            {/if}
+                
+                {#if nodeState.roles[message.role].bot}
+
+                    <RunButton
+                        inProgress={nodeState.inProgress}
+                        label1="Regenarate" 
+                        label2="Generating..." 
+                        class="clickable-icon",
+                        onclick={() => nodeState.generate(message)}
+                        Icon={RefreshCcw} />
+
+                {/if}
+
+            </div>
+        </div>
+        <div class="dialogue-message-body">
+
+            {#if message.id !== nodeState.editId}
+
+                {#if !nodeState.thinkSwitch[message.id]}
+
+                    {#if message.system}
+                        <MarkdownRenderer markdown={message.system} label="System" className="system" />
+                    {/if}
+
+                    {#if message.private}
+                        <MarkdownRenderer markdown={message.private} label="Memory" className="private" />
+                        <MarkdownRenderer markdown={message.public} />
+                    {:else}
+                        <MarkdownRenderer markdown={message.text} />
+                    {/if}
+
+                {:else}
+                    <MarkdownRenderer markdown={message.think} />
+                {/if}
+
+            {:else}
             
-            <CopyTextButton 
-                label="Copy message" 
-                onclick={clickCopy} />
+                <textarea 
+                    rows="1"
+                    placeholder="Type your message here"
+                    bind:this={textarea}
+                    bind:value={nodeState.editText}
+                    onchange={() => nodeState.saveEdit()}
+                    oninput={() => textareaResize()}></textarea>
 
-            <RunButton
-                inProgress={nodeState.inProgress}
-                label1="Regenarate" 
-                label2="Generating..." 
-                class="clickable-icon",
-                onclick={() => nodeState.generate(message)}
-                Icon={RefreshCcw} />
-
+            {/if}
         </div>
     </div>
-    <div class="dialogue-message-body">
-        {#if !nodeState.thinkSwitch[message.id]}
-            <MarkdownRenderer markdown={message.text} />
-        {:else}
-            <MarkdownRenderer markdown={message.think} />
-        {/if}
+
+{:else}
+
+    <div class="dialogue-message edit">
+        <div class="dialogue-message-head">
+            <div class="dialogue-message-role">
+                <span class="dialogue-message-num">#{messageNum}</span> 
+                <span class="dialogue-message-role-name">Your messge</span>
+            </div>
+            <div class="dialogue-message-buttons">
+
+                <RunButton
+                    inProgress={nodeState.inProgress}
+                    label1="Send your message" 
+                    label2="Generating..." 
+                    class="mod-cta",
+                    onclick={submitInput}
+                    Icon={ArrowUp} />
+
+            </div>
+        </div>
+        <div class="dialogue-message-body">
+            <textarea 
+                rows="1"
+                placeholder="Type your message here"
+                bind:this={textarea}
+                bind:value={nodeState.inputText}
+                onchange={() => nodeState.saveInput()}
+                oninput={() => textareaResize()}></textarea>
+        </div>
     </div>
-</div>
+
+{/if}

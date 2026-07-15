@@ -4,7 +4,7 @@
     import { Play, Loader, XIcon, Lightbulb } from 'lucide-svelte';
     import { useUpdateNodeInternals } from '@xyflow/svelte';
     
-    import NodeState from '../Common/NodeState.svelte.js';
+    import NodeState from './GenerateNode.svelte.js';
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
@@ -40,7 +40,7 @@
             data.results.length === 0)
             return { role : "model", content : "" };
 
-        const result = data.results[data.part];
+        const result = data.results[data.part || 0];
         const text = result.text; // getThink ? result.think : result.text;
         return { role : "model", content : text };
     }
@@ -130,7 +130,7 @@
         activeTab = nextPart;
         showThink = false;
 
-        appState.graph.onChange("NextPart");
+        appState.graph.onChange.emit("NextPart");
         renderHtml(data.results);
     }
 

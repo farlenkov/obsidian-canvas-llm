@@ -18,4 +18,31 @@ export default class FileInputNodeType extends NodeType
             height : 120,
             data : { path : "", name : "" }};
     }
+
+    onFileRename(node, file, oldPath)
+    {
+        let isChanged = false;
+
+        if (node.data.path === oldPath)
+        {
+            node.data.path = file.path;
+            node.data.name = file.name;
+            isChanged = true;
+        }
+
+        if (node.data.exclude)
+        {
+            for (let i = 0; i < node.data.exclude.length; i++)
+            {
+                if (node.data.exclude[i] === oldPath)
+                {
+                    node.data.exclude[i] = file.path;
+                    isChanged = true;
+                }
+            }
+        }
+        
+        // console.log(`[FileInputNodeType: onFileRename] '${node.data.path}' > '${file.path}'`);        
+        return isChanged;
+    }
 }

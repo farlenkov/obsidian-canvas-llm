@@ -1,6 +1,6 @@
 import { createNodeId, createEdgeId } from '$lib/graph/CreateId';
 import { PlaceholderSet } from '$lib/svelte-obsidian/src/Placeholder.js';
-import providers from '$lib/svelte-llm/models/ProviderInfo.svelte.js';
+import { EventEmitter } from '$lib/svelte-obsidian/src/Event.js';
 import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
 
 export default class GraphState
@@ -13,7 +13,7 @@ export default class GraphState
         this.nodes = $state.raw([]);
         this.edges = $state.raw([]);
         this.getNodeContent = {};
-        this.onChange = () => {};
+        this.onChange = new EventEmitter();
     }
 
     async loadFromFile(graphJson)
@@ -31,70 +31,12 @@ export default class GraphState
     {
         if (!graphJson.version)
             graphJson.version = this.fileVersion;
-        
-        graphJson.nodes.forEach(node => 
-        {
-            // markdown to markdowns
-
-            if (node.data.markdown)
-            {
-                node.data.markdowns = [node.data.markdown];
-                delete node.data.markdown;
-            }
-
-            // remove html & htmls
-            
-            if (node.data.html)
-                delete node.data.html;
-
-            if (node.data.htmls)
-                delete node.data.htmls;
-
-            // model to provider
-
-            if (node.data.model &&
-                !node.data.provider)
-            {
-                providers.List.forEach(provider => 
-                {
-                    if (provider.ModelById[node.data.model])
-                        node.data.provider = provider.id;
-                });
-            }
-
-            // markdowns to results
-
-            if (node.data.markdowns)
-            {
-                node.data.results = [];
-
-                node.data.markdowns.forEach(markdown => 
-                {
-                    const result = 
-                    {
-                        provider : node.data.provider,
-                        model : node.data.model,
-                        text : markdown
-                    };
-
-                    if (Array.isArray(markdown))
-                    {
-                        result.think = markdown[0];
-                        result.text = markdown[1];
-                    }
-
-                    node.data.results.push(result);
-                });
-
-                delete node.data.markdowns;
-            }
-        });
     }
 
     addNode(node)
     {
         this.nodes = [...this.nodes, node];
-        this.onChange("addNode");
+        this.onChange.emit("addNode");
     }
 
     addEdge(sourceId, targetId, targetHandle)
@@ -110,24 +52,34 @@ export default class GraphState
             newEdge.targetHandle = targetHandle;
 
         this.edges = [...this.edges, newEdge];
-        this.onChange("addEdge");
+        this.onChange.emit("addEdge");
     }
     
     removeNode(node) 
     {
-        this.nodes = this.nodes.filter((node2) => 
+        const nodeCount = this.nodes.length;
+        const edgeCount = this.edges.length;
+
+        this.nodes = this.nodes.filter(node2 => 
             node2.id != node.id);
 
-        this.edges = this.edges.filter((edge) => 
+        if (this.nodes.length < nodeCount)
+            this.onChange.emit("removeNode");
+
+        this.edges = this.edges.filter(edge => 
             edge.source != node.id && 
-            edge.target != node.id);
-        
-        this.onChange("removeNode");
+            edge.target != node.id);        
+
+        if (this.edges.length < edgeCount)
+            this.onChange.emit("removeEdge");
+
+        // console.log("nodeCount", nodeCount, this.nodes.length);
+        // console.log("edgeCount", edgeCount, this.edges.length);
     }
 
     removeEdge(edge) 
     {
-        this.edges = this.edges.filter((edge2) => 
+        this.edges = this.edges.filter(edge2 => 
         {
             if (edge2.source        === edge.source &&
                 edge2.target        === edge.target &&
@@ -137,32 +89,41 @@ export default class GraphState
                 return true;
         });
 
-        this.onChange("removeEdge");
+        this.onChange.emit("removeEdge");
     }
 
     removePrevEdge(connection)
     {
-        const newEdge = {};
-        newEdge[connection.fromHandle.type] = connection.fromHandle.nodeId;
-        newEdge[connection.toHandle.type] = connection.toHandle.nodeId;
+        const edgeCount = this.edges.length;
+        let sourceId;
+        let targetId;
+        let targetHandle;
 
-        if (connection.fromHandle.id)
-            newEdge[connection.fromHandle.type + 'Handle'] = connection.fromHandle.id;
-
-        if (connection.toHandle.id)
-            newEdge[connection.toHandle.type + 'Handle'] = connection.toHandle.id;
+        if (connection.fromHandle?.type === 'target')
+        {
+            sourceId = connection.toNode?.id
+            targetId = connection.fromHandle.nodeId;
+            targetHandle = connection.fromHandle.id || undefined;
+        }
+        else if (connection.toHandle?.type === 'target')
+        {
+            sourceId = connection.fromNode?.id
+            targetId = connection.toHandle.nodeId;
+            targetHandle = connection.toHandle.id || undefined;
+        }
 
         this.edges = this.edges.filter(oldEdge => 
         {
-            if (oldEdge.target === newEdge.target &&
-                oldEdge.targetHandle  === newEdge.targetHandle &&
-                oldEdge.source !== newEdge.source)
+            if (oldEdge.target === targetId &&
+                oldEdge.targetHandle === targetHandle &&
+                oldEdge.source !== sourceId)
                 return false;
             else
                 return true;
         });
 
-        this.onChange("removePrevEdge");
+        if (this.edges.length < edgeCount)
+            this.onChange.emit("removeEdge");
     }
 
     updateNode (id, update, note)
@@ -175,7 +136,7 @@ export default class GraphState
             return node;
         });
 
-        this.onChange(note);
+        this.onChange.emit(note);
     }
 
     toString ()
@@ -193,12 +154,12 @@ export default class GraphState
     getBranch (targetId, loop = {})
     {
         loop[targetId] = true;
-        const targetNode = this.nodes.find((node) => node.id === targetId);
+        const targetNode = this.nodes.find(node => node.id === targetId);
 
         if (!targetNode)
             return [];
     
-        const sourceEdge = this.edges.find((edge) => 
+        const sourceEdge = this.edges.find(edge => 
             edge.target === targetId && 
             !edge.targetHandle);
     
@@ -230,7 +191,7 @@ export default class GraphState
     async getMessage (node, app, usedNodes)
     {
         if (typeof node !== 'object')
-            node = this.nodes.find((node2) => node2.id === node);
+            node = this.nodes.find(node2 => node2.id === node);
         
         const message = await this.getNodeContent[node.id]();
 
@@ -251,7 +212,7 @@ export default class GraphState
 
     async applyTemplate(app, node, text, usedNodes)
     {
-        const edges = this.edges.filter((edge) => edge.target === node.id);
+        const edges = this.edges.filter(edge => edge.target === node.id);
         const values = {};
 
         for (let edge of edges)
@@ -262,7 +223,7 @@ export default class GraphState
                 continue;
             }
 
-            const sourceNode = this.nodes.find((node) => node.id === edge.source);
+            const sourceNode = this.nodes.find(node => node.id === edge.source);
             const sourceMessage = await this.getMessage(sourceNode, app, usedNodes);
 
             if (sourceMessage)

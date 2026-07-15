@@ -55,7 +55,7 @@
         nodeTypes = {nodeTypesIndex}
         onconnectstart = {() => appState.contextMenu.Hide()}
         onconnectend = {onConnectEnd}
-        ondelete = {(event) => appState.graph.onChange("ondelete")}
+        ondelete = {(event) => appState.graph.onChange.emit("ondelete")}
         deleteKey = {null}
         
         onpaneclick = {() => appState.contextMenu.Hide()}
@@ -63,7 +63,7 @@
         onedgeclick = {() => appState.contextMenu.Hide()}
 
         onnodedragstart = {()   => appState.contextMenu.Hide()}
-        onnodedragstop = {()    => appState.graph.onChange("onnodedragstop")}
+        onnodedragstop = {()    => appState.graph.onChange.emit("onnodedragstop")}
 
         onpanecontextmenu = {({ event })        => appState.contextMenu.ShowPane(event)}
         onnodecontextmenu = {({ event, node })  => appState.contextMenu.ShowNode(event, node)}

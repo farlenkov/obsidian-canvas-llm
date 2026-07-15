@@ -1,2 +1,2 @@
-import CanvasPlugin from '$lib/obsidian/CanvasPlugin.js';
-export default CanvasPlugin;
+import Plugin from '$lib/obsidian/Plugin.js';
+export default Plugin;

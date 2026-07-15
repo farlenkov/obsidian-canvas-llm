@@ -1,7 +1,13 @@
 {
 	"folders": 
 	[
-		{ "path": "../vault_dev/"},
-		{ "path": "." }
+		{
+			"name": "vault_dev",
+			"path": "../vault_dev"
+		},
+		{
+			"name": "obsidian-canvas-llm",
+			"path": "."
+		}
 	]
 }

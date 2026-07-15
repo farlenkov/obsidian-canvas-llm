@@ -47,14 +47,20 @@
                 .dialogue-message-buttons
                 {
                     display: flex;
+                    align-items: center;
                     flex-direction: row;
-                    align-items: end;
 
                     .dialogue-message-variants
                     {
                         display: flex;
                         flex-direction: row;
                         align-items: center;
+                    }
+
+                    .mod-cta
+                    {
+                        padding: var(--size-2-3);
+                        height: 1.75em;
                     }
                 }
             }
@@ -70,13 +76,31 @@
                     border: 1px solid var(--divider-color);
                     border-radius: var(--radius-s);
                     background-color: var(--background-primary);
-                    padding: 0.2em 0.5em;
+                    padding: 0.4em 0.5em;
 
                     code
                     {
                         white-space: pre-wrap;
                         overflow-wrap: break-word;
                     }
+                }
+
+                .private
+                {
+                    color: var(--color-base-60);
+                    padding-bottom: 0.65em;
+                    margin-bottom: 0.65em;
+                }
+
+                .system
+                {
+                    color: var(--color-red);
+                    padding-bottom: 0.65em;
+                    margin-bottom: 0.65em;
+                    /* border-radius: var(--radius-m); 
+                    background-color: var(--background-primary);
+                    padding: 0.5em 0.7em;
+                    margin: 0 -0.2em 0.4em; */
                 }
             }
         }
@@ -85,12 +109,32 @@
         {
             .dialogue-message-head      { border-bottom: 1px solid var(--color-orange); }
             .dialogue-message-role-name { color: var(--color-orange); }
+
+            .dialogue-message-body .private, 
+            .dialogue-message-body .system 
+            { border-bottom: 1px dashed var(--color-orange); }
         }
 
         .dialogue-message:nth-child(even)    
         {
             .dialogue-message-head      { border-bottom: 1px solid var(--color-cyan); }
             .dialogue-message-role-name { color: var(--color-cyan); }
+            
+            .dialogue-message-body .private, 
+            .dialogue-message-body .system 
+            { border-bottom: 1px dashed var(--color-cyan); }
+        }
+
+        .dialogue-message:nth-child(odd).edit
+        {
+            outline: 1px dashed var(--color-orange);
+            outline-offset: 2px;
+        }
+
+        .dialogue-message:nth-child(even).edit
+        {
+            outline: 1px dashed var(--color-cyan);
+            outline-offset: 2px;
         }
 
         .dialogue-message-next
@@ -98,7 +142,7 @@
             display: flex;
             flex-direction: row;
             justify-content: center; 
-            padding: 0.5em 0 1em 0;
+            margin: 0.5em 0.5em 1em 0.5em;
 
             button
             {
@@ -107,6 +151,26 @@
                 justify-content: center; 
                 align-items: center;
                 gap: 0.5em;
+            }
+        }
+
+        .dialogue-message.edit
+        {
+            textarea
+            {
+                width: 100%;
+                resize: none;
+                overflow: hidden;
+                box-sizing: border-box;
+                padding: 0;
+                margin: 0;
+
+                box-shadow: none;
+                border: none;
+                outline: none;
+                font-size: inherit;
+                text-align: left;
+                background: transparent;
             }
         }
     }
@@ -120,14 +184,22 @@
         height:     var(--modal-height);
 
         max-width:  25em;
-        max-height: 14.5em;
+        max-height: 25em;
+
+        padding: 0;
 
         .role-list
         {
             display: flex;
             flex-direction: column;
-            gap: 1.75em;
-            margin-top: 1em;
+
+            hr 
+            {
+                margin: 0;
+                height: 0;
+                border: none;
+                border-top: var(--modal-border-width) dashed var(--modal-border-color);
+            }
 
             .role-item
             {
@@ -136,37 +208,32 @@
                 align-items: stretch;
                 justify-content: space-between;
                 gap: 0.2em;
-
-                .role-label-and-model
-                {
-                    display: flex;
-                    justify-content: space-between;
-                }
+                padding: 1.5em;
 
                 .role-label
-                {
-                    align-items: center;
-                    filter: brightness(0.65);
-                    min-width: 4em;
+                {   
+                    font-size: 1.3em;
                 }
 
-                .role-name
-                {
-
-                }
-
-                .role-model
+                .role-memory,
+                .role-model,
+                .role-auto,
+                .role-model-label
                 {
                     display: flex;
-                    flex-direction: row;
                     align-items: center;
+                }
 
-                    .role-model-label
-                    {
-                        text-align: right;
-                    }
+                .role-memory,
+                .role-model,
+                .role-auto
+                {
+                    padding-left: 0.1em;
                 }
             }
+
+            .role-item1 .role-label { color: var(--color-orange); }
+            .role-item2 .role-label { color: var(--color-cyan); }
         }
     }
 }

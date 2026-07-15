@@ -26,6 +26,8 @@
 
         if (appState.contextMenu.Connection)
         {
+            appState.graph.removePrevEdge(appState.contextMenu.Connection);
+
             if (appState.contextMenu.Connection.fromHandle.type == "source")
             {
                 appState.graph.addEdge(
