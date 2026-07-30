@@ -7,7 +7,7 @@
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import RunButton from './RunButton.svelte';
 
-    const {nodeState, viewState, message, messageNum} = $props();
+    const {nodeState, viewState, message, messageNum, saveMessages} = $props();
     
     let textarea;
 
@@ -69,14 +69,6 @@
             nodeState.id,
             { input : nodeState.inputText },
             "editDialogueMessage");
-    }
-
-    function saveMessages()
-    {
-        viewState.updateNode(
-            nodeState.id,
-            { messages : nodeState.messages },
-            "newDialogueMessage");
     }
 
     async function clickCopy(ev)

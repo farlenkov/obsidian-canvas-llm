@@ -55,6 +55,10 @@ Example of use `File input` node and `Template` mode:
 
 ![File input and Template mode example](assets/screenshots/file_input_template.png)
 
+Example of use `Dialogue` node:
+
+![Dialogue simulator example](assets/screenshots/dialogue_simulator.png)
+
 ## Installation
 ### From Community Plugins
 1. Open Obsidian → `Settings` → `Community Plugins` → `Browse`.

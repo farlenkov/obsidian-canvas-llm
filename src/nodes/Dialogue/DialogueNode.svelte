@@ -70,6 +70,20 @@
             .open();
     }
 
+    async function clickGenerate()
+    {
+        await nodeState.generate();
+        saveMessages();        
+    }
+
+    function saveMessages()
+    {
+        viewState.updateNode(
+            nodeState.id,
+            { messages : nodeState.messages },
+            "newDialogueMessage");
+    }
+
     nodeState.onMessageAdd = msg =>
     {
         setTimeout(() => 
@@ -132,7 +146,7 @@
                 {/if}
                 
                 {#each nodeState.currentThread as message, messageNum}
-                    <Message {message} {messageNum} {nodeState} {viewState}/>
+                    <Message {message} {messageNum} {nodeState} {viewState} {saveMessages}/>
                 {/each}
 
                 {#if !nodeState.editId}                
@@ -146,13 +160,13 @@
                                 label3={nodeState.hasMessages ? "CONTINUE" : "START"}
                                 label4="GENERATING..."
                                 class="mod-cta",
-                                onclick={() => nodeState.generate()}
+                                onclick={clickGenerate}
                                 Icon={Play} />
                         </div>
 
                     {:else}
 
-                        <Message {nodeState} {viewState} messageNum={nodeState.currentThread.length+1} />
+                        <Message {nodeState} {viewState} {saveMessages} messageNum={nodeState.currentThread.length+1} />
 
                     {/if}
                 {/if}
