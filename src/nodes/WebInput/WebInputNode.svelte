@@ -1,25 +1,18 @@
 <script>
 
-    import { remote } from 'electron';
     import { getContext, onMount } from 'svelte';
-    import { ScanText, FileText, Globe, RotateCw, ArrowRight, ArrowLeft } from 'lucide-svelte';
+    import { RotateCw, ArrowRight, ArrowLeft, Globe } from 'lucide-svelte';
     import { useUpdateNodeInternals } from '@xyflow/svelte';
-    import { Defuddle } from 'defuddle/node';
     import TurndownService from "turndown";
 
-    import NodeState from '../Common/NodeState.svelte.js';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
-    import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
     import Handles from '../Common/Handles.svelte';
     import NodeResizer from '../Common/NodeResizer.svelte';
 
-    const { Menu, MenuItem } = remote;
-    const {id, data, selected} = $props();
-    const appState = getContext("appState");
-    const nodeState = new NodeState(id, data, appState, useUpdateNodeInternals());
+    const { id } = $props();
+    const viewState = getContext("viewState");
+    const nodeState = viewState.graph.getNodeState(id); 
     
-    let url = $state(data.url);
-    let title = $state("");
     let webView;
 
     const turndown = new TurndownService
@@ -45,13 +38,36 @@
 
         // watchAllEvents();
 
-        webView.src = url;
-        appState.graph.getNodeContent[id] = getMessage;
-        return () => delete appState.graph.getNodeContent[id];
+        webView.src = nodeState.url;
+        
+        const updateNodeInternals = useUpdateNodeInternals();
+        nodeState.updateNodeInternals.add(updateNodeInternals);
+        viewState.graph.getNodeContent[id] = getMessage;
+
+        return () => 
+        {
+            nodeState.updateNodeInternals.del(updateNodeInternals);
+            delete viewState.graph.getNodeContent[id];
+        };
     });
 
     async function getMessage()
     {
+        const googleDocsUrl = getGoogleDocsUrl();
+
+        if (googleDocsUrl)
+        {
+            const options = 
+            {
+                url : googleDocsUrl.url,
+                throw : false
+            };
+
+            const resp = await requestUrl(options);
+            const text = await resp.text;
+            return { role : "user", content : `<${googleDocsUrl.type}>\n${text}\n</${googleDocsUrl.type}>` };
+        }        
+        
         const html = await webView.executeJavaScript(`document.documentElement.outerHTML`);
         const doc = (new DOMParser).parseFromString(html, 'text/html');
 
@@ -64,6 +80,31 @@
             .replace(/[ \t]+/g, " ");
 
         return { role : "user", content : markdown };
+    }
+
+    function getGoogleDocsUrl()
+    {
+        try 
+        {
+            const parsedUrl = new URL(nodeState.url);
+            const isGoogleDocs = parsedUrl.hostname === "docs.google.com";
+
+            if (isGoogleDocs)
+            {
+                const matchDoc = parsedUrl.pathname.match(/^\/document\/d\/([^/]+)/);
+                const matchSheet = parsedUrl.pathname.match(/^\/spreadsheets\/d\/([^/]+)/);
+
+                if (matchDoc)
+                    return { type : "doc", url : `https://docs.google.com/document/d/${matchDoc[1]}/export?format=md` };
+
+                if (matchSheet)
+                    return { type : "csv", url : `https://docs.google.com/spreadsheets/d/${matchSheet[1]}/export?format=csv` };
+            }
+        } 
+        catch (e)
+        {
+            console.log(e);
+        }
     }
 
     function watchAllEvents()
@@ -92,22 +133,22 @@
 
     function onUrlChange ()
     {
-        appState.graph.updateNode(id, {url: url}, "UrlChange");
-        webView.src = url;
+        viewState.updateNode(id, {url: nodeState.url}, "UrlChange");
+        webView.src = nodeState.url;
     }
 
     function onNavigate(e)
     {
         if (e.isMainFrame !== false)
         {
-            url = webView.getURL();
-            appState.graph.updateNode(id, {url: url}, "Navigate");
+            nodeState.url = webView.getURL();
+            viewState.updateNode(id, {url: nodeState.url}, "Navigate");
         }
     }
 
     function onTitleChange(e)
     {
-        title = e.title.length > 30
+        nodeState.title = e.title.length > 30
             ? e.title.substring(0, 27) + "..."
             : e.title;
     }
@@ -156,11 +197,20 @@
         webView.reload();
     }
 
+    function onResize(started)
+    {
+        if (started)
+            webView.style.pointerEvents = "none";
+        else
+            webView.style.pointerEvents = '';
+    }
+
 </script>
 
 <NodeResizer 
     minWidth={100} 
-    minHeight={30} />
+    minHeight={30}
+    callback={onResize} />
 
 <Handles />
 
@@ -170,7 +220,12 @@
         <node-content>
             <node-header>
                 <node-header-left>
-                    {title || "🌐 Web" }
+                    {#if nodeState.title}
+                        {nodeState.title}
+                    {:else}
+                        <Globe size={16}/> Web
+                    {/if}
+                    <!-- {nodeState.title || "🌐 Web" } -->
                 </node-header-left>
                 <node-header-right>
 
@@ -202,7 +257,7 @@
             <node-body>
 
                 <input 
-                    bind:value={url}
+                    bind:value={nodeState.url}
                     type="url"
                     onchange={onUrlChange}
                     class="nodrag nozoom node-text" />

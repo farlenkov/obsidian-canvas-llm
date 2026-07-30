@@ -1,13 +1,15 @@
 import { MessagesSquare } from 'lucide-svelte';
 import NodeType from '../Type/NodeType.js';
-import DialogueNode from './DialogueNode.svelte';
+import NodeView from './DialogueNode.svelte';
+import NodeState from './DialogueNode.svelte.js';
 
 export default class DialogueNodeType extends NodeType
 {
     id = "dialogue";
     name = "Dialogue";
     desc = "Add node for dialogue simulation";
-    view = DialogueNode;
+    view = NodeView;
+    state = NodeState;
     icon = MessagesSquare;
 
     getDefault()

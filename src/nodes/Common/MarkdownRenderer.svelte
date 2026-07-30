@@ -4,7 +4,7 @@
     import { MarkdownRenderer } from 'obsidian';
 
     const { markdown, className, label } = $props();
-    const appState = getContext("appState");
+    const viewState = getContext("viewState");
     let bodyEl;
 
     onMount(() => 
@@ -23,11 +23,11 @@
         bodyEl.empty();
 
         MarkdownRenderer.render(
-            appState.app, 
+            viewState.app, 
             markdown, 
             bodyEl, 
-            appState.view.file.path, 
-            appState.view);
+            viewState.file.path, 
+            viewState);
     }
 
 </script>

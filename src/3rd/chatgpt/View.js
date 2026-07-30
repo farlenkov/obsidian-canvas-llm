@@ -1,5 +1,5 @@
 import FileView from '$lib/svelte-obsidian/src/View.js';
-import AppView from './View.svelte';
+import RootView from './View.svelte';
 
 export default class ChatGptView extends FileView  
 {
@@ -13,6 +13,6 @@ export default class ChatGptView extends FileView
             leaf, 
             plugin, 
             ChatGptView.VIEW_TYPE, 
-            AppView);
+            RootView);
     }
 }

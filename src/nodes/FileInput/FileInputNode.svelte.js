@@ -11,10 +11,9 @@ import Md3Reader from './Reader/MD3.js';
 
 export default class FileInputNodeState extends NodeState
 {
-    constructor(id, data, appState, updateNodeInternals)
+    constructor(id, graph)
     {
-        super(id, data, appState, updateNodeInternals);
-        const read = async (file, tabs) => this.read(file, tabs);
+        super(id, graph);
 
         this.fileReaders = 
         {
@@ -33,13 +32,50 @@ export default class FileInputNodeState extends NodeState
             'md3'           : new Md3Reader(this)
         };
 
-        this.targetName = $state(data.name);
-        this.targetPath = $state(data.path);
+        this.targetName = $state();
+        this.targetPath = $state();
+        this.exclude = $state();
         this.preview = $state([]);
         this.isFolder = $state(false);
-        this.exclude = $state(data.exclude || []);
+        this.isNotFound = $state(false);
         this.openedFiles = {};
         this.supportedExtensions = Object.keys(this.fileReaders);
+
+        // this.graph.plugin.onFileModify.on(this.onFileModify);
+        // this.graph.plugin.onFileRename.on(this.onFileRename);
+    }
+
+    async init(data)
+    {
+        super.init(data);
+        
+        this.targetName = data.name;
+        this.targetPath = data.path;
+        this.exclude = data.exclude || [];
+
+        // console.log("init > read", data.path);
+        const text = await this.read(this.targetPath);
+
+        if (!text)
+            this.preview = [];
+        else
+            this.parsePlaceholders(text);
+    }
+
+    destroy()
+    {
+        // this.graph.plugin.onFileModify.off(this.onFileModify);
+        // this.graph.plugin.onFileRename.off(this.onFileRename);
+    }
+
+    onFileModify(file)
+    {
+        // console.log("onFileModify", this);
+    }
+
+    onFileRename(files)
+    {
+        // console.log("onFileRename", this);
     }
 
     async read(path, tabs)
@@ -70,6 +106,7 @@ export default class FileInputNodeState extends NodeState
             this.isFolder = file.extension ? false : true;
         }
 
+        // console.log("[read]", "preview:", this.preview, "text:", text);
         return text;
     }
 }

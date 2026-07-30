@@ -2,14 +2,18 @@
 import Plugin from '$lib/svelte-obsidian/src/Plugin.js';
 import { defaultGraph } from '$lib/graph/Graph.default.js';
 import { EventEmitter } from '$lib/svelte-obsidian/src/Event.js';
-import { sleep } from '$lib/svelte-obsidian/src/Async.js';
-import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
-import settings from '$lib/svelte-llm/settings/Settings.svelte.js';
+import { sleep, delay } from '$lib/svelte-obsidian/src/Async.js';
+import SettingsState from '$lib/svelte-obsidian/src/Settings.js';
 
-import CanvasView from './View.js';
+import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
+import llmSettings from '$lib/svelte-llm/settings/Settings.js';
+
+import GraphState from '$lib/graph/Graph.svelte.js';
+import CanvasView from '../graph/View.js';
 import ClaudeView from '../3rd/claude/View.js';
 import ChatGptView from '../3rd/chatgpt/View.js';
 import DeepSeekView from '../3rd/deepseek/View.js';
+import McpHost from '../svelte-llm/mcp/McpHost.js';
 
 const MENU_ICON = 'workflow';
 
@@ -17,11 +21,18 @@ export default class MyPlugin extends Plugin
 {
     onFileModify = new EventEmitter();
     onFileRename = new EventEmitter();
-    openedFiles = {};
+    openedGraphs = {};
 
     async onload() 
     {
-        settings.Init(this);
+        this.settings = new SettingsState(this, 
+        {
+            ...llmSettings.getDefaults(), 
+            ...McpHost.getDefaultSettings()
+        });
+        
+        this.mcp = new McpHost(this);        
+        llmSettings.Init(this);
 
         this.registerFileRenameHandler();
         this.registerFileModifyHandler();
@@ -52,77 +63,133 @@ export default class MyPlugin extends Plugin
 
     registerFileRenameHandler()
     {
+        let batch = [];
+        let timer;
+
         const fileRenameEvent = this.app.vault.on(
             'rename', 
             async (file, oldPath) => 
             {
-                await sleep(100);
+                batch.push({file, oldPath, newPath : file.path});
+                clearTimeout(timer);
 
-                if (this.openedFiles[oldPath])
+                timer = delay(100, () => 
                 {
-                    this.openedFiles[file.path] = this.openedFiles[oldPath];
-                    delete this.openedFiles[oldPath];
-                }
-
-                this.onFileRename.emit(file, oldPath);
-
-                const canvasFiles = this.app.vault
-                    .getFiles()
-                    .filter(f => f.extension === CanvasView.FILE_EXT);
-                
-                for (const canvasFile of canvasFiles) 
-                {
-                    if (this.openedFiles[canvasFile.path])
-                        continue;
-                    
-                    const text = await this.app.vault.read(canvasFile);
-                    const canvas = JSON.parse(text);
-                    let isChanged = false;
-
-                    for (const node of canvas.nodes)
-                    {
-                        const nodeType = nodeTypes.ById[node.type];
-
-                        if (typeof nodeType.onFileRename === 'function')
-                            isChanged = nodeType.onFileRename(node, file, oldPath) || isChanged;
-                    }
-
-                    if (isChanged)
-                    {
-                        console.log(`[rename] '${canvasFile.path}'`);
-                        const newText = JSON.stringify(canvas, null, '\t');
-                        await this.app.vault.modify(canvasFile, newText);
-                    }
-                }
+                    this.batchRename(batch);
+                    batch = [];
+                });
             });
 
         this.registerEvent(fileRenameEvent);
+    }
+
+    async batchRename(batch)
+    {
+        const changedFiles = {};
+        // console.log("batch", batch);
+        
+        const canvasFiles = this.app.vault
+            .getFiles()
+            .filter(f => f.extension === CanvasView.FILE_EXT);
+
+        for (const renamed of batch)
+        {
+            if (this.openedGraphs[renamed.oldPath])
+            {
+                this.openedGraphs[renamed.newPath] = this.openedGraphs[renamed.oldPath];
+                delete this.openedGraphs[renamed.oldPath];
+            }
+
+            for (const canvasFile of canvasFiles) 
+            {            
+                const canvas = changedFiles[canvasFile.path] 
+                    ? changedFiles[canvasFile.path].content 
+                    : JSON.parse(await this.app.vault.read(canvasFile));
+                
+                for (const node of canvas.nodes)
+                {
+                    const nodeType = nodeTypes.ById[node.type];
+
+                    if (typeof nodeType.onFileRename === 'function')
+                        if (nodeType.onFileRename(node, renamed.file, renamed.oldPath))
+                            changedFiles[canvasFile.path] = { file : canvasFile, content : canvas };
+                }                
+            }
+        }
+
+        // console.log("changedFiles", changedFiles);
+
+        for (const path in changedFiles)
+        {
+            const changed = changedFiles[path];
+            const newText = JSON.stringify(changed.content, null, '\t');
+            
+            // console.log("save:", changed.file.path);
+            await this.app.vault.modify(changed.file, newText);
+        }
+        
+        this.onFileRename.emit(batch);
+
+        for (const openedGraph of Object.values(this.openedGraphs))
+            for (const nodeState of Object.values(openedGraph.nodeStates))
+                if (nodeState.onFileRename)
+                    nodeState.onFileRename(batch);
     }
 
     registerFileModifyHandler()
     {
         const fileModifyEvent = this.app.vault.on(
             'modify', 
-            (file) => this.onFileModify.emit(file));
+            async (file) =>
+            {
+                this.onFileModify.emit(file);
+
+                for (const openedGraph of Object.values(this.openedGraphs))
+                    for (const nodeState of Object.values(openedGraph.nodeStates))
+                        if (nodeState.onFileModify)
+                            nodeState.onFileModify(file);
+
+                const modifiedGraph = this.openedGraphs[file.path];
+
+                if (!modifiedGraph)
+                    return;
+                
+                if (modifiedGraph.isModified)
+                {
+                    delete modifiedGraph.isModified;
+                    return;
+                }
+
+                const text = await this.app.vault.read(file);
+                // console.log("load:", file.path);
+                modifiedGraph.loadFromFile(text);
+            });
 
         this.registerEvent(fileModifyEvent);
     }
 
     onFileOpen(file)
     {
-        if (this.openedFiles[file.path])
-            this.openedFiles[file.path]++;
-        else
-            this.openedFiles[file.path] = 1;
-
-        console.log("open", this.openedFiles[file.path], file.path);
+        if (this.openedGraphs[file.path])
+            this.openedGraphs[file.path].viewCount++;
     }
 
     onFileClose(file)
     {
-        if (this.openedFiles[file.path])
-            this.openedFiles[file.path]--;
+        if (file)
+            if (this.openedGraphs[file.path])
+                this.openedGraphs[file.path].viewCount--;
+    }
 
-        console.log("close", this.openedFiles[file.path], file.path);
+    getGraph(file, fileText)
+    {
+        if (this.openedGraphs[file.path])
+            return this.openedGraphs[file.path];
+
+        const graph = new GraphState(file, this);
+        this.openedGraphs[file.path] = graph;
+        graph.loadFromFile(fileText);
+
+        return graph;
     }
 }

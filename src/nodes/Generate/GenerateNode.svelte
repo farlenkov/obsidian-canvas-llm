@@ -4,159 +4,126 @@
     import { Play, Loader, XIcon, Lightbulb } from 'lucide-svelte';
     import { useUpdateNodeInternals } from '@xyflow/svelte';
     
-    import NodeState from './GenerateNode.svelte.js';
+    import Modal from '$lib/svelte-obsidian/src/Modal.js';
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
     import NodeResizer from '../Common/NodeResizer.svelte';
     import Handles from '../Common/Handles.svelte';
+    import ParamsView from './GenerateParams.svelte';
 
-    import aiClient from '$lib/svelte-llm/models/AiClient.svelte.js';
-
-    const {id, data, selected} = $props();
-    const appState = getContext("appState");
-    const nodeState = new NodeState(id, data, appState, useUpdateNodeInternals());  
-
-    let inProgress = $state(false);
-    let errorMessage = $state("");
-    let activeTab = $state(data.part ?? 0);
-    let hasThink = $state(false);
-    let showThink = $state(false);
-    let textToRender = $state("");
-    let provider = $derived(appState.providers.ById[data.provider]);
-    let model = $derived(provider ? provider.ModelById[data.model] : null);
+    const { id } = $props();
+    const viewState = getContext("viewState");
+    const nodeState = viewState.graph.getNodeState(id);  
     
     onMount(() => 
     { 
-        renderHtml(data.results);
+        const updateNodeInternals = useUpdateNodeInternals();
+        nodeState.updateNodeInternals.add(updateNodeInternals);
+        viewState.graph.getNodeContent[id] = getMessage;
 
-        appState.graph.getNodeContent[id] = getMessage;
-        return () => delete appState.graph.getNodeContent[id];
+        // renderHtml(data.results);
+
+        return () =>
+        {
+            nodeState.updateNodeInternals.del(updateNodeInternals);
+            delete viewState.graph.getNodeContent[id];
+        };
     });
 
     async function getMessage()
     {
-        if (!data.results ||
-            data.results.length === 0)
-            return { role : "model", content : "" };
+        if (!nodeState.results ||
+            nodeState.results.length === 0)
+            return { role : "assistant", content : "" };
 
-        const result = data.results[data.part || 0];
+        const result = nodeState.results[nodeState.activeTab || 0];
         const text = result.text; // getThink ? result.think : result.text;
-        return { role : "model", content : text };
-    }
-    
-    function getModelDesc()
-    {
-        if (model)
-            return `[ ${provider.name} / ${model.owner} ] ${model.desc}`;
-        else
-            return `[ ${data.provider} ] ${data.model}`;
-    }
-
-    async function clickGenerate()
-    {
-        errorMessage = "";
-        
-        if (!data.model)
-        {
-            showParams();
-            return;
-        }
-
-        if (!model)
-        {
-            showParams()
-            return;
-        }
-
-        if (!appState.settings.HasKey(provider.id))
-        {
-            appState.showSettings();
-            return;
-        }
-        
-        inProgress = true;
-
-        try
-        {
-            const messages = (await appState.graph
-                .getMessages(id, appState.app))
-                .slice(0, -1);
-
-            if (messages.length == 0)
-                throw "Prompt is empty. Please connect some Input node with content.";
-            
-            const { markdowns } = await aiClient.Call(data.provider, data.model, messages);
-            const oldResults = data.results.filter(md => md ? true : false);
-
-            const result = 
-            { 
-                provider : data.provider, 
-                model : data.model,
-                text : markdowns[0]
-            };
-
-            if (markdowns.length > 1)
-                result.think = markdowns[1];
-
-            const update = 
-            {
-                part : oldResults.length,
-                results : [...oldResults, result]
-            };
-
-            appState.graph.updateNode(id, update, "TextGenerate");
-            activeTab = update.part;
-
-            renderHtml(update.results);
-        }
-        catch (err)
-        {
-            errorMessage = err;
-        }
-
-        inProgress = false;
-    }
-
-    function showParams()
-    {
-        appState.generateParams.Show(id, data);
+        return { role : "assistant", content : text };
     }
 
     function clickNextPart()
     {
-        const nextPart = (activeTab + 1) % data.results.length;
-        data.part = nextPart;
-        activeTab = nextPart;
-        showThink = false;
+        nodeState.nextPart();
 
-        appState.graph.onChange.emit("NextPart");
-        renderHtml(data.results);
+        viewState.updateNode(
+            nodeState.id,
+            { part : nodeState.activeTab },
+            "NextPart");
     }
 
-    function clickThink(value)
+    async function clickGenerate()
     {
-        showThink = value;
-        renderHtml(data.results);
+        nodeState.errorMessage = "";
+
+        if (!nodeState.model)
+        {
+            console.log("clickGenerate", nodeState);
+            showParams();
+            return;
+        }
+
+        if (!viewState.settings.HasKey(nodeState.provider.id))
+        {
+            viewState.showSettings();
+            return;
+        }
+
+        await nodeState.generate();
+        
+        const update = 
+        {
+            part : nodeState.activeTab,
+            results : nodeState.results
+        };
+
+        viewState.updateNode(nodeState.id, update, "TextGenerate");
+        // renderHtml(update.results);
+    }
+    
+    function getModelDesc()
+    {
+        if (nodeState.model)
+            return `[ ${nodeState.provider.name} / ${nodeState.model.owner} ] ${nodeState.model.desc}`;
+        else
+            return `[ ${nodeState.providerId} ] ${nodeState.modelId}`;
+    }
+
+    function showParams()
+    {
+        // viewState.generateParams.Show(nodeState);
+
+        new Modal(
+            ParamsView, 
+            {
+                viewState, 
+                nodeState
+            }, 
+            [
+                "svelte-obsidian", 
+                "canvas-llm", 
+                "svelte-llm-model-select-container"
+            ])
+            .open();
     }
 
     function getSwitchPartLabel()
     {
-        return `Switch part (${activeTab + 1}/${data.results.length}) \n ${data.results[activeTab].model}`;
+        return `Switch part (${nodeState.activeTab + 1}/${nodeState.results.length}) \n ${nodeState.results[nodeState.activeTab].model}`;
     }
 
-    function renderHtml(results)
-    {
-        if (!results || results.length <= activeTab)
-        {
-            textToRender = "";
-            return;
-        }
+    // function renderHtml(results)
+    // {
+    //     if (nodeState.results.length <= nodeState.activeTab)
+    //     {
+    //         nodeState.textToRender = "";
+    //         return;
+    //     }
 
-        const result = results[activeTab];
-        textToRender = showThink ? result.think : result.text;
-        hasThink = result.think ? true : false;
-    }
+    //     const result = nodeState.results[nodeState.activeTab];
+    //     nodeState.textToRender = nodeState.showThink ? result.think : result.text;
+    //     nodeState.hasThink = result.think ? true : false;
+    // }
 
 </script>
 
@@ -172,9 +139,9 @@
         <node-content>
             <node-header>
                 <node-header-left>
-                    {#if data.model}
+                    {#if nodeState.modelId}
                         <div aria-label="{getModelDesc()}">
-                            {data.model}
+                            {nodeState.modelId}
                         </div>
                     {:else}
                         Generate
@@ -182,34 +149,34 @@
                 </node-header-left>
 
                 <node-header-right>
-                    {#if hasThink}
-                        {#if !showThink}
+                    {#if nodeState.hasThink}
+                        {#if !nodeState.showThink}
                             <button 
                                 class="show-think clickable-icon"
                                 aria-label="Show reasoning"
-                                onclick={() => clickThink(true)}>
+                                onclick={() => nodeState.toggleThink(true)}>
                                 <Lightbulb size={16}/>
                             </button>
                         {:else}
                             <button 
                                 class="show-think clickable-icon color-text-accent"
                                 aria-label="Show message"
-                                onclick={() => clickThink(false)}>
+                                onclick={() => nodeState.toggleThink(false)}>
                                 <Lightbulb size={16}/>
                             </button>
                         {/if}
                     {/if}
 
-                    {#if data.results?.length > 1}
+                    {#if nodeState.results?.length > 1}
                         <button 
                             class="next-part"
                             aria-label={getSwitchPartLabel()}
                             onclick={clickNextPart}>
-                            {activeTab + 1}
+                            {nodeState.activeTab + 1}
                         </button>
                     {/if}
 
-                    {#if !inProgress}
+                    {#if !nodeState.inProgress}
                         <button class="call-llm mod-cta" aria-label="Call LLM" onclick={clickGenerate}>
                             <Play size={16}/>  
                         </button>
@@ -219,7 +186,7 @@
                         </button>
                     {/if}
 
-                    <CopyTextButton {nodeState} copyThink={showThink} />
+                    <CopyTextButton {nodeState} copyThink={nodeState.showThink} />
                     <ParamsButton onclick={showParams} />
                 </node-header-right>
 
@@ -227,12 +194,12 @@
 
             <node-body class="nodrag nozoom nomenu node-text markdown-rendered">
 
-                <MarkdownRenderer markdown={textToRender} />
+                <MarkdownRenderer markdown={nodeState.textToRender} />
 
-                {#if errorMessage}
+                {#if nodeState.errorMessage}
                     <error>
-                        {errorMessage}
-                        <button type="button" class="btn-dark" onclick={() => {errorMessage = ""}}>
+                        {nodeState.errorMessage}
+                        <button type="button" class="btn-dark" onclick={() => {nodeState.errorMessage = ""}}>
                             <XIcon size={24} strokeWidth={2}/>
                         </button>
                     </error>

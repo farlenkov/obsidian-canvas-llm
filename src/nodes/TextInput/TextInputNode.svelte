@@ -4,42 +4,46 @@
     import { SquarePen, Eye } from 'lucide-svelte';
     import { useUpdateNodeInternals } from '@xyflow/svelte';
 
-    import NodeState from '../Common/NodeState.svelte.js';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import TemplatingButton from '../Common/TemplatingButton.svelte';
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
     import NodeResizer from '../Common/NodeResizer.svelte';
     import Handles from '../Common/Handles.svelte';
 
-    const {id, data, selected} = $props();
-    const appState = getContext("appState");
-    const nodeState = new NodeState(id, data, appState, useUpdateNodeInternals());  
-
-    let value = $state(data.value);
-    let isRead = $state(data.read ?? false);
-    nodeState.parsePlaceholders(value);
-
+    const { id } = $props();
+    const viewState = getContext("viewState");
+    const nodeState = viewState.graph.getNodeState(id);  
+    
     onMount(() => 
     {
-        appState.graph.getNodeContent[id] = getMessage;
-        return () => delete appState.graph.getNodeContent[id];
+        const updateNodeInternals = useUpdateNodeInternals();
+        nodeState.updateNodeInternals.add(updateNodeInternals);
+        viewState.graph.getNodeContent[id] = getMessage;
+        
+        nodeState.parsePlaceholders(nodeState.value);
+
+        return () => 
+        {
+            nodeState.updateNodeInternals.del(updateNodeInternals);
+            delete viewState.graph.getNodeContent[id];
+        };
     });
 
     async function getMessage()
     {
-        return { role : "user", content : value };
+        return { role : "user", content : nodeState.value };
     }
 
     function onChange ()
     {
-        appState.graph.updateNode(id, {value: value}, "TextInput");
-        nodeState.parsePlaceholders(value);
+        viewState.updateNode(id, {value : nodeState.value}, "TextInput");
+        nodeState.parsePlaceholders(nodeState.value);
     }
 
     function clickToggleReadMode()
     {
-        isRead = !isRead;
-        appState.graph.updateNode(id, {read: isRead}, "ReadMode");
+        nodeState.isRead = !nodeState.isRead;
+        viewState.updateNode(id, {read : nodeState.isRead}, "ReadMode");
     }
 
 </script>
@@ -51,50 +55,50 @@
 
 <Handles 
     inputs={nodeState.isTemplate ? nodeState.allIns : []}
-    class={isRead ? "" : "edit-mode"} />
+    class={nodeState.isRead ? "" : "edit-mode"} />
 
 <div 
     class="canvas-node" 
-    class:edit-mode={!isRead}>
+    class:edit-mode={!nodeState.isRead}>
 
     <div class="canvas-node-container">
         <node-content>
             <node-header>
                 <node-header-left>
-                    {isRead ? "Note" : "Input"}
+                    {nodeState.isRead ? "Note" : "Input"}
                 </node-header-left>
                 <node-header-right>
 
                     <button 
                         type="button"
                         class="show-markdown clickable-icon"
-                        aria-label={isRead ? "Switch to edit mode" : "Switch to read mode"}
+                        aria-label={nodeState.isRead ? "Switch to edit mode" : "Switch to read mode"}
                         onclick={clickToggleReadMode}>
 
-                        {#if isRead}
+                        {#if nodeState.isRead}
                             <SquarePen size={16} />
                         {:else}
                             <Eye size={18} />
                         {/if}
                     </button>
 
-                    <TemplatingButton {nodeState} />
+                    <TemplatingButton {nodeState} {viewState} />
                     <CopyTextButton {nodeState} />
                 </node-header-right>
 
             </node-header>
 
-            {#if isRead}
+            {#if nodeState.isRead}
                 <node-body class="nodrag nozoom nomenu node-text markdown-rendered">
-                    <MarkdownRenderer markdown={value} />
+                    <MarkdownRenderer markdown={nodeState.value} />
                 </node-body>
             {:else}
                 <node-body class="nomenu">
 
                     <textarea 
-                        bind:value 
+                        bind:value={nodeState.value} 
                         onchange={onChange}
-                        class:hide={isRead}
+                        class:hide={nodeState.isRead}
                         class="nodrag nozoom node-text"></textarea>
 
                 </node-body>

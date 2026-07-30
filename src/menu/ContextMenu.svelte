@@ -2,12 +2,13 @@
   
     import { getContext } from 'svelte';
     import { useSvelteFlow } from '@xyflow/svelte';
-    import { SquareXIcon } from 'lucide-svelte';
+    import { SquareXIcon, CopyPlus } from 'lucide-svelte';
 
+    import FileSelectModal from '$lib/svelte-obsidian/src/FileSelectModal.js';
     import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
     import { createNodeId, createEdgeId } from '$lib/graph/CreateId';
 
-    const appState = getContext("appState");
+    const viewState = getContext("viewState");
     const { screenToFlowPosition } = useSvelteFlow();
 
     function addNode(nodeType)
@@ -18,113 +19,189 @@
 
         newNode.position = screenToFlowPosition(
         {
-            x : appState.contextMenu.Event.clientX,
-            y : appState.contextMenu.Event.clientY
+            x : viewState.contextMenu.Event.clientX,
+            y : viewState.contextMenu.Event.clientY
         });
 
-        appState.graph.addNode(newNode);
+        viewState.graph.addNode(newNode);
 
-        if (appState.contextMenu.Connection)
+        if (viewState.contextMenu.Connection)
         {
-            appState.graph.removePrevEdge(appState.contextMenu.Connection);
+            viewState.graph.removePrevEdge(viewState.contextMenu.Connection);
 
-            if (appState.contextMenu.Connection.fromHandle.type == "source")
+            if (viewState.contextMenu.Connection.fromHandle.type == "source")
             {
-                appState.graph.addEdge(
-                    appState.contextMenu.Connection.fromNode.id, 
+                viewState.graph.addEdge(
+                    viewState.contextMenu.Connection.fromNode.id, 
                     newNode.id);
             }
             else
             {
-                appState.graph.addEdge(
+                viewState.graph.addEdge(
                     newNode.id, 
-                    appState.contextMenu.Connection.fromNode.id,
-                    appState.contextMenu.Connection.fromHandle.id);
+                    viewState.contextMenu.Connection.fromNode.id,
+                    viewState.contextMenu.Connection.fromHandle.id);
             }
         }
 
-        appState.contextMenu.Hide();
+        viewState.saveGraph("addNode");
+        viewState.contextMenu.Hide();
     }
     
     function nodeRemove() 
     {
-        appState.graph.removeNode(appState.contextMenu.Node);
-        appState.contextMenu.Hide();
+        viewState.graph.removeNode(viewState.contextMenu.Node);
+        viewState.contextMenu.Hide();
+        viewState.saveGraph("removeNode");
     }
 
     function edgeRemove()
     {
-        appState.graph.removeEdge(appState.contextMenu.Edge);
-        appState.contextMenu.Hide();
+        viewState.graph.removeEdge(viewState.contextMenu.Edge);
+        viewState.contextMenu.Hide();
+        viewState.saveGraph("removeEdge");
+    }
+
+    function insertFromFile()
+    {
+        const offset = screenToFlowPosition(
+        {
+            x : viewState.contextMenu.Event.clientX,
+            y : viewState.contextMenu.Event.clientY
+        });
+
+        new FileSelectModal(
+            viewState.app, 
+            ["canvas-llm"],
+            async (file) => 
+            { 
+                const text = await viewState.app.vault.read(file);
+                const canvas = JSON.parse(text);
+
+                if (!canvas.nodes)
+                    return;
+
+                const idMap = {};
+                const min_x = Math.min(...canvas.nodes.map(node => node.position.x));
+                const min_y = Math.min(...canvas.nodes.map(node => node.position.y));
+
+                for (const node of canvas.nodes)
+                {
+                    const newId = createNodeId();
+                    const oldId = node.id;
+                    node.id = idMap[oldId] = newId;
+
+                    if (node.type === 'dialogue' &&
+                        node.data.messages &&
+                        node.data.messages[oldId])
+                    {
+                        node.data.messages[newId] = node.data.messages[oldId];
+                        delete node.data.messages[oldId];
+                    }
+
+                    node.position =
+                    {
+                        x : node.position.x - min_x + offset.x,
+                        y : node.position.y - min_y + offset.y
+                    };
+                }
+
+                for (const edge of canvas.edges)
+                {
+                    edge.source = idMap[edge.source];
+                    edge.target = idMap[edge.target];
+                    edge.id = createEdgeId();
+                }
+
+                viewState.graph.nodes = [...viewState.graph.nodes, ...canvas.nodes];
+                viewState.graph.edges = [...viewState.graph.edges, ...canvas.edges];
+                viewState.saveGraph("insertFromFile");
+            })
+            .open();
+
+      viewState.contextMenu.Hide();
     }
 
   </script>
 
-{#if appState.contextMenu.IsVisible}
+{#if viewState.contextMenu.IsVisible}
 
-  <div
-    style:top={appState.contextMenu.Top}
-    style:left={appState.contextMenu.Left}
-    style:right={appState.contextMenu.Right}
-    style:bottom={appState.contextMenu.Bottom}
-    class="context-menu- menu">
-   
-    {#if appState.contextMenu.Node}
+    <div
+        style:top={viewState.contextMenu.Top}
+        style:left={viewState.contextMenu.Left}
+        style:right={viewState.contextMenu.Right}
+        style:bottom={viewState.contextMenu.Bottom}
+        class="context-menu- menu">
+    
+        {#if viewState.contextMenu.Node}
 
-      <div class="context-menu-item- menu-item tappable is-warning" onclick={nodeRemove}>
-        <SquareXIcon size={24} class="menu-item-icon" />
-        <div class="menu-item-title">Delete node</div>
-      </div>
+            <div class="context-menu-item- menu-item tappable is-warning" onclick={nodeRemove}>
+                <SquareXIcon size={24} class="menu-item-icon" />
+                <div class="menu-item-title">Delete node</div>
+            </div>
 
-    {:else if appState.contextMenu.Edge}
+        {:else if viewState.contextMenu.Edge}
 
-      <div class="context-menu-item- menu-item tappable is-warning" onclick={edgeRemove}>
-        <SquareXIcon size={24} class="menu-item-icon" />
-        <div class="menu-item-title">Delete edge</div>
-      </div>
+            <div class="context-menu-item- menu-item tappable is-warning" onclick={edgeRemove}>
+                <SquareXIcon size={24} class="menu-item-icon" />
+                <div class="menu-item-title">Delete edge</div>
+            </div>
 
-    {:else}
+        {:else}
 
-      {#each nodeTypes.List as nodeType}
+            {#each nodeTypes.List as nodeType}
+
+                <div 
+                    class="context-menu-item- menu-item tappable" 
+                    aria-label="{nodeType.desc}"
+                    onclick={() => addNode(nodeType)}>
+
+                    <svelte:component 
+                        this={nodeType.icon} 
+                        size={24} 
+                        class="menu-item-icon menu-item-icon-{nodeType.id}" />
+
+                    <div class="menu-item-title">{nodeType.name}</div>
+                </div>
+
+            {/each}
 
         <div 
-          class="context-menu-item- menu-item tappable" 
-          aria-label="{nodeType.desc}"
-          onclick={() => addNode(nodeType)}>
+            class="context-menu-item- menu-item tappable" 
+            aria-label="Copy graph from another Canvas LLM file"
+            onclick={insertFromFile}>
 
-          <svelte:component 
-              this={nodeType.icon} 
-              size={24} 
-              class="menu-item-icon menu-item-icon-{nodeType.id}" />
+            <svelte:component 
+                this={CopyPlus} 
+                size={24} 
+                class="menu-item-icon menu-item-icon-insertFromFile" />
 
-          <div class="menu-item-title">{nodeType.name}</div>
-        </div>
+            <div class="menu-item-title">Copy from file</div>
+          </div>
 
-      {/each}
+        {/if}
 
-    {/if}
-
-  </div>
+    </div>
 
 {/if}
    
 <style>
 
-  .menu
-  {
-    position: absolute;
-    z-index: 10;
-  }
+    .menu
+    {
+        position: absolute;
+        z-index: 10;
+    }
 
-  .menu-item.tappable:hover
-  {
-    background-color: var(--background-modifier-hover);
-  }
+    .menu-item.tappable:hover
+    {
+        background-color: var(--background-modifier-hover);
+    }
 
-  .menu-item:not(.tappable)
-  {
-    padding: 0.5em;
-    color: var(--text-accent);
-  }
+    .menu-item:not(.tappable)
+    {
+        padding: 0.5em;
+        color: var(--text-accent);
+    }
 
 </style>

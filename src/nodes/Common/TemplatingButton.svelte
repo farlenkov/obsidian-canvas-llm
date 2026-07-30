@@ -3,11 +3,17 @@
     import { Braces } from 'lucide-svelte';
     import GenericButton from './GenericButton.svelte';
 
-    const { nodeState, onclick: callback } = $props();
+    const { viewState, nodeState } = $props();
 
     function onclick()
     {
-        nodeState.toggleTemplate();
+        nodeState.isTemplate = !nodeState.isTemplate;
+        nodeState.updateNodeInternals.emit(this.id);
+
+        viewState.updateNode(
+            nodeState.id, 
+            { template : nodeState.isTemplate }, 
+            "TemplateMode");
     }
 
 </script>

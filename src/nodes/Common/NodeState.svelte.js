@@ -1,32 +1,43 @@
 import { PlaceholderSet } from '$lib/svelte-obsidian/src/Placeholder.js';
+import { EventEmitter } from '$lib/svelte-obsidian/src/Event.js';
 
 export default class NodeState
 {
-    constructor(id, data, appState, updateNodeInternals)
+    constructor(id, graph)
     {
         this.id = id;
-        this.app = appState.app;
-        this.appState = appState;
-        this.updateNodeInternals = updateNodeInternals;
+        this.app = graph.app;
+        this.graph = graph;
 
+        this.updateNodeInternals = new EventEmitter();
         this.placeholders = new PlaceholderSet();
-        this.isTemplate = $state(data.template ?? false);
+        
+        this.isTemplate = $state();
         this.allIns = $state([]);
         this.error = $state(false);
-
-        this.upgradeNode(id, data);
     }
 
-    upgradeNode(id, data)
+    init (data)
+    {
+        this.upgradeNode(data);
+        this.isTemplate = data.template ?? false;
+    }
+
+    destroy()
+    {
+        
+    }
+
+    upgradeNode(data)
     {
 
     }
 
     async getCopy(shiftKey)
     {
-        const branch = await this.appState.graph.getMessages(
+        const branch = await this.graph.getMessages(
             this.id, 
-            this.appState.app);
+            this.app);
 
         if (!shiftKey)
         {
@@ -51,13 +62,6 @@ export default class NodeState
         }
     }
 
-    toggleTemplate()
-    {
-        this.isTemplate = !this.isTemplate;
-        this.appState.graph.updateNode(this.id, {template: this.isTemplate}, "TemplateMode");
-        this.updateNodeInternals(this.id);
-    }
-
     parsePlaceholders(text)
     {
         const usedIns = this.getUsedIns();
@@ -68,12 +72,12 @@ export default class NodeState
             .add(usedIns)
             .get();
 
-        this.updateNodeInternals(this.id);
+        this.updateNodeInternals.emit(this.id);
     }
 
     getUsedIns()
     {
-        return this.appState.graph.edges
+        return this.graph.edges
             .filter((edge) => 
                 edge.targetHandle && 
                 edge.target === this.id)

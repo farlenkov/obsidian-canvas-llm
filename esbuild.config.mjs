@@ -46,9 +46,9 @@ async function copyStatic()
         const jsContext = await esbuild.context
         ({
             banner: { js: banner },
-            entryPoints: ["src/app/main.js"],
+            entryPoints: ["src/obsidian/main.js"],
             bundle: true,
-            external: ["electron", "obsidian", "path", "events", "timers", "fs", "zlib", "crypto", "url"],
+            external: ["electron", "obsidian", "path", "events", "timers", "fs", "zlib", "crypto", "url", "child_process", "node:process", "node:stream"],
             format: "cjs",
             target: "es2018",
             logLevel: "info",//"error",//

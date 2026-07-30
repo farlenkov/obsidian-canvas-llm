@@ -22,6 +22,7 @@ export default class FolderReader extends FileReader
             if (folder.path != child.path)
             {
                 const shortpath = child.path.replace(this.nodeState.targetPath + "/", "");
+                console.log("read:", child.path);
 
                 preview.push
                 ({

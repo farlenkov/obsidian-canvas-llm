@@ -1,14 +1,16 @@
 import { SquarePlayIcon } from 'lucide-svelte';
-import settings from '$lib/svelte-llm/settings/Settings.svelte.js';
+import settings from '$lib/svelte-llm/settings/Settings.js';
 import NodeType from '../Type/NodeType.js';
-import GenerateNode from './GenerateNode.svelte';
+import NodeView from './GenerateNode.svelte';
+import NodeState from './GenerateNode.svelte.js';
 
 export default class GenerateNodeType extends NodeType
 {
     id = "generate";
     name = "Generator";
     desc = "Add node for LLM calls";
-    view = GenerateNode;
+    view = NodeView;
+    state = NodeState;
     icon = SquarePlayIcon;
 
     getDefault()

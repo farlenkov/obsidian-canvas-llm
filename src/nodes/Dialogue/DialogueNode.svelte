@@ -5,7 +5,6 @@
     import { useUpdateNodeInternals } from '@xyflow/svelte';
     import { delay } from '$lib/svelte-obsidian/src/Async.js';
 
-    import NodeState from './DialogueNode.svelte.js';
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import GenericButton from '../Common/GenericButton.svelte';
@@ -16,30 +15,26 @@
     import Modal from '$lib/svelte-obsidian/src/Modal.js';
     import ParamsView from './Params.svelte'
 
-    const {id, data, selected} = $props();
-    const appState = getContext("appState");
-    const nodeState = new NodeState(id, data, appState, useUpdateNodeInternals());
+    const { id } = $props();
+    const viewState = getContext("viewState");
+    const nodeState = viewState.graph.getNodeState(id);
 
     nodeState.onStartEdit.on(scrollToBottom);
 
     onMount(() => 
     {
         scrollToBottom();
-        appState.graph.getNodeContent[id] = getMessage;
-        appState.graph.onChange.add(onGraphChange);
+
+        const updateNodeInternals = useUpdateNodeInternals();
+        nodeState.updateNodeInternals.add(updateNodeInternals);
+        viewState.graph.getNodeContent[id] = getMessage;
 
         return () => 
         {
-            delete appState.graph.getNodeContent[id]
-            appState.graph.onChange.del(onGraphChange);
+            nodeState.updateNodeInternals.del(updateNodeInternals);
+            delete viewState.graph.getNodeContent[id]
         };
     });
-
-    function onGraphChange(type)
-    {
-        if (type === "removeEdge")
-            nodeState.updateHandles();
-    }
 
     function scrollToBottom(timeout = 100)
     {
@@ -47,12 +42,6 @@
         {
             if (!nodeState.nodeBody)
                 return;
-
-            // nodeBody.scrollTo
-            // ({
-            //     top: nodeBody.scrollHeight,
-            //     behavior: 'smooth'
-            // });
             
             nodeState.nodeBody.scrollTop = nodeState.nodeBody.scrollHeight;
         });
@@ -70,7 +59,8 @@
             ParamsView, 
             {
                 app : nodeState.app, 
-                nodeState
+                nodeState,
+                viewState,
             }, 
             [
                 "svelte-obsidian", 
@@ -142,7 +132,7 @@
                 {/if}
                 
                 {#each nodeState.currentThread as message, messageNum}
-                    <Message {message} {messageNum} {nodeState}/>
+                    <Message {message} {messageNum} {nodeState} {viewState}/>
                 {/each}
 
                 {#if !nodeState.editId}                
@@ -162,7 +152,7 @@
 
                     {:else}
 
-                        <Message {nodeState} messageNum={nodeState.currentThread.length+1} />
+                        <Message {nodeState} {viewState} messageNum={nodeState.currentThread.length+1} />
 
                     {/if}
                 {/if}

@@ -1,13 +1,15 @@
 import { Globe } from 'lucide-svelte';
 import NodeType from '../Type/NodeType.js';
-import WebInputNode from './WebInputNode.svelte';
+import NodeView from './WebInputNode.svelte';
+import NodeState from './WebInputNode.svelte.js';
 
 export default class WebInputNodeType extends NodeType
 {
     id = "webInput";
     name = "Web input";
     desc = "Add node for web content";
-    view = WebInputNode;
+    view = NodeView;
+    state = NodeState;
     icon = Globe;
 
     getDefault()

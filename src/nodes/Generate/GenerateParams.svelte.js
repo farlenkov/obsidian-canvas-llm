@@ -1,37 +1,37 @@
 import Modal from '$lib/svelte-obsidian/src/Modal.js';
 import GenerateParamsView from '$lib/nodes/Generate/GenerateParams.svelte';
 
-export default class GenerateParams
-{
-    NodeID = $state(0);
-    FilterName = $state("");
-    FilterFree = $state(false);
+// export default class GenerateParams
+// {
+//     FilterName = $state("");
+//     FilterFree = $state(false);
 
-    constructor(appState)
-    {
-        this.appState = appState;
-    }
+//     constructor(viewState)
+//     {
+//         this.viewState = viewState;
+//     }
 
-    Show (nodeId, data) 
-    {
-        this.NodeID = nodeId;
+//     Show (nodeState) 
+//     {
+//         this.viewState.modelSelectState.ModelID = 
+//             nodeState.modelId || 
+//             this.viewState.settings.Data.defaultModel;
         
-        this.appState.modelSelectState.ModelID = 
-            data.model || 
-            this.appState.settings.Data.defaultModel;
-        
-        this.appState.modelSelectState.ProviderID = 
-            data.provider || 
-            this.appState.settings.Data.defaultProvider;
+//         this.viewState.modelSelectState.ProviderID = 
+//             nodeState.providerId || 
+//             this.viewState.settings.Data.defaultProvider;
 
-        new Modal(
-            GenerateParamsView, 
-            {appState : this.appState}, 
-            [
-                "svelte-obsidian", 
-                "canvas-llm", 
-                "svelte-llm-model-select-container"
-            ])
-            .open();
-    }
-}
+//         new Modal(
+//             GenerateParamsView, 
+//             {
+//                 viewState : this.viewState,
+//                 nodeState : nodeState
+//             }, 
+//             [
+//                 "svelte-obsidian", 
+//                 "canvas-llm", 
+//                 "svelte-llm-model-select-container"
+//             ])
+//             .open();
+//     }
+// }

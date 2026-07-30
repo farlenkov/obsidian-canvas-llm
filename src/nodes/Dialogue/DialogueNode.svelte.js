@@ -1,7 +1,7 @@
 import { createId } from '$lib/graph/CreateId';
 import { extractTag } from '$lib/svelte-obsidian/src/String.js';
 import { EventEmitter } from '$lib/svelte-obsidian/src/Event.js';
-import aiClient from '$lib/svelte-llm/models/AiClient.svelte.js';
+import aiClient from '$lib/svelte-llm/models/AiClient.js';
 import NodeState from '../Common/NodeState.svelte.js';
 
 export default class DialogueNodeState extends NodeState
@@ -13,30 +13,44 @@ export default class DialogueNodeState extends NodeState
 
     static ROLE_LABELS = [ "Role A", "Role B" ];
 
-    constructor(id, data, appState, updateNodeInternals)
+    constructor(id, graph)
     {
-        super(id, data, appState, updateNodeInternals);
+        super(id, graph);
 
         this.rootId = $derived(this.id);
-        this.messages = $state(data.messages);
-        this.roles = $state(data.roles);
+        this.messages = $state();
+        this.roles = $state();
 
-        this.editId = $state(data.editId    || null);
-        this.editText = $state(data.edit    || null);
-        this.inputText = $state(data.input  || null);
+        this.editId = $state();
+        this.editText = $state();
+        this.inputText = $state();
         
         this.thinkSwitch = $state({});
         this.inProgress = $state(false);
-        this.currentThread = $state(this.getCurrentThread());
+        this.currentThread = $state();
         this.hasMessages = $derived(this.currentThread.length > 0);
 
         this.nodeTooltip = $state('');
         this.nodeHandles = $state([]);
+    }
+
+    init(data)
+    {
+        super.init(data);
+        
+        this.roles = data.roles;
+        this.messages = data.messages;
+
+        this.editId = data.editId    || null;
+        this.editText = data.edit    || null;
+        this.inputText = data.input  || null;
+
+        this.currentThread = this.getCurrentThread();
         this.updateNodeTooltip();
         this.updateHandles();
     }
 
-    upgradeNode(id, data)
+    upgradeNode(data)
     {
         // add BOT 
 
@@ -54,9 +68,15 @@ export default class DialogueNodeState extends NodeState
 
     updateNodeTooltip()
     {
+        const roleName1 = this.roles[0].name || DialogueNodeState.ROLE_LABELS[0];
+        const roleName2 = this.roles[1].name || DialogueNodeState.ROLE_LABELS[1];
+
+        const roleModel1 = this.roles[0].bot ? this.roles[0].model : "user";
+        const roleModel2 = this.roles[1].bot ? this.roles[1].model : "user";
+
         this.nodeTooltip = 
-            `${this.roles[0].name || DialogueNodeState.ROLE_LABELS[0]}\n(${this.roles[0].model})\n\n` + 
-            `${this.roles[1].name || DialogueNodeState.ROLE_LABELS[1]}\n(${this.roles[1].model})`;
+            `${roleName1}\n(${roleModel1})\n\n` + 
+            `${roleName2}\n(${roleModel2})`;
     }
 
     async generate(replaceMessage)
@@ -74,9 +94,9 @@ export default class DialogueNodeState extends NodeState
 
             for (let targetHandle in edges)
             {
-                const sourceMessage = await this.appState.graph.getMessage(
+                const sourceMessage = await this.graph.getMessage(
                     edges[targetHandle].source, 
-                    this.appState.app, 
+                    this.app, 
                     usedNodes);
                 
                 rolePrompts[targetHandle] = sourceMessage 
@@ -108,12 +128,12 @@ export default class DialogueNodeState extends NodeState
             const roleIndex = tempThread.length % 2;
             const providerId = this.roles[roleIndex].provider;
 
-            if (!this.appState.settings.HasKey(providerId))
-            {
-                this.appState.showSettings();
-                this.inProgress = false;
-                return;
-            }
+            // if (!this.viewState.settings.HasKey(providerId))
+            // {
+            //     this.viewState.showSettings();
+            //     this.inProgress = false;
+            //     return;
+            // }
 
             const messages = [];
             const rolePrompt = roleIndex === 0 ? rolePrompts.role1 : rolePrompts.role2;
@@ -126,7 +146,7 @@ export default class DialogueNodeState extends NodeState
             {
                 const message = tempThread[i];
                 const isMyMessage = roleIndex === message.role;
-                const role = isMyMessage ? "model" : "user";
+                const role = isMyMessage ? "assistant" : "user";
 
                 const content = !message.private
                     ? message.text
@@ -146,7 +166,8 @@ export default class DialogueNodeState extends NodeState
                     content : 
                         `### Response format\n` + 
                         `Always respond in this format, without any external explanations:\n` +
-                        `<memory>\nYour secret thoughts and info that you want to hide from your interlocutor. Only you will see this in next turns.\n</memory>\n` +
+                        // `<memory>\nYour secret thoughts and info that you want to hide from your interlocutor. Only you will see this in next turns.\n</memory>\n` +
+                        `<memory>\nYour secret thoughts and info that you want to hide from everyone except you. You must use this field to remember information that will be available to you and only you in future requests.\n</memory>\n` +
                         `<message>\nYour answer addressed to your interlocutor. DO NOT describe any internal thoughts here. You can use markdown format.\n</message>`
                 });
             }
@@ -155,20 +176,25 @@ export default class DialogueNodeState extends NodeState
                 messages.push({ role : "user", content : ""});
 
             const modelId = this.roles[roleIndex].model;
-            const { markdowns } = await aiClient.Call(providerId, modelId, messages);
+
+            const result = await aiClient.callModel(
+                providerId, 
+                modelId, 
+                messages,
+                this.graph.plugin.mcp);
 
             const newMessage = 
             {  
                 id : createId(),
-                text : markdowns[0],
+                text : result.text,
                 provider : providerId,
                 model : modelId,
                 role : roleIndex,
                 isActive : true                
             }
 
-            if (markdowns.length > 1)
-                newMessage.think = markdowns[1];
+            if (result.think)
+                newMessage.think = result.think;
 
             if (roleMemory)
                 this.parseMemory(newMessage);
@@ -229,11 +255,6 @@ export default class DialogueNodeState extends NodeState
             this.messages[parentId] = [newMessage];
         }
 
-        this.appState.graph.updateNode(
-            this.id,
-            { messages : this.messages },
-            "newDialogueMessage");
-
         this.currentThread = this.getCurrentThread();
         this.onMessageAdd(newMessage);
     }
@@ -263,11 +284,6 @@ export default class DialogueNodeState extends NodeState
         for (var i = 0; i < messagesByParent.length; i++)
             messagesByParent[i].isActive = (i == newVariation);
         
-        this.appState.graph.updateNode(
-            this.id,
-            { messages : this.messages },
-            "switchDialogueMessage");
-
         this.currentThread = this.getCurrentThread();
     }
 
@@ -275,43 +291,21 @@ export default class DialogueNodeState extends NodeState
     {
         this.editId   = message.id;
         this.editText = message.text;
-        this.saveEdit();
 
         this.currentThread = this.getCurrentThread();
         this.onStartEdit.emit();
-    }
-
-    saveEdit()
-    {        
-        this.appState.graph.updateNode(
-            this.id,
-            { 
-                editId : this.editId,
-                edit   : this.editText,
-            },
-            "editDialogueMessage");
-    }
-
-    saveInput()
-    {        
-        this.appState.graph.updateNode(
-            this.id,
-            { input : this.inputText },
-            "editDialogueMessage");
     }
 
     resetEdit()
     {
         this.editId = null;
         this.editText = null;
-        this.saveEdit();
         this.currentThread = this.getCurrentThread();
     }
 
     resetInput()
     {
         this.inputText = null;
-        this.saveInput();
     }
 
     submitEdit()
@@ -432,7 +426,7 @@ export default class DialogueNodeState extends NodeState
     {
         const edges = {};
 
-        for (let edge of this.appState.graph.edges)
+        for (let edge of this.graph.edges)
         {
             if (edge.target !== this.id ||
                 !edge.targetHandle)
@@ -475,7 +469,7 @@ export default class DialogueNodeState extends NodeState
             // [{ "role1" : (this.roles[0].name || DialogueNodeState.ROLE_LABELS[0]) + "\n(system prompt)" },
             // { "role2" : (this.roles[1].name || DialogueNodeState.ROLE_LABELS[1]) + "\n(system prompt)" }];
 
-        this.updateNodeInternals();
+        this.updateNodeInternals.emit(this.id);
     }
 
     getRoleName(roleNum)

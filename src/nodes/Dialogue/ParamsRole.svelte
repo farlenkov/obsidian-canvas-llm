@@ -4,39 +4,29 @@
     import NodeState from './DialogueNode.svelte.js';
     import Modal from '$lib/svelte-obsidian/src/Modal.js';
     import ModelSelect from '$lib/svelte-llm/settings/ModelSelect.svelte';
-    import ModelSelectState from '$lib/svelte-llm/settings/ModelSelect.svelte.js';
 
-    const { nodeState, role, role2, index } = $props();
+    const { nodeState, viewState, role, role2, index } = $props();
 
     function save()
     {
-        nodeState.updateNodeTooltip();
-
-        nodeState.appState.graph.updateNode(
+        viewState.updateNode(
             nodeState.id,
             { roles : nodeState.roles },
             "changeDialogueRole");
 
+        nodeState.updateNodeTooltip();
         nodeState.updateHandles();
     }
     
     function clickModel(role)
     {
-        const modelSelectState = new ModelSelectState();
-
-        modelSelectState.ModelID = 
-            role.model ||
-            nodeState.appState.settings.Data.defaultModel;
-        
-        modelSelectState.ProviderID = 
-            role.provider ||
-            nodeState.appState.settings.Data.defaultProvider;
-
         const modal = new Modal(
             ModelSelect, 
             {
-                app : nodeState.app, 
-                modelSelectState,
+                app : viewState.app,
+                modelId : role.model,
+                providerId : role.provider,
+                onShowSettings : () => viewState.showSettings(),
                 
                 onModelSelected : model => 
                 {

@@ -5,29 +5,59 @@ import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
 
 export default class GraphState
 {
-    constructor(file)
+    constructor(file, plugin)
     {
         this.fileVersion = 2;
+        this.viewCount = 1;
 
         this.file = file;
+        this.plugin = plugin;
+        this.app = plugin.app;
         this.nodes = $state.raw([]);
         this.edges = $state.raw([]);
         this.getNodeContent = {};
+        this.nodeStates = {};
         this.onChange = new EventEmitter();
     }
 
-    async loadFromFile(graphJson)
+    loadFromFile(fileJson)
     {
-        if (typeof graphJson === 'string')
-            graphJson = JSON.parse(graphJson);
+        if (typeof fileJson === 'string')
+            fileJson = JSON.parse(fileJson);
 
-        await this.upgradeGraph(graphJson);
+        this.upgradeGraph(fileJson);
+        
+        this.nodes = fileJson.nodes || [];
+        this.edges = fileJson.edges || [];
 
-        this.nodes = graphJson.nodes;
-        this.edges = graphJson.edges;
+        for (const node of this.nodes)
+        {
+            const nodeState = this.nodeStates[node.id];
+
+            if (nodeState)
+                nodeState.init(node.data);
+        }
     }
 
-    async upgradeGraph(graphJson)
+    getNodeState(nodeId)
+    {
+        let nodeState = this.nodeStates[nodeId];
+
+        if (!nodeState)
+        {
+            const node = this.nodes.find(node => node.id === nodeId);
+            const nodeType = nodeTypes.ById[node.type];
+
+            nodeState = new nodeType.state(nodeId, this);
+            nodeState.init(node.data);
+
+            this.nodeStates[nodeId] = nodeState;
+        }
+
+        return nodeState;
+    }
+
+    upgradeGraph(graphJson)
     {
         if (!graphJson.version)
             graphJson.version = this.fileVersion;
@@ -36,7 +66,7 @@ export default class GraphState
     addNode(node)
     {
         this.nodes = [...this.nodes, node];
-        this.onChange.emit("addNode");
+        // this.onChange.emit("addNode");
     }
 
     addEdge(sourceId, targetId, targetHandle)
@@ -52,27 +82,33 @@ export default class GraphState
             newEdge.targetHandle = targetHandle;
 
         this.edges = [...this.edges, newEdge];
-        this.onChange.emit("addEdge");
+        // this.onChange.emit("addEdge");
     }
     
     removeNode(node) 
     {
-        const nodeCount = this.nodes.length;
-        const edgeCount = this.edges.length;
+        // const nodeCount = this.nodes.length;
+        // const edgeCount = this.edges.length;
 
         this.nodes = this.nodes.filter(node2 => 
             node2.id != node.id);
 
-        if (this.nodes.length < nodeCount)
-            this.onChange.emit("removeNode");
+        // if (this.nodes.length < nodeCount)
+        //     this.onChange.emit("removeNode");
 
         this.edges = this.edges.filter(edge => 
             edge.source != node.id && 
-            edge.target != node.id);        
+            edge.target != node.id);            
 
-        if (this.edges.length < edgeCount)
-            this.onChange.emit("removeEdge");
+        // if (this.edges.length < edgeCount)
+        //     this.onChange.emit("removeEdge");
 
+        if (this.nodeStates[node.id])
+        {
+            this.nodeStates[node.id].destroy();
+            delete this.nodeStates[node.id];
+        }
+        
         // console.log("nodeCount", nodeCount, this.nodes.length);
         // console.log("edgeCount", edgeCount, this.edges.length);
     }
@@ -89,12 +125,12 @@ export default class GraphState
                 return true;
         });
 
-        this.onChange.emit("removeEdge");
+        // this.onChange.emit("removeEdge");
     }
 
     removePrevEdge(connection)
     {
-        const edgeCount = this.edges.length;
+        // const edgeCount = this.edges.length;
         let sourceId;
         let targetId;
         let targetHandle;
@@ -122,11 +158,11 @@ export default class GraphState
                 return true;
         });
 
-        if (this.edges.length < edgeCount)
-            this.onChange.emit("removeEdge");
+        // if (this.edges.length < edgeCount)
+        //     this.onChange.emit("removeEdge");
     }
 
-    updateNode (id, update, note)
+    updateNode (id, update)
     {
         this.nodes = this.nodes.map(node => 
         {
@@ -136,7 +172,7 @@ export default class GraphState
             return node;
         });
 
-        this.onChange.emit(note);
+        // this.onChange.emit(note);
     }
 
     toString ()

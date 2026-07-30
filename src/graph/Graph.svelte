@@ -6,16 +6,21 @@
         ControlButton, 
         Background,
         BackgroundVariant,
-        MiniMap
+        MiniMap,
+        useUpdateNodeInternals
     } from '@xyflow/svelte';
 
-    import { getContext } from 'svelte';
+    import { setContext } from 'svelte';
     import { MapIcon, Settings } from 'lucide-svelte';
 
     import ContextMenu from '$lib/menu/ContextMenu.svelte';
     import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
 
-    const appState = getContext("appState");
+    const { view : viewState } = $props();
+    setContext("viewState", viewState);
+
+    // const updateNodeInternals = useUpdateNodeInternals();
+    // updateNodeInternals(1);
 
     const nodeTypesIndex = {};
     nodeTypes.List.forEach(nodeType => nodeTypesIndex[nodeType.id] = nodeType.view);
@@ -28,24 +33,24 @@
     {
         if (connection.isValid) 
         {
-            appState.graph.removePrevEdge(connection);
+            viewState.graph.removePrevEdge(connection);
             return;
         }
         
         await sleep(100);
-        appState.contextMenu.ShowConnect(event, connection);
+        viewState.contextMenu.ShowConnect(event, connection);
     }
 
 </script>
 
 <div 
     class="graph-container"
-    bind:clientWidth={appState.contextMenu.CanvasWidth} 
-    bind:clientHeight={appState.contextMenu.CanvasHeight}>
+    bind:clientWidth={viewState.contextMenu.CanvasWidth} 
+    bind:clientHeight={viewState.contextMenu.CanvasHeight}>
 
     <SvelteFlow
-        bind:nodes = {appState.graph.nodes}
-        bind:edges = {appState.graph.edges}
+        bind:nodes = {viewState.graph.nodes}
+        bind:edges = {viewState.graph.edges}
         {zoomOnScroll}
         {preventScrolling}
         fitView
@@ -53,21 +58,21 @@
         proOptions = {{hideAttribution:true}}
         snapGrid = {[20,20]}
         nodeTypes = {nodeTypesIndex}
-        onconnectstart = {() => appState.contextMenu.Hide()}
+        onconnectstart = {() => viewState.contextMenu.Hide()}
         onconnectend = {onConnectEnd}
-        ondelete = {(event) => appState.graph.onChange.emit("ondelete")}
+        ondelete = {(event) => viewState.saveGraph("ondelete")}
         deleteKey = {null}
         
-        onpaneclick = {() => appState.contextMenu.Hide()}
-        onnodeclick = {() => appState.contextMenu.Hide()}
-        onedgeclick = {() => appState.contextMenu.Hide()}
+        onpaneclick = {() => viewState.contextMenu.Hide()}
+        onnodeclick = {() => viewState.contextMenu.Hide()}
+        onedgeclick = {() => viewState.contextMenu.Hide()}
 
-        onnodedragstart = {()   => appState.contextMenu.Hide()}
-        onnodedragstop = {()    => appState.graph.onChange.emit("onnodedragstop")}
+        onnodedragstart = {()   => viewState.contextMenu.Hide()}
+        onnodedragstop = {()    => viewState.saveGraph("onnodedragstop")}
 
-        onpanecontextmenu = {({ event })        => appState.contextMenu.ShowPane(event)}
-        onnodecontextmenu = {({ event, node })  => appState.contextMenu.ShowNode(event, node)}
-        onedgecontextmenu = {({ event, edge })  => appState.contextMenu.ShowEdge(event, edge)}
+        onpanecontextmenu = {({ event })        => viewState.contextMenu.ShowPane(event)}
+        onnodecontextmenu = {({ event, node })  => viewState.contextMenu.ShowNode(event, node)}
+        onedgecontextmenu = {({ event, edge })  => viewState.contextMenu.ShowEdge(event, edge)}
 
         onnodepointermove   = {({event}) => { zoomOnScroll = event.target.closest(".nozoom") == null }}
         onnodepointerleave  = {() => { zoomOnScroll = true }}>
@@ -76,7 +81,7 @@
             <ControlButton onclick={() => showMiniMap = !showMiniMap} title="MiniMap" class={'canvas-llm-controll-button'}>
                 <MapIcon size={24} />
             </ControlButton>
-            <ControlButton onclick={() => appState.showSettings()} title="Settings" class={'canvas-llm-controll-button'}>
+            <ControlButton onclick={() => viewState.showSettings()} title="Settings" class={'canvas-llm-controll-button'}>
                 <Settings size={24} />
             </ControlButton>
         </Controls>

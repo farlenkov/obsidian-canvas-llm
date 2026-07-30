@@ -1,4 +1,4 @@
-import settings from '$lib/svelte-llm/settings/Settings.svelte.js';
+import settings from '$lib/svelte-llm/settings/Settings.js';
 import { createNodeId, createEdgeId } from '$lib/graph/CreateId';
 
 export function defaultGraph()

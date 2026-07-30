@@ -11,30 +11,44 @@
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
     import NodeResizer from '../Common/NodeResizer.svelte';
     import Handles from '../Common/Handles.svelte';
-    import FileSelectModal from './FileSelectModal.js';
+    import FileSelectModal from '$lib/svelte-obsidian/src/FileSelectModal.js';
 
-    const {id, data, selected} = $props();
-    const appState = getContext("appState");
-    const nodeState = new NodeState(id, data, appState, useUpdateNodeInternals());  
+    const { id } = $props();
+    const viewState = getContext("viewState");
+    const nodeState = viewState.graph.getNodeState(id);
 
-    let nodeTitle = $derived(nodeState.targetName ? (isFilePath(nodeState.targetName) ? "📃 " : "📁 ") + nodeState.targetName : "🚫 File not selected");
     let isDragOver = $state(false);
-    let isNotFound = $state(false);
+
+    let nodeTitle = $derived(
+        nodeState.targetName 
+            ? (isFilePath(nodeState.targetName) ? "📃 " : "📁 ") + nodeState.targetName 
+            : "🚫 File not selected");
+
+    // $effect(() => 
+    // {
+    //     if (nodeState.targetPath) 
+    //         renderHtml();
+    // });
 
     onMount(() => 
     {
-        if (nodeState.targetPath) 
-            renderHtml();
+        // if (nodeState.targetPath) 
+        //     renderHtml();
 
-        appState.plugin.onFileModify.on(onFileModify);
-        appState.plugin.onFileRename.on(onFileRename);
-        appState.graph.getNodeContent[id] = getMessage;
+        // viewState.plugin.onFileModify.on(onFileModify);
+        // viewState.plugin.onFileRename.on(onFileRename);
+        
+        const updateNodeInternals = useUpdateNodeInternals();
+        nodeState.updateNodeInternals.add(updateNodeInternals);
+        viewState.graph.getNodeContent[id] = getMessage;
 
         return () => 
         {
-            appState.plugin.onFileModify.off(onFileModify);
-            appState.plugin.onFileRename.off(onFileRename);
-            delete appState.graph.getNodeContent[id];
+            // viewState.plugin.onFileModify.off(onFileModify);
+            // viewState.plugin.onFileRename.off(onFileRename);
+            
+            nodeState.updateNodeInternals.del(updateNodeInternals);
+            delete viewState.graph.getNodeContent[id];
         };
     });
 
@@ -51,48 +65,52 @@
         return text;
     }
 
-    function onFileModify(file)
-    {
-        if (file.path === nodeState.targetPath)
-            renderHtml();
-    }
+    // function onFileModify(file)
+    // {
+    //     if (file.path === nodeState.targetPath)
+    //         renderHtml();
+    // }
 
-    function onFileRename(file, oldPath)
-    {
-        if (oldPath === nodeState.targetPath)
-        {
-            onFileChange(file);
-            return;
-        }
+    // function onFileRename(batch)
+    // {
+    //     // console.log("onFileRename", batch, "nodeState.targetPath", nodeState.targetPath);
+    //     console.log("onFileRename > read", nodeState.targetPath);
+    //     renderHtml();
+        
+    //     // if (oldPath === nodeState.targetPath)
+    //     // {
+    //     //     onFileChange(file);
+    //     //     return;
+    //     // }
 
-        let isChanged = false;
-        let exclude = [...nodeState.exclude];
+    //     // let isChanged = false;
+    //     // let exclude = [...nodeState.exclude];
 
-        for (let i = 0; i < exclude.length; i++)
-        {
-            if (exclude[i] === oldPath)
-            {
-                exclude[i] = file.path;
-                isChanged = true;
-            }
-        }
+    //     // for (let i = 0; i < exclude.length; i++)
+    //     // {
+    //     //     if (exclude[i] === oldPath)
+    //     //     {
+    //     //         exclude[i] = file.path;
+    //     //         isChanged = true;
+    //     //     }
+    //     // }
 
-        if (isChanged)
-        {
-            nodeState.exclude = exclude;
-            onExcludeChange();
-        }
+    //     // if (isChanged)
+    //     // {
+    //     //     nodeState.exclude = exclude;
+    //     //     onExcludeChange();
+    //     // }
 
-        if (oldPath.indexOf(nodeState.targetPath) === 0)
-            isChanged = true;
+    //     // if (oldPath.indexOf(nodeState.targetPath) === 0)
+    //     //     isChanged = true;
 
-        if (isChanged)
-            renderHtml();
-    }
+    //     // if (isChanged)
+    //     //     renderHtml();
+    // }
 
     function onFileChange(file)
     {
-        appState.graph.updateNode(
+        viewState.updateNode(
             id, 
             {
                 name : file.name, 
@@ -102,13 +120,13 @@
 
         nodeState.targetName = file.name;
         nodeState.targetPath = file.path;
-        renderHtml();
+        // renderHtml();
     } 
 
     function onClickSelectFile ()
     {
         new FileSelectModal(
-            appState.app, 
+            viewState.app, 
             nodeState.supportedExtensions,
             (file) => { onFileChange(file); })
             .open();
@@ -116,7 +134,7 @@
 
     function onExcludeChange()
     {
-        appState.graph.updateNode(
+        viewState.updateNode(
             id, 
             { exclude : nodeState.exclude }, 
             "excludeFileInput");
@@ -148,7 +166,7 @@
         e.preventDefault();
         isDragOver = false;
 
-        const draggable = appState.app.dragManager.draggable;
+        const draggable = viewState.app.dragManager.draggable;
         const file = draggable.file;
 
         if (!file) 
@@ -161,25 +179,25 @@
         onFileChange(file);
     }
 
-    async function renderHtml()
-    {
-        isNotFound = false;
+    // async function renderHtml()
+    // {
+    //     isNotFound = false;
 
-        if (!nodeState.targetPath)
-        {
-            nodeState.parsePlaceholders("");
-            return;
-        }
+    //     if (!nodeState.targetPath)
+    //     {
+    //         nodeState.parsePlaceholders("");
+    //         return;
+    //     }
 
-        await readFiles();
+    //     await readFiles();
 
-        if (!nodeState.preview ||
-            nodeState.preview.length == 0)
-        {
-            isNotFound = true;
-            return;
-        }
-    }
+    //     if (!nodeState.preview ||
+    //         nodeState.preview.length == 0)
+    //     {
+    //         isNotFound = true;
+    //         return;
+    //     }
+    // }
 
 </script>
 
@@ -207,7 +225,7 @@
                 </node-header-left>
 
                 <node-header-right>
-                    <TemplatingButton {nodeState} />
+                    <TemplatingButton {nodeState} {viewState} />
                     <CopyTextButton {nodeState} />
                     <ParamsButton onclick={onClickSelectFile} label="Select file" />
                 </node-header-right>
@@ -216,7 +234,7 @@
 
             <node-body class="nodrag nozoom nomenu node-text markdown-rendered">
 
-                {#if isNotFound}
+                {#if nodeState.isNotFound}
                     <error>
                         File not found:
                         <br/>

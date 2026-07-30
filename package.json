@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-canvas-llm",
-	"version": "1.1.8",
+	"version": "1.1.9",
 	"description": "A canvas-like UI to talk with LLMs in Obsidian.",
 	"main": "main.js",
 	"keywords": [],
@@ -19,10 +19,11 @@
 		"lucide-svelte": "^1.0.1",
 		"obsidian": "latest",
 		"showdown": "^2.1.0",
-		"svelte": "^5.56.4"
+		"svelte": "^5.56.8"
 	},
 	"dependencies": {
-		"defuddle": "^0.19.1",
+		"@modelcontextprotocol/sdk": "^1.24.3",
+		"defuddle": "^0.19.2",
 		"epub2": "^3.0.2",
 		"mammoth": "^1.12.0",
 		"turndown": "^7.2.4"

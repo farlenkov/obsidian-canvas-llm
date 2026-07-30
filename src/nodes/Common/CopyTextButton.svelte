@@ -4,7 +4,6 @@
     import { Copy } from 'lucide-svelte';
 
     const { nodeState, copyThink, label, onclick } = $props();
-    const appState = getContext("appState");
 
     async function onClick(ev)
     {

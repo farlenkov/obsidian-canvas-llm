@@ -7,7 +7,7 @@
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import RunButton from './RunButton.svelte';
 
-    const {nodeState, message, messageNum} = $props();
+    const {nodeState, viewState, message, messageNum} = $props();
     
     let textarea;
 
@@ -20,30 +20,75 @@
     {
         nodeState.startEdit(message);
         textareaResize(1);
+        saveEdit();
     }
 
     function resetEdit()
     {
         nodeState.resetEdit();
         textareaResize(100);
+        saveEdit();
     }
 
     function submitEdit()
     {
         nodeState.submitEdit();
         textareaResize(100);
+        saveMessages();
+        saveEdit();
     }
 
     function submitInput()
     {
         nodeState.submitInput();
         textareaResize(100);
+        saveMessages();
+        saveInput();
+    }
+
+    async function generate(message)
+    {
+        await nodeState.generate(message);
+        saveMessages();
+    }
+
+    function saveEdit()
+    {        
+        viewState.updateNode(
+            nodeState.id,
+            { 
+                editId : nodeState.editId,
+                edit   : nodeState.editText,
+            },
+            "editDialogueMessage");
+    }
+
+    function saveInput()
+    {        
+        viewState.updateNode(
+            nodeState.id,
+            { input : nodeState.inputText },
+            "editDialogueMessage");
+    }
+
+    function saveMessages()
+    {
+        viewState.updateNode(
+            nodeState.id,
+            { messages : nodeState.messages },
+            "newDialogueMessage");
     }
 
     async function clickCopy(ev)
     {
         const copyText = await nodeState.getCopy(ev.shiftKey, message);
         navigator.clipboard.writeText(copyText);
+    }
+
+    function switchVariation(message, change)
+    {
+        nodeState.switchVariation(message, change);
+        saveMessages();
     }
 
     let resizeCounter = 1;
@@ -74,7 +119,6 @@
                 return;
 
             const counter = resizeCounter++;
-            console.log(counter, ">", nodeState.wasAtBottom, nodeState.savedScrollTop);
 
             requestAnimationFrame(() => 
             {
@@ -82,7 +126,7 @@
                     return;
                 
                 nodeState.nodeBody.scrollTop = nodeState.savedScrollTop + (nodeState.wasAtBottom ? 100 : 0);
-                console.log(counter, "<", nodeState.wasAtBottom, nodeState.savedScrollTop);
+                // console.log(counter, "<", nodeState.wasAtBottom, nodeState.savedScrollTop);
 
                 delete nodeState.savedScrollTop;
                 delete nodeState.wasAtBottom;
@@ -116,7 +160,7 @@
                                 class="clickable-icon"
                                 aria-label="Prev variation"
                                 disabled={nodeState.inProgress}
-                                onclick={() => nodeState.switchVariation(message, -1)}>
+                                onclick={() => switchVariation(message, -1)}>
                                 <ChevronLeft size={16}/>
                             </button>
 
@@ -128,7 +172,7 @@
                                 class="clickable-icon"
                                 aria-label="Next variation"
                                 disabled={nodeState.inProgress}
-                                onclick={() => nodeState.switchVariation(message, 1)}>
+                                onclick={() => switchVariation(message, 1)}>
                                 <ChevronRight size={16}/>
                             </button>
 
@@ -190,7 +234,7 @@
                         label1="Regenarate" 
                         label2="Generating..." 
                         class="clickable-icon",
-                        onclick={() => nodeState.generate(message)}
+                        onclick={() => generate(message)}
                         Icon={RefreshCcw} />
 
                 {/if}
@@ -225,7 +269,7 @@
                     placeholder="Type your message here"
                     bind:this={textarea}
                     bind:value={nodeState.editText}
-                    onchange={() => nodeState.saveEdit()}
+                    onchange={() => saveEdit()}
                     oninput={() => textareaResize()}></textarea>
 
             {/if}
@@ -258,7 +302,7 @@
                 placeholder="Type your message here"
                 bind:this={textarea}
                 bind:value={nodeState.inputText}
-                onchange={() => nodeState.saveInput()}
+                onchange={() => saveInput()}
                 oninput={() => textareaResize()}></textarea>
         </div>
     </div>

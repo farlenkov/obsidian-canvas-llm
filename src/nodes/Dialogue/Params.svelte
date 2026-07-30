@@ -2,7 +2,7 @@
 
     import RoleParams from './ParamsRole.svelte'
 
-    const { nodeState } = $props();
+    const { nodeState, viewState } = $props();
     
 </script>
 
@@ -10,6 +10,7 @@
 
     <RoleParams 
         {nodeState} 
+        {viewState} 
         index={0} 
         role={nodeState.roles[0]} 
         role2={nodeState.roles[1]} />
@@ -18,6 +19,7 @@
 
     <RoleParams 
         {nodeState} 
+        {viewState} 
         index={1} 
         role={nodeState.roles[1]} 
         role2={nodeState.roles[0]} />
