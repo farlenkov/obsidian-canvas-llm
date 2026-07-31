@@ -83,7 +83,8 @@
         z-index: 1;
 
         background-color: var(--background-secondary);
-        border: 1px solid rgb(var(--canvas-color));
+        border-width: 1px;
+        border-style: solid;
     }
 
     .svelte-flow__handle:hover

@@ -120,6 +120,7 @@
 
         nodeState.targetName = file.name;
         nodeState.targetPath = file.path;
+        readFiles();
         // renderHtml();
     } 
 

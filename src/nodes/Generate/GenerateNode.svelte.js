@@ -89,7 +89,7 @@ export default class GenerateNodeState extends NodeState
         catch (err)
         {
             this.errorMessage = err;
-            throw err;
+            // throw err;
         }
 
         this.inProgress = false;
