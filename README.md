@@ -49,6 +49,18 @@ Alibaba, Anthropic, DeepSeek, Google, Groq, Ollama, OpenAI, OpenRouter, SambaNov
 ### 🧩 Template Mode
 Use `{{ input }}` placeholders in `Text input` and `File input` nodes to create dynamic input handles.
 
+### 📡 Model Context Protocol (MCP) Support (experimental)
+
+Use any MCP-compatible server to give your AI access to external tools, services, and data sources such as Slack, Jira, GitHub, and more. You can add your MCP configs (Claude Desktop compatible) to `.obsidian/plugins/canvas-llm/data.json` by editing block `mcpServers`:
+
+```json
+{
+    "mcpServers": {
+        ...put your MCP configs here..
+    }
+}
+```
+
 ## More Screenshots
 
 Example of use `File input` node and `Template` mode:
