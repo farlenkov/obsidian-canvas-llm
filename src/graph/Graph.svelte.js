@@ -180,10 +180,19 @@ export default class GraphState
         const data = 
         {
             version : this.fileVersion,
-            nodes : this.nodes,
-            edges : this.edges
+            
+            edges : this.edges,
+
+            nodes : this.nodes.map(node => ({
+                id : node.id,
+                data : node.data,
+                type : node.type,
+                width : node.width,
+                height : node.height,
+                position : node.position }))
         };
 
+        // console.log("graph.toString()", data);
         return JSON.stringify(data, null, '\t');
     }
 

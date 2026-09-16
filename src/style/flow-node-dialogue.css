@@ -23,7 +23,7 @@
             .dialogue-message-head
             {
                 display: flex;
-                flex-direction: row;
+                /* flex-direction: row; */
                 justify-content: space-between;
 
                 position: sticky;
@@ -39,7 +39,7 @@
                 .dialogue-message-role
                 {
                     display: flex;
-                    flex-direction: row;
+                    /* flex-direction: row; */
                     align-items: center;
                     gap: 0.4em;
                 }
@@ -48,12 +48,12 @@
                 {
                     display: flex;
                     align-items: center;
-                    flex-direction: row;
+                    /* flex-direction: row; */
 
                     .dialogue-message-variants
                     {
                         display: flex;
-                        flex-direction: row;
+                        /* flex-direction: row; */
                         align-items: center;
                     }
 
@@ -140,18 +140,52 @@
         .dialogue-message-next
         {
             display: flex;
-            flex-direction: row;
+            /* flex-direction: row; */
             justify-content: center; 
             margin: 0.5em 0.5em 1em 0.5em;
+            gap: 0.25em;
 
-            button
+            /* button
             {
                 display: flex;
                 flex-direction: row;
                 justify-content: center; 
                 align-items: center;
-                gap: 0.5em;
+            } */
+
+            .steps-selector
+            {
+                position: relative;
+                /* display: inline-block; */
+
+                button
+                {
+                    font-size: 1em;
+                    line-height: 1.3em;
+                    padding-left: 0.5em;
+                    padding-right: 0.6em;
+                }
+
+                .menu
+                {
+                    position: absolute;
+                    bottom: 100%;
+                    left: 0;
+                    max-height: fit-content;
+                    display: none;
+                    z-index: 10;
+                }
             }
+
+            .steps-selector:hover .menu
+            {
+                display: flex;
+            }
+        }
+
+        .dialogue-message-next.empty
+        {
+            padding-top: 12em;
         }
 
         .dialogue-message.edit
@@ -181,10 +215,10 @@
     .modal
     {
         width:      var(--modal-width);
-        height:     var(--modal-height);
+        /* height:     var(--modal-height); */
 
         max-width:  25em;
-        max-height: 25em;
+        /* max-height: 25em; */
 
         padding: 0;
 
@@ -199,6 +233,13 @@
                 height: 0;
                 border: none;
                 border-top: var(--modal-border-width) dashed var(--modal-border-color);
+            }
+            
+            .node-title
+            {
+                padding: 1.5em;
+
+                input[type='text'] { width: 100%;}
             }
 
             .role-item

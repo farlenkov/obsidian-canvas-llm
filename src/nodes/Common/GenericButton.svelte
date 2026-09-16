@@ -1,6 +1,6 @@
 <script>
 
-    let { onclick, isActive, label, icon: Icon } = $props();
+    let { onclick, isActive, label, icon: Icon, disabled } = $props();
 
 </script>
 
@@ -9,7 +9,8 @@
     class="clickable-icon" 
     aria-label={label} 
     class:color-text-accent={isActive}
-    {onclick}>
+    {onclick}
+    {disabled}>
 
     <Icon size={16} />
 </button>

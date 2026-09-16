@@ -18,8 +18,10 @@ export default class DialogueNodeState extends NodeState
         super(id, graph);
 
         this.rootId = $derived(this.id);
+        this.title = $state();
         this.messages = $state();
         this.roles = $state();
+        this.steps = $state();
 
         this.editId = $state();
         this.editText = $state();
@@ -27,8 +29,12 @@ export default class DialogueNodeState extends NodeState
         
         this.thinkSwitch = $state({});
         this.inProgress = $state(false);
-        this.currentThread = $state();
-        this.hasMessages = $derived(this.currentThread.length > 0);
+        this.progressStep = $state(1);
+        this.progressSteps = $state(1);
+        this.currentThread = $state([]);
+        this.hasMessages = $state(false);
+        this.allowSteps = $state(false);
+        this.cancelSequence = $state(false);
 
         this.nodeTooltip = $state('');
         this.nodeHandles = $state([]);
@@ -38,6 +44,8 @@ export default class DialogueNodeState extends NodeState
     {
         super.init(data);
         
+        this.title = data.title || "";
+        this.steps = data.steps || 1;
         this.roles = data.roles;
         this.messages = data.messages;
 
@@ -45,8 +53,9 @@ export default class DialogueNodeState extends NodeState
         this.editText = data.edit    || null;
         this.inputText = data.input  || null;
 
-        this.currentThread = this.getCurrentThread();
+        this.updateCurrentThread();
         this.updateNodeTooltip();
+        this.updateAllowSteps();
         this.updateHandles();
     }
 
@@ -64,6 +73,12 @@ export default class DialogueNodeState extends NodeState
             for (const mesage of data.messages[parentId])
                 if (mesage.parentId)
                     delete mesage.parentId;
+
+        // OLLAMA > LOCAL
+
+        for (const role of data.roles)
+            if (role.provider === 'ollama')
+                role.provider = 'local';
     }
 
     updateNodeTooltip()
@@ -126,7 +141,8 @@ export default class DialogueNodeState extends NodeState
             const lastParentId = replaceMessage ? this.parentIds[replaceMessage.id] : null;
             const tempThread = this.getCurrentThread(lastParentId);
             const roleIndex = tempThread.length % 2;
-            const providerId = this.roles[roleIndex].provider;
+            const role = this.roles[roleIndex];
+            const providerId = role.provider;
 
             // if (!this.viewState.settings.HasKey(providerId))
             // {
@@ -137,7 +153,7 @@ export default class DialogueNodeState extends NodeState
 
             const messages = [];
             const rolePrompt = roleIndex === 0 ? rolePrompts.role1 : rolePrompts.role2;
-            const roleMemory = this.roles[roleIndex].memory;
+            const roleMemory = role.memory;
 
             if (rolePrompt)
                 messages.push({ role : "user", content : rolePrompt});
@@ -175,7 +191,7 @@ export default class DialogueNodeState extends NodeState
             if (messages.length === 0)
                 messages.push({ role : "user", content : ""});
 
-            const modelId = this.roles[roleIndex].model;
+            const modelId = role.model;
 
             const result = await aiClient.callModel(
                 providerId, 
@@ -186,15 +202,15 @@ export default class DialogueNodeState extends NodeState
             const newMessage = 
             {  
                 id : createId(),
-                text : result.text,
                 provider : providerId,
                 model : modelId,
                 role : roleIndex,
-                isActive : true                
+                isActive : true,
+                ...result
             }
 
-            if (result.think)
-                newMessage.think = result.think;
+            // if (result.think)
+            //     newMessage.think = result.think;
 
             if (roleMemory)
                 this.parseMemory(newMessage);
@@ -208,6 +224,7 @@ export default class DialogueNodeState extends NodeState
         catch (err)
         {
             this.error = err;
+            // throw err;
         }
         finally
         {
@@ -255,8 +272,14 @@ export default class DialogueNodeState extends NodeState
             this.messages[parentId] = [newMessage];
         }
 
-        this.currentThread = this.getCurrentThread();
+        this.updateCurrentThread();
         this.onMessageAdd(newMessage);
+    }
+
+    updateCurrentThread()
+    {
+        this.currentThread = this.getCurrentThread();
+        this.hasMessages = this.currentThread.length > 0;
     }
 
     hasVariations(parentId)
@@ -284,7 +307,7 @@ export default class DialogueNodeState extends NodeState
         for (var i = 0; i < messagesByParent.length; i++)
             messagesByParent[i].isActive = (i == newVariation);
         
-        this.currentThread = this.getCurrentThread();
+        this.updateCurrentThread();
     }
 
     startEdit(message)
@@ -292,7 +315,7 @@ export default class DialogueNodeState extends NodeState
         this.editId   = message.id;
         this.editText = message.text;
 
-        this.currentThread = this.getCurrentThread();
+        this.updateCurrentThread();
         this.onStartEdit.emit();
     }
 
@@ -300,7 +323,7 @@ export default class DialogueNodeState extends NodeState
     {
         this.editId = null;
         this.editText = null;
-        this.currentThread = this.getCurrentThread();
+        this.updateCurrentThread();
     }
 
     resetInput()
@@ -472,6 +495,13 @@ export default class DialogueNodeState extends NodeState
         this.updateNodeInternals.emit(this.id);
     }
 
+    updateAllowSteps()
+    {
+        this.allowSteps = 
+            this.roles[0]?.bot && 
+            this.roles[1]?.bot;
+    }
+
     getRoleName(roleNum)
     {
         const role = this.roles[roleNum];
@@ -507,6 +537,12 @@ export default class DialogueNodeState extends NodeState
             this.variantNum,
             lastParentId || this.editId
         );
+    }
+
+    clearMessages()
+    {
+        this.messages = {};
+        this.updateCurrentThread();
     }
 
     static getThread(

@@ -8,7 +8,16 @@
         .menu-item-icon-generate  { color: #00abff; }
         .menu-item-icon-dialogue  { color: #00abff; }
         .menu-item-icon-insertFromFile {  }
-    } 
+    }
 
-    .menu-item.is-warning .menu-item-icon { color: red; }
+    .menu-item.tappable:hover,
+    .vertical-tab-nav-item:hover
+    {
+        background-color: var(--background-modifier-hover);
+    }
+
+    .menu-item.is-warning .menu-item-icon 
+    { 
+        color: red; 
+    }
 }

@@ -1,7 +1,6 @@
-import providers from '$lib/svelte-llm/models/ProviderInfo.js';
+import providers from '$lib/svelte-llm/models/Providers.js';
 import aiClient from '$lib/svelte-llm/models/AiClient.js';
 import NodeState from '../Common/NodeState.svelte.js';
-import { GalleryThumbnailsIcon } from 'lucide-svelte/dist/lucide-svelte.js';
 
 export default class GenerateNodeState extends NodeState
 {
@@ -76,14 +75,14 @@ export default class GenerateNodeState extends NodeState
             const result = await aiClient.callModel(
                 this.providerId, 
                 this.modelId, 
-                messages, 
+                messages,
                 this.graph.plugin.mcp);
 
             result.provider = this.providerId;
             result.model = this.modelId;
 
             const oldResults = this.results.filter(md => md ? true : false);
-            this.results = [...oldResults, result];            
+            this.results = [...oldResults, result];
             this.activeTab = this.results.length - 1;
         }
         catch (err)
@@ -168,6 +167,18 @@ export default class GenerateNodeState extends NodeState
             }
 
             delete data.markdowns;
-        }     
+        }
+        
+        // OLLAMA > LOCAL
+
+        if (data.provider === 'ollama')
+            data.provider = 'local';
+    }
+
+    clearResults()
+    {
+        this.results = [];
+        this.activeTab = 0;
+        this.updateCurrentText();
     }
 }

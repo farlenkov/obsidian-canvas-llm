@@ -33,6 +33,6 @@
 </script>
 
 <div 
-    aria-label={label}
+    title={label}
     bind:this={bodyEl}
     class={"markdown-renderer " + (className ?? "")}></div>

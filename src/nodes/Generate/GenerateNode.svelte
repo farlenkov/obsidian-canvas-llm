@@ -1,7 +1,7 @@
 <script>
 
 	import { getContext, onMount } from 'svelte';
-    import { Play, Loader, XIcon, Lightbulb } from 'lucide-svelte';
+    import { Play, Loader, XIcon, Lightbulb, FileXCorner } from 'lucide-svelte';
     import { useUpdateNodeInternals } from '@xyflow/svelte';
     
     import Modal from '$lib/svelte-obsidian/src/Modal.js';
@@ -10,24 +10,36 @@
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
     import NodeResizer from '../Common/NodeResizer.svelte';
     import Handles from '../Common/Handles.svelte';
-    import ParamsView from './GenerateParams.svelte';
+    import ModelSelect from '$lib/svelte-llm/settings/ModelSelect.svelte';
 
     const { id } = $props();
     const viewState = getContext("viewState");
     const nodeState = viewState.graph.getNodeState(id);  
+
+    const contextItems =
+    [{
+        label : "CLEAR GENERATIONS",
+        class : "is-warning",
+        icon : FileXCorner,
+        callback : () => 
+        {
+            nodeState.clearResults();
+            saveResults();
+        }
+    }];
     
     onMount(() => 
     { 
         const updateNodeInternals = useUpdateNodeInternals();
         nodeState.updateNodeInternals.add(updateNodeInternals);
         viewState.graph.getNodeContent[id] = getMessage;
-
-        // renderHtml(data.results);
+        viewState.contextItems[id] = contextItems;
 
         return () =>
         {
             nodeState.updateNodeInternals.del(updateNodeInternals);
             delete viewState.graph.getNodeContent[id];
+            delete viewState.contextItems[id];
         };
     });
 
@@ -38,7 +50,7 @@
             return { role : "assistant", content : "" };
 
         const result = nodeState.results[nodeState.activeTab || 0];
-        const text = result.text; // getThink ? result.think : result.text;
+        const text = result.text;
         return { role : "assistant", content : text };
     }
 
@@ -58,7 +70,6 @@
 
         if (!nodeState.model)
         {
-            console.log("clickGenerate", nodeState);
             showParams();
             return;
         }
@@ -70,15 +81,18 @@
         }
 
         await nodeState.generate();
-        
-        const update = 
-        {
-            part : nodeState.activeTab,
-            results : nodeState.results
-        };
+        saveResults();
+    }
 
-        viewState.updateNode(nodeState.id, update, "TextGenerate");
-        // renderHtml(update.results);
+    function saveResults()
+    {
+        viewState.updateNode(
+            nodeState.id, 
+            {
+                part : nodeState.activeTab,
+                results : nodeState.results
+            }, 
+            "TextGenerate");
     }
     
     function getModelDesc()
@@ -91,20 +105,37 @@
 
     function showParams()
     {
-        // viewState.generateParams.Show(nodeState);
-
-        new Modal(
-            ParamsView, 
+        const modal = new Modal(
+            ModelSelect, 
             {
-                viewState, 
-                nodeState
+                app : viewState.app,
+                modelId : nodeState.modelId,
+                providerId : nodeState.providerId,
+                onShowSettings : () => viewState.showSettings(),
+
+                onModelSelected : model => 
+                {
+                    viewState.updateNode(
+                        nodeState.id, 
+                        {
+                            provider : model.providerId, 
+                            model : model.id
+                        }, 
+                        "ModelChange");
+                    
+                    nodeState.modelId = model.id;
+                    nodeState.providerId = model.providerId;
+                    viewState.settings.AddRecentModel(model);
+                    modal.close();
+                }
             }, 
             [
                 "svelte-obsidian", 
                 "canvas-llm", 
-                "svelte-llm-model-select-container"
-            ])
-            .open();
+                "svelte-llm-model-select"
+            ]);
+
+        modal.open();
     }
 
     function getSwitchPartLabel()
@@ -226,11 +257,7 @@
     right: 1px;
   }
 
-  node-header-left
-  {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  
 
   node-header-right .mod-cta
   {

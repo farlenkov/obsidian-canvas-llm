@@ -15,6 +15,7 @@
             "changeDialogueRole");
 
         nodeState.updateNodeTooltip();
+        nodeState.updateAllowSteps();
         nodeState.updateHandles();
     }
     
@@ -40,7 +41,7 @@
             [
                 "svelte-obsidian", 
                 "canvas-llm", 
-                "svelte-llm-model-select-container"
+                "svelte-llm-model-select"
             ]);
 
         modal.open();

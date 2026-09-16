@@ -39,13 +39,14 @@ export default class FileInputNodeState extends NodeState
         this.isFolder = $state(false);
         this.isNotFound = $state(false);
         this.openedFiles = {};
+        this.watchedFiles = {};
         this.supportedExtensions = Object.keys(this.fileReaders);
 
         // this.graph.plugin.onFileModify.on(this.onFileModify);
         // this.graph.plugin.onFileRename.on(this.onFileRename);
     }
 
-    async init(data)
+    init(data)
     {
         super.init(data);
         
@@ -53,13 +54,7 @@ export default class FileInputNodeState extends NodeState
         this.targetPath = data.path;
         this.exclude = data.exclude || [];
 
-        // console.log("init > read", data.path);
-        const text = await this.read(this.targetPath);
-
-        if (!text)
-            this.preview = [];
-        else
-            this.parsePlaceholders(text);
+        this.readTargetFiles();
     }
 
     destroy()
@@ -68,9 +63,29 @@ export default class FileInputNodeState extends NodeState
         // this.graph.plugin.onFileRename.off(this.onFileRename);
     }
 
+    async readTargetFiles()
+    {
+        if (!this.targetPath)
+        {
+            this.isNotFound = false;
+            this.preview = [];
+            return;
+        }        
+        
+        const text = await this.read(this.targetPath);
+
+        if (!text)
+            this.preview = [];
+        else
+            this.parsePlaceholders(text);
+
+        return text;
+    }
+
     onFileModify(file)
     {
-        // console.log("onFileModify", this);
+        if (this.watchedFiles[file.path])
+            this.readTargetFiles();
     }
 
     onFileRename(files)
@@ -80,33 +95,58 @@ export default class FileInputNodeState extends NodeState
 
     async read(path, tabs)
     {
-        const file = this.app.vault.getAbstractFileByPath(path);
-
-        if (!file)
-            return null;
+        // OPENED IN CYCLE ?
 
         if (this.openedFiles[path])
             return;
+        
+        // IS ROOT ?
+
+        const isRoot = !tabs;
+
+        if (isRoot)
+        {
+            this.watchedFiles = {};
+            this.isNotFound = false;
+        }
+
+        // FILE EXISTS ?
+
+        const file = this.app.vault.getAbstractFileByPath(path);
+
+        if (!file)
+        {
+            if (isRoot)
+                this.isNotFound = true;
+
+            return;
+        }
+
+        // FILE READABLE ?
 
         const reader = this.fileReaders[file.extension || 'folder'];
 
         if (!reader)
-            return "";
+            return;
+
+        // READING...
 
         const preview = [];
         tabs = tabs ? tabs : "";
 
+        this.watchedFiles[path] = true;
         this.openedFiles[path] = true;
         const text = await reader.read(file, tabs, preview);
         delete this.openedFiles[path];
+
+        // READ DONE
         
-        if (!tabs)
+        if (isRoot)
         {
             this.preview = preview;
             this.isFolder = file.extension ? false : true;
         }
 
-        // console.log("[read]", "preview:", this.preview, "text:", text);
         return text;
     }
 }

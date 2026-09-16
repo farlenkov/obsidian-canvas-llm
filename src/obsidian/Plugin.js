@@ -25,13 +25,15 @@ export default class MyPlugin extends Plugin
 
     async onload() 
     {
-        this.settings = new SettingsState(this, 
-        {
+        this.settings = new SettingsState(this);        
+        
+        await this.settings.init
+        ({
             ...llmSettings.getDefaults(), 
             ...McpHost.getDefaultSettings()
         });
-        
-        this.mcp = new McpHost(this);        
+
+        this.mcp = new McpHost(this);
         llmSettings.Init(this);
 
         this.registerFileRenameHandler();

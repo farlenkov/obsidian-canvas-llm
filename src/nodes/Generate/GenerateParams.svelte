@@ -1,29 +1,30 @@
 <script>
 
-    import ModelSelect from '$lib/svelte-llm/settings/ModelSelect.svelte';
+    // import ModelSelect from '$lib/svelte-llm/settings/ModelSelect.svelte';
 
-    const { viewState, nodeState, modal } = $props();
+    // const { viewState, nodeState, modal } = $props();
 
-    function onModelSelected(model)
-    {
-        viewState.updateNode(
-            nodeState.id, 
-            {
-                provider : model.providerId, 
-                model : model.id
-            }, 
-            "ModelChange");
+    // function onModelSelected(model)
+    // {
+    //     viewState.updateNode(
+    //         nodeState.id, 
+    //         {
+    //             provider : model.providerId, 
+    //             model : model.id
+    //         }, 
+    //         "ModelChange");
         
-        nodeState.modelId = model.id;
-        nodeState.providerId = model.providerId;
-        viewState.settings.AddRecentModel(model);
-        modal.close();
-    }
+    //     nodeState.modelId = model.id;
+    //     nodeState.providerId = model.providerId;
+    //     viewState.settings.AddRecentModel(model);
+    //     modal.close();
+    // }
 
 </script>
 
-<ModelSelect
+<!-- <ModelSelect
+    app = {viewState.app}
     onModelSelected = {onModelSelected}
     onShowSettings = {() => viewState.showSettings()}
     modelId = {nodeState.modelId }
-    providerId = {nodeState.providerId}/>
+    providerId = {nodeState.providerId}/> -->

@@ -28,16 +28,3 @@
     </button>
 
 {/if}
-
-<style>
-
-    button
-    {
-        display: flex;
-        flex-direction: row;
-        gap: 0.5em;
-        align-items: center;
-        justify-content: center;
-    }
-
-</style>

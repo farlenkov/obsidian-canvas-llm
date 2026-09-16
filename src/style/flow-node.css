@@ -24,7 +24,7 @@
             node-header
             {
                 display: flex;
-                flex-direction: row;
+                /* flex-direction: row; */
                 justify-content: space-between;
                 min-width: 0;
 
@@ -36,7 +36,7 @@
                 node-header-right
                 {
                     display: flex;
-                    flex-direction: row;
+                    /* flex-direction: row; */
                     align-items: center;
                     padding: 0.1em 0.25em 0.1em 0.5em; 
                     height: 100%;
@@ -47,6 +47,8 @@
                 {
                     font: var(--font-interface-theme);
                     white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
 
                 node-header-right 

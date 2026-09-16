@@ -1,3 +1,4 @@
+
 export default class ContextMenuState
 {
     IsVisible = $state(false);
@@ -11,6 +12,11 @@ export default class ContextMenuState
 
     CanvasWidth = $state(0);
     CanvasHeight = $state(0);
+
+    constructor (viewState)
+    {
+        this.viewState = viewState;
+    }
 
     ShowPane (event) { this.#Show(event); }
 

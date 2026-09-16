@@ -60,8 +60,7 @@
 
     async function readFiles()
     {
-        const text = await nodeState.read(nodeState.targetPath);
-        nodeState.parsePlaceholders(text);
+        const text = await nodeState.readTargetFiles();
         return text;
     }
 

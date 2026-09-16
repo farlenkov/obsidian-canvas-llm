@@ -4,8 +4,8 @@
     import { useSvelteFlow } from '@xyflow/svelte';
     import { SquareXIcon, CopyPlus } from 'lucide-svelte';
 
-    import FileSelectModal from '$lib/svelte-obsidian/src/FileSelectModal.js';
     import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
+    import FileSelectModal from '$lib/svelte-obsidian/src/FileSelectModal.js';
     import { createNodeId, createEdgeId } from '$lib/graph/CreateId';
 
     const viewState = getContext("viewState");
@@ -89,7 +89,9 @@
                 {
                     const newId = createNodeId();
                     const oldId = node.id;
+
                     node.id = idMap[oldId] = newId;
+                    node.selected = true
 
                     if (node.type === 'dialogue' &&
                         node.data.messages &&
@@ -113,13 +115,20 @@
                     edge.id = createEdgeId();
                 }
 
-                viewState.graph.nodes = [...viewState.graph.nodes, ...canvas.nodes];
+                const oldNodes = viewState.graph.nodes.map(node => ({...node, selected : false}));
+                viewState.graph.nodes = [...oldNodes, ...canvas.nodes];
                 viewState.graph.edges = [...viewState.graph.edges, ...canvas.edges];
                 viewState.saveGraph("insertFromFile");
             })
             .open();
 
       viewState.contextMenu.Hide();
+    }
+
+    function clickContext(menuItem)
+    {
+        menuItem.callback();
+        viewState.contextMenu.Hide();
     }
 
   </script>
@@ -131,18 +140,32 @@
         style:left={viewState.contextMenu.Left}
         style:right={viewState.contextMenu.Right}
         style:bottom={viewState.contextMenu.Bottom}
-        class="context-menu- menu">
+        class="menu">
     
         {#if viewState.contextMenu.Node}
 
-            <div class="context-menu-item- menu-item tappable is-warning" onclick={nodeRemove}>
+            {#if viewState.contextItems[viewState.contextMenu.Node.id]}
+                {#each viewState.contextItems[viewState.contextMenu.Node.id] as menuItem}
+                    <div class="menu-item tappable {menuItem.class}" onclick={() => clickContext(menuItem)}>
+                        
+                        <svelte:component 
+                            this={menuItem.icon} 
+                            size={24} 
+                            class="menu-item-icon" />
+
+                        <div class="menu-item-title">{menuItem.label}</div>
+                    </div>
+                {/each}
+            {/if}
+
+            <div class="menu-item tappable is-warning" onclick={nodeRemove}>
                 <SquareXIcon size={24} class="menu-item-icon" />
-                <div class="menu-item-title">Delete node</div>
+                <div class="menu-item-title">DELETE NODE</div>
             </div>
 
         {:else if viewState.contextMenu.Edge}
 
-            <div class="context-menu-item- menu-item tappable is-warning" onclick={edgeRemove}>
+            <div class="menu-item tappable is-warning" onclick={edgeRemove}>
                 <SquareXIcon size={24} class="menu-item-icon" />
                 <div class="menu-item-title">Delete edge</div>
             </div>
@@ -152,7 +175,7 @@
             {#each nodeTypes.List as nodeType}
 
                 <div 
-                    class="context-menu-item- menu-item tappable" 
+                    class="menu-item tappable" 
                     aria-label="{nodeType.desc}"
                     onclick={() => addNode(nodeType)}>
 
@@ -167,7 +190,7 @@
             {/each}
 
         <div 
-            class="context-menu-item- menu-item tappable" 
+            class="menu-item tappable" 
             aria-label="Copy graph from another Canvas LLM file"
             onclick={insertFromFile}>
 
@@ -191,11 +214,6 @@
     {
         position: absolute;
         z-index: 10;
-    }
-
-    .menu-item.tappable:hover
-    {
-        background-color: var(--background-modifier-hover);
     }
 
     .menu-item:not(.tappable)

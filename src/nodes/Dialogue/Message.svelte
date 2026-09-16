@@ -1,15 +1,20 @@
 <script>
 
     import { onMount } from 'svelte';
-    import { RefreshCcw, ChevronLeft, ChevronRight, Lightbulb, ArrowUp, SquarePen, X } from 'lucide-svelte';
+    import { RefreshCcw, ChevronLeft, ChevronRight, Lightbulb, ArrowUp, SquarePen, X, ArrowUpToLine, ArrowDownToLine } from 'lucide-svelte';
     import { delay } from '$lib/svelte-obsidian/src/Async.js';
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
+    import GenericButton from '../Common/GenericButton.svelte';
     import RunButton from './RunButton.svelte';
 
     const {nodeState, viewState, message, messageNum, saveMessages} = $props();
     
     let textarea;
+    let rootEl = $state();
+    let headEl = $state();
+    // disabled={rootEl?.previousElementSibling}
+    // disabled={rootEl?.nextElementSibling}
 
     onMount(() => 
     {
@@ -126,14 +131,36 @@
         });
     }
 
+    function scrollUp()
+    {
+        scroll(rootEl);
+    }
+
+    function scrollDown()
+    {
+        scroll(rootEl.nextElementSibling);
+    }
+
+    function scroll(child) 
+    {
+        const parent = nodeState.nodeBody;
+
+        parent.scrollTo
+        ({
+            behavior: 'smooth',
+            top: child.offsetTop - headEl.scrollHeight - 8
+        });
+    }
+
 </script>
 
 {#if message}
 
     <div 
         class="dialogue-message"
-        class:edit={message.id === nodeState.editId}>
-        <div class="dialogue-message-head">
+        class:edit={message.id === nodeState.editId}
+        bind:this={rootEl}>
+        <div class="dialogue-message-head" bind:this={headEl}>
             <div 
                 class="dialogue-message-role"
                 aria-label={message.model}>
@@ -142,7 +169,16 @@
             </div>
             <div class="dialogue-message-buttons">
 
+                <GenericButton 
+                    onclick={scrollUp} 
+                    icon={ArrowUpToLine} 
+                    label="Scroll up" />
                 
+                <GenericButton 
+                    onclick={scrollDown} 
+                    icon={ArrowDownToLine} 
+                    label="Scroll down" />
+
                 {#if message.id !== nodeState.editId}
 
                     {#if nodeState.hasVariations(nodeState.parentIds[message.id])}

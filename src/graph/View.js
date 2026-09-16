@@ -5,8 +5,8 @@ import ContextMenuState from '$lib/menu/ContextMenu.svelte.js';
 import SettingsView from '$lib/svelte-llm/settings/Settings.svelte';
 import settings from '$lib/svelte-llm/settings/Settings.js';
 
-import providers from '$lib/svelte-llm/models/ProviderInfo.js';
-import models from '$lib/svelte-llm/models/ModelInfo.js';
+import providers from '$lib/svelte-llm/models/Providers.js';
+import models from '$lib/svelte-llm/models/Models.js';
 
 import Graph from '$lib/graph/Graph.svelte';
 
@@ -32,7 +32,8 @@ export default class CanvasView extends FileView // https://docs.obsidian.md/Ref
 
         // LOCAL
 
-        this.contextMenu = new ContextMenuState();
+        this.contextMenu = new ContextMenuState(this);
+        this.contextItems = {};
     }
 
     showSettings()
@@ -90,5 +91,6 @@ export default class CanvasView extends FileView // https://docs.obsidian.md/Ref
     {
         super.onUnloadFile(file);
         this.plugin.onFileClose(file);
+        this.contextMenu.Hide();
     }
 }

@@ -66,7 +66,7 @@
             const resp = await requestUrl(options);
             const text = await resp.text;
             return { role : "user", content : `<${googleDocsUrl.type}>\n${text}\n</${googleDocsUrl.type}>` };
-        }        
+        }
         
         const html = await webView.executeJavaScript(`document.documentElement.outerHTML`);
         const doc = (new DOMParser).parseFromString(html, 'text/html');
@@ -98,7 +98,21 @@
                     return { type : "doc", url : `https://docs.google.com/document/d/${matchDoc[1]}/export?format=md` };
 
                 if (matchSheet)
-                    return { type : "csv", url : `https://docs.google.com/spreadsheets/d/${matchSheet[1]}/export?format=csv` };
+                {
+                    // gid может быть либо в query (?gid=...), либо в hash (#gid=...)
+                    const gidFromQuery = parsedUrl.searchParams.get("gid");
+                    const gidFromHash = parsedUrl.hash.match(/gid=(\d+)/)?.[1];
+                    const gid = gidFromQuery || gidFromHash;
+
+                    const exportUrl = 
+                        `https://docs.google.com/spreadsheets/d/${matchSheet[1]}/export?format=csv` +
+                        (gid ? `&gid=${gid}` : '');
+
+                    return { type: "csv", url: exportUrl };
+                }
+
+                // if (matchSheet)
+                //     return { type : "csv", url : `https://docs.google.com/spreadsheets/d/${matchSheet[1]}/export?format=csv` };
             }
         } 
         catch (e)
