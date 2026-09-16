@@ -95,6 +95,14 @@ Other OpenAI-compatible local runtimes may also work, but have not been tested o
 
 ## More Screenshots
 
+Model selection:
+
+![Model selection](assets/screenshots/model_select.png)
+
+Model parameters:
+
+![Model parameters](assets/screenshots/model_params.png)
+
 Example of use `File input` node and `Template` mode:
 
 ![File input and Template mode example](assets/screenshots/file_input_template.png)
