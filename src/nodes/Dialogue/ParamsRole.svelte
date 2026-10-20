@@ -1,9 +1,9 @@
 <script>
 
-    import { Settings, X } from 'lucide-svelte';
+    import { Settings } from 'lucide-svelte';
     import NodeState from './DialogueNode.svelte.js';
     import Modal from '$lib/svelte-obsidian/src/Modal.js';
-    import ModelSelect from '$lib/svelte-llm/settings/ModelSelect.svelte';
+    import ModelSelect from '$lib/svelte-llm/model-select/ModelSelect.svelte';
 
     const { nodeState, viewState, role, role2, index } = $props();
 
@@ -25,6 +25,7 @@
             ModelSelect, 
             {
                 app : viewState.app,
+                state : nodeState.modelSelect,
                 modelId : role.model,
                 providerId : role.provider,
                 onShowSettings : () => viewState.showSettings(),

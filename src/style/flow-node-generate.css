@@ -1,0 +1,11 @@
+.canvas-llm
+{
+    .svelte-flow__node-generate 
+    {
+        .switch-version
+        {
+            padding: var(--size-4-1) var(--size-4-2);
+        }
+    }
+}
+

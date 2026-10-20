@@ -1,7 +1,7 @@
 <script>
 
     import { getContext, onMount } from 'svelte';
-    import { RotateCw, ArrowRight, ArrowLeft, Globe } from 'lucide-svelte';
+    import { RotateCw, ArrowRight, ArrowLeft, Globe, Bubbles } from 'lucide-svelte';
     import { useUpdateNodeInternals } from '@xyflow/svelte';
     import TurndownService from "turndown";
 
@@ -42,12 +42,12 @@
         
         const updateNodeInternals = useUpdateNodeInternals();
         nodeState.updateNodeInternals.add(updateNodeInternals);
-        viewState.graph.getNodeContent[id] = getMessage;
+        viewState.graph.nodeContent.add(id, getMessage);
 
         return () => 
         {
             nodeState.updateNodeInternals.del(updateNodeInternals);
-            delete viewState.graph.getNodeContent[id];
+            viewState.graph.nodeContent.del(id, getMessage);
         };
     });
 
@@ -234,12 +234,10 @@
         <node-content>
             <node-header>
                 <node-header-left>
-                    {#if nodeState.title}
-                        {nodeState.title}
-                    {:else}
-                        <Globe size={16}/> Web
-                    {/if}
-                    <!-- {nodeState.title || "🌐 Web" } -->
+                    <!-- <Bubbles size={16} color="#ffffff" /> -->
+                    📟
+                    {nodeState.title || "Web"}                    
+                    <!-- {nodeState.title || "🌎🌐📡 Web" } -->
                 </node-header-left>
                 <node-header-right>
 

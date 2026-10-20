@@ -136,7 +136,11 @@ export default class FileInputNodeState extends NodeState
 
         this.watchedFiles[path] = true;
         this.openedFiles[path] = true;
-        const text = await reader.read(file, tabs, preview);
+        let text;
+        
+        try { text = await reader.read(file, tabs, preview); }
+        catch (error) { console.error(error); }
+
         delete this.openedFiles[path];
 
         // READ DONE

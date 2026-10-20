@@ -3,10 +3,10 @@ import Plugin from '$lib/svelte-obsidian/src/Plugin.js';
 import { defaultGraph } from '$lib/graph/Graph.default.js';
 import { EventEmitter } from '$lib/svelte-obsidian/src/Event.js';
 import { sleep, delay } from '$lib/svelte-obsidian/src/Async.js';
-import SettingsState from '$lib/svelte-obsidian/src/Settings.js';
+import SettingsState from '$lib/svelte-obsidian/src/Settings.svelte.js';
 
 import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
-import llmSettings from '$lib/svelte-llm/settings/Settings.js';
+import llmSettings from '$lib/svelte-llm/settings/Settings.svelte.js';
 
 import GraphState from '$lib/graph/Graph.svelte.js';
 import CanvasView from '../graph/View.js';
@@ -19,22 +19,18 @@ const MENU_ICON = 'workflow';
 
 export default class MyPlugin extends Plugin 
 {
+    settings = new SettingsState();
+    mcp = new McpHost();
+
     onFileModify = new EventEmitter();
     onFileRename = new EventEmitter();
     openedGraphs = {};
 
     async onload() 
-    {
-        this.settings = new SettingsState(this);        
-        
-        await this.settings.init
-        ({
-            ...llmSettings.getDefaults(), 
-            ...McpHost.getDefaultSettings()
-        });
-
-        this.mcp = new McpHost(this);
-        llmSettings.Init(this);
+    {    
+        await this.settings.init(this);
+        this.mcp.init(this);
+        llmSettings.init(this);
 
         this.registerFileRenameHandler();
         this.registerFileModifyHandler();
@@ -42,6 +38,9 @@ export default class MyPlugin extends Plugin
         this.registerFileView(ClaudeView);
         this.registerFileView(ChatGptView);
         this.registerFileView(DeepSeekView);
+        
+        if (this.settings.Data.shortenFileTags)
+            this.shortenFileTags();
 
         this.registerMenuItem(
             'New Canvas LLM',
@@ -193,5 +192,46 @@ export default class MyPlugin extends Plugin
         graph.loadFromFile(fileText);
 
         return graph;
+    }
+
+    shortenFileTags()
+    {
+        const EXT = '.canvas-llm';
+        const SHORT = 'llm';
+        const observed = new WeakSet();
+
+        const hookExplorers = () =>
+        {
+            for (const leaf of this.app.workspace.getLeavesOfType('file-explorer')) 
+            {
+                const container = leaf.view.containerEl;
+                
+                if (observed.has(container)) 
+                    continue;
+
+                observed.add(container);
+
+                const observer = new MutationObserver(() => shortenTags(container));
+                observer.observe(container, { childList: true, subtree: true });
+                this.register(() => observer.disconnect());
+
+                shortenTags(container);
+            }
+        }
+
+        const shortenTags = (container) =>
+        {
+            const tags = container.querySelectorAll(`.nav-file-title[data-path$="${EXT}"] .nav-file-tag`);
+            
+            for (const el of tags)
+                if (el.textContent !== SHORT) 
+                    el.textContent = SHORT;
+        }
+
+        this.app.workspace.onLayoutReady(() => 
+        {
+            hookExplorers();
+            this.registerEvent( this.app.workspace.on('layout-change', () => hookExplorers()) );
+        });
     }
 }

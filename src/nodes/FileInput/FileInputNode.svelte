@@ -9,6 +9,7 @@
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import TemplatingButton from '../Common/TemplatingButton.svelte';
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
+    import HeadingsButton from '../Common/HeadingsButton.svelte';
     import NodeResizer from '../Common/NodeResizer.svelte';
     import Handles from '../Common/Handles.svelte';
     import FileSelectModal from '$lib/svelte-obsidian/src/FileSelectModal.js';
@@ -16,6 +17,7 @@
     const { id } = $props();
     const viewState = getContext("viewState");
     const nodeState = viewState.graph.getNodeState(id);
+    let bodyEl;
 
     let isDragOver = $state(false);
 
@@ -24,31 +26,58 @@
             ? (isFilePath(nodeState.targetName) ? "📃 " : "📁 ") + nodeState.targetName 
             : "🚫 File not selected");
 
-    // $effect(() => 
-    // {
-    //     if (nodeState.targetPath) 
-    //         renderHtml();
-    // });
+    $effect(() => 
+    {
+        nodeState.preview.toString();
+        refreshHeadings();
+    });
+
+    const getContextItems = () => 
+    {
+        if (!nodeState.targetPath)
+            return [];
+
+        const contextItems = 
+        [{
+            title : `Show target`,
+            icon : "square-arrow-up-left",
+            onclick : () => 
+            {
+                const item = viewState.app.vault.getAbstractFileByPath(nodeState.targetPath);
+                const explorer = viewState.app.workspace.getLeavesOfType("file-explorer")[0];
+
+                if (explorer) 
+                {
+                    explorer.view.revealInFolder(item);
+                    viewState.app.workspace.revealLeaf(explorer);
+                }
+            }
+        },
+        {
+            title : `Reset node`,
+            class : "is-danger",
+            icon : "square-x",
+            onclick : () => 
+            {
+                onFileChange();
+            }
+        }];
+
+        return contextItems;
+    };
 
     onMount(() => 
-    {
-        // if (nodeState.targetPath) 
-        //     renderHtml();
-
-        // viewState.plugin.onFileModify.on(onFileModify);
-        // viewState.plugin.onFileRename.on(onFileRename);
-        
+    {        
         const updateNodeInternals = useUpdateNodeInternals();
         nodeState.updateNodeInternals.add(updateNodeInternals);
-        viewState.graph.getNodeContent[id] = getMessage;
+        viewState.graph.nodeContent.add(id, getMessage);
+        viewState.contextItems.add(id, getContextItems);
 
         return () => 
-        {
-            // viewState.plugin.onFileModify.off(onFileModify);
-            // viewState.plugin.onFileRename.off(onFileRename);
-            
+        {            
             nodeState.updateNodeInternals.del(updateNodeInternals);
-            delete viewState.graph.getNodeContent[id];
+            viewState.graph.nodeContent.del(id, getMessage);
+            viewState.contextItems.del(id, getContextItems);
         };
     });
 
@@ -64,63 +93,20 @@
         return text;
     }
 
-    // function onFileModify(file)
-    // {
-    //     if (file.path === nodeState.targetPath)
-    //         renderHtml();
-    // }
-
-    // function onFileRename(batch)
-    // {
-    //     // console.log("onFileRename", batch, "nodeState.targetPath", nodeState.targetPath);
-    //     console.log("onFileRename > read", nodeState.targetPath);
-    //     renderHtml();
-        
-    //     // if (oldPath === nodeState.targetPath)
-    //     // {
-    //     //     onFileChange(file);
-    //     //     return;
-    //     // }
-
-    //     // let isChanged = false;
-    //     // let exclude = [...nodeState.exclude];
-
-    //     // for (let i = 0; i < exclude.length; i++)
-    //     // {
-    //     //     if (exclude[i] === oldPath)
-    //     //     {
-    //     //         exclude[i] = file.path;
-    //     //         isChanged = true;
-    //     //     }
-    //     // }
-
-    //     // if (isChanged)
-    //     // {
-    //     //     nodeState.exclude = exclude;
-    //     //     onExcludeChange();
-    //     // }
-
-    //     // if (oldPath.indexOf(nodeState.targetPath) === 0)
-    //     //     isChanged = true;
-
-    //     // if (isChanged)
-    //     //     renderHtml();
-    // }
-
     function onFileChange(file)
     {
         viewState.updateNode(
             id, 
             {
-                name : file.name, 
-                path : file.path
+                name : file?.name, 
+                path : file?.path
             }, 
             "changeFileInput");
 
-        nodeState.targetName = file.name;
-        nodeState.targetPath = file.path;
+        nodeState.targetName = file?.name;
+        nodeState.targetPath = file?.path;
         readFiles();
-        // renderHtml();
+        // refreshHeadings();
     } 
 
     function onClickSelectFile ()
@@ -179,25 +165,22 @@
         onFileChange(file);
     }
 
-    // async function renderHtml()
-    // {
-    //     isNotFound = false;
+    function clickHeader(el)
+    {
+        bodyEl.scrollTo
+        ({
+            behavior: 'smooth',
+            top: el.offsetTop
+        });
+    }
 
-    //     if (!nodeState.targetPath)
-    //     {
-    //         nodeState.parsePlaceholders("");
-    //         return;
-    //     }
-
-    //     await readFiles();
-
-    //     if (!nodeState.preview ||
-    //         nodeState.preview.length == 0)
-    //     {
-    //         isNotFound = true;
-    //         return;
-    //     }
-    // }
+    function refreshHeadings(callback)
+    {
+        if (callback)
+            refreshHeadings.callback = callback;
+        else
+            refreshHeadings.callback?.();
+    }
 
 </script>
 
@@ -225,6 +208,17 @@
                 </node-header-left>
 
                 <node-header-right>
+
+                    {#if !nodeState.isFolder && !nodeState.isNotFound}
+                        <HeadingsButton 
+                            {bodyEl}
+                            app={viewState.app}
+                            class="clickable-icon"
+                            onclick={clickHeader}
+                            target={nodeState.targetPath}
+                            refresh={refreshHeadings} />
+                    {/if}
+
                     <TemplatingButton {nodeState} {viewState} />
                     <CopyTextButton {nodeState} />
                     <ParamsButton onclick={onClickSelectFile} label="Select file" />
@@ -232,7 +226,9 @@
 
             </node-header>
 
-            <node-body class="nodrag nozoom nomenu node-text markdown-rendered">
+            <node-body
+                bind:this={bodyEl} 
+                class="nodrag nozoom nomenu node-text markdown-rendered">
 
                 {#if nodeState.isNotFound}
                     <error>
@@ -278,7 +274,6 @@
                 {/if}
 
             </node-body>
-
         </node-content>
     </div>
 </div>

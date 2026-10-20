@@ -7,25 +7,27 @@
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import TemplatingButton from '../Common/TemplatingButton.svelte';
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
+    import HeadingsButton from '../Common/HeadingsButton.svelte';
     import NodeResizer from '../Common/NodeResizer.svelte';
     import Handles from '../Common/Handles.svelte';
 
     const { id } = $props();
     const viewState = getContext("viewState");
     const nodeState = viewState.graph.getNodeState(id);  
+    let bodyEl;
     
     onMount(() => 
     {
         const updateNodeInternals = useUpdateNodeInternals();
         nodeState.updateNodeInternals.add(updateNodeInternals);
-        viewState.graph.getNodeContent[id] = getMessage;
+        viewState.graph.nodeContent.add(id, getMessage);
         
         nodeState.parsePlaceholders(nodeState.value);
 
         return () => 
         {
             nodeState.updateNodeInternals.del(updateNodeInternals);
-            delete viewState.graph.getNodeContent[id];
+            viewState.graph.nodeContent.del(id, getMessage);
         };
     });
 
@@ -44,6 +46,15 @@
     {
         nodeState.isRead = !nodeState.isRead;
         viewState.updateNode(id, {read : nodeState.isRead}, "ReadMode");
+    }
+
+    function clickHeader(el)
+    {
+        bodyEl.scrollTo
+        ({
+            behavior: 'smooth',
+            top: el.offsetTop
+        });
     }
 
 </script>
@@ -65,9 +76,17 @@
         <node-content>
             <node-header>
                 <node-header-left>
-                    {nodeState.isRead ? "Note" : "Input"}
+                    📝 {nodeState.isRead ? "Note" : "Input"}
                 </node-header-left>
                 <node-header-right>
+
+                    {#if nodeState.isRead}
+                        <HeadingsButton 
+                            {bodyEl}
+                            app={viewState.app}
+                            class="clickable-icon"
+                            onclick={clickHeader} />
+                    {/if}
 
                     <button 
                         type="button"
@@ -89,7 +108,7 @@
             </node-header>
 
             {#if nodeState.isRead}
-                <node-body class="nodrag nozoom nomenu node-text markdown-rendered">
+                <node-body bind:this={bodyEl} class="nodrag nozoom nomenu node-text markdown-rendered">
                     <MarkdownRenderer markdown={nodeState.value} />
                 </node-body>
             {:else}

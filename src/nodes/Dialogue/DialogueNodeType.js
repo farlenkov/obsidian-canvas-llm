@@ -1,4 +1,4 @@
-import { MessagesSquare } from 'lucide-svelte';
+import settings from '$lib/svelte-llm/settings/Settings.svelte.js';
 import NodeType from '../Type/NodeType.js';
 import NodeView from './DialogueNode.svelte';
 import NodeState from './DialogueNode.svelte.js';
@@ -10,10 +10,13 @@ export default class DialogueNodeType extends NodeType
     desc = "Add node for dialogue simulation";
     view = NodeView;
     state = NodeState;
-    icon = MessagesSquare;
+    icon = 'messages-square';
+    category = 'output';
 
     getDefault()
     {
+        const defaultModel = settings.GetDefaultModel();
+
         return {
             type : this.id, 
             width : 460, 
@@ -24,16 +27,18 @@ export default class DialogueNodeType extends NodeType
                 
                 "roles" : 
                 [{
-                    "provider" : "openai",
-                    "model" : "gpt-5.4-nano",
-                    "name" : "",
-                    "bot" : true
+                    "provider" : defaultModel.providerId,
+                    "model" : defaultModel.id,
+                    "name" : "User",
+                    "bot" : false
                 },
                 {
-                    "provider" : "openai",
-                    "model" : "gpt-5.4-nano",
-                    "name" : "",
-                    "bot" : true
+                    "provider" : defaultModel.providerId,
+                    "model" : defaultModel.id,
+                    "name" : "Assist",
+                    "bot" : true,
+                    "auto" : true,
+                    "memory" : true
                 }]
             }};
     }

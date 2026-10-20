@@ -1,23 +1,14 @@
 .canvas-llm
 {
-    .menu-item
-    {
-        .menu-item-icon-textInput { color: var(--color-orange); }
-        .menu-item-icon-fileInput { color: var(--color-purple); }
-        .menu-item-icon-webInput { color: var(--color-purple); }
-        .menu-item-icon-generate  { color: #00abff; }
-        .menu-item-icon-dialogue  { color: #00abff; }
-        .menu-item-icon-insertFromFile {  }
-    }
+    .menu-item-textInput .menu-item-icon { color: var(--color-orange); }
+    .menu-item-fileInput .menu-item-icon { color: var(--color-purple); }
+    .menu-item-webInput  .menu-item-icon { color: var(--color-purple); }
+    .menu-item-generate  .menu-item-icon { color: #00abff; }
+    .menu-item-dialogue  .menu-item-icon { color: #00abff; }
 
     .menu-item.tappable:hover,
     .vertical-tab-nav-item:hover
     {
         background-color: var(--background-modifier-hover);
-    }
-
-    .menu-item.is-warning .menu-item-icon 
-    { 
-        color: red; 
     }
 }

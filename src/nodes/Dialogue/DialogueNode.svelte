@@ -1,12 +1,13 @@
 <script>
 
     import { getContext, onMount } from 'svelte';
-    import { Play, XIcon, ArrowUpToLine, ArrowDownToLine, FileXCorner, Hourglass } from 'lucide-svelte';
+    import { Play, XIcon, ArrowUpToLine, ArrowDownToLine, Hourglass, Loader } from 'lucide-svelte';
     import { useUpdateNodeInternals } from '@xyflow/svelte';
     import { delay, sleep } from '$lib/svelte-obsidian/src/Async.js';
 
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
+    import HeadingsButton from '../Common/HeadingsButton.svelte';
     import GenericButton from '../Common/GenericButton.svelte';
     import NodeResizer from '../Common/NodeResizer.svelte';
     import Handles from '../Common/Handles.svelte';
@@ -21,46 +22,124 @@
     const stepsVariants = [100, 40, 20, 10, 4, 2, 1];
     
     let hideStepsMenu = $state(false);
-    
-    nodeState.onStartEdit.on(scrollToBottom);
+    let nodeBody = $state();
 
-    const contextItems =
-    [{
-        label : "CLEAR MESSAGES",
-        class : "is-warning",
-        icon : FileXCorner,
-        callback : () => 
-        {
-            nodeState.clearMessages();
-            saveMessages();
-        }
-    }];
+    const getContextItems = () =>
+    {
+        if (Object.keys(nodeState.messages).length == 0)
+            return [];
+        
+        const contextItems =
+        [{
+            title : "Delete all messages",
+            class : "is-danger",
+            icon : "message-square-x",
+            onclick : () => 
+            {
+                nodeState.clearMessages();
+                saveMessages("Delete messages");
+            }
+        }];
+
+        return contextItems;
+    };
 
     onMount(() => 
     {
         scrollToBottom();
 
         const updateNodeInternals = useUpdateNodeInternals();
-        nodeState.updateNodeInternals.add(updateNodeInternals);
-        viewState.graph.getNodeContent[id] = getMessage;
-        viewState.contextItems[id] = contextItems;
+        
+        nodeState.updateNodeInternals.on(updateNodeInternals);
+        nodeState.onStartEdit.on(scrollToBottom);
+        
+        viewState.graph.nodeContent.add(id, getMessage);
+        viewState.contextItems.add(id, getContextItems);
 
         return () => 
         {
-            nodeState.updateNodeInternals.del(updateNodeInternals);
-            delete viewState.graph.getNodeContent[id];
-            delete viewState.contextItems[id];
+            nodeState.updateNodeInternals.off(updateNodeInternals);
+            nodeState.onStartEdit.off(scrollToBottom);
+
+            viewState.graph.nodeContent.del(id, getMessage);
+            viewState.contextItems.del(id, getContextItems);
         };
     });
 
-    function scrollToBottom(timeout = 100)
+    async function scrollToBottom(timeout = 100)
     {
-        delay(timeout, () => 
-        {
-            if (!nodeState.nodeBody)
-                return;
+        await sleep(timeout);
 
-            nodeState.nodeBody.scrollTop = nodeState.nodeBody.scrollHeight;
+        if (nodeBody)
+            nodeBody.scrollTop = nodeBody.scrollHeight;
+    }
+
+    function scrollToElement(messageEl, minusOffset = 0, instant = false) 
+    {
+        if (!messageEl)
+            return;
+
+        nodeBody.scrollTo
+        ({
+            behavior: instant ? 'instant' : 'smooth',
+            top: messageEl.offsetTop - (minusOffset ?? 0)
+        });
+    }
+
+    function clickUp(ev)
+    {
+        if (ev.shiftKey)
+            nodeBody.scrollTop = 0;
+        else
+            scrollToNearest('up');
+    }
+
+    function clickDown(ev)
+    {
+        if (ev.shiftKey)
+            nodeBody.scrollTop = nodeBody.scrollHeight;
+        else
+            scrollToNearest('down');
+    }
+
+    function scrollToNearest(direction) 
+    {
+        const containerRect = nodeBody.getBoundingClientRect();
+        const scaleY = containerRect.height / nodeBody.offsetHeight;
+
+        if (!scaleY) 
+            return;
+
+        const epsilon = 4;
+        const items = [...nodeBody.querySelectorAll('.dialogue-message')];
+
+        const candidates = items
+            .map(item => 
+            ({
+                item,
+                top: item.getBoundingClientRect().top
+            }))
+            .filter(({ top }) => 
+            {
+                return direction === 'up'
+                    ? top < containerRect.top - epsilon
+                    : top > containerRect.top + epsilon;
+            })
+            .sort((a, b) => a.top - b.top);
+
+        if (!candidates.length) 
+            return;
+        
+        const target = direction === 'up'
+            ? candidates[candidates.length - 1]
+            : candidates[0];
+
+        const delta = (target.top - containerRect.top) / scaleY;
+
+        nodeBody.scrollBy
+        ({
+            top: delta - epsilon / 2,
+            behavior: 'smooth'
         });
     }
 
@@ -97,7 +176,7 @@
             while(nodeState.progressStep <= nodeState.progressSteps)
             {
                 await nodeState.generate();
-                saveMessages();
+                saveMessages("clickGenerate");
 
                 nodeState.progressStep++;
 
@@ -124,8 +203,11 @@
         nodeState.progressSteps = nodeState.progressStep;
     }
 
-    function saveMessages()
+    function saveMessages(note)
     {
+        // console.log(`saveMessages (${note})`);
+        refreshHeadings();
+
         viewState.updateNode(
             nodeState.id,
             { messages : nodeState.messages },
@@ -145,19 +227,32 @@
         hideStepsMenu = false;
     }
 
-    nodeState.onMessageAdd = msg =>
+    nodeState.onMessageAdd = async msg =>
     {
-        setTimeout(() => 
+        await sleep(100);
+        refreshHeadings();
+
+        if (nodeState.inProgress)
         {
-            const lastMessageEL = nodeState.nodeBody?.querySelector('.dialogue-message:last-of-type');
+            scrollToBottom();
+            return;
+        }
 
-            if (lastMessageEL)
-            {
-                // console.log("[onMessageAdd]", "offsetTop:", lastMessageEL.offsetTop, "scrollHeight:", nodeBody.scrollHeight)
-                nodeState.nodeBody.scrollTop = lastMessageEL.offsetTop;
-            }
+        const messageEls = nodeBody.querySelectorAll('.dialogue-message:not(.edit)');
 
-        }, 100);
+        if (!messageEls.length)
+            return;
+        
+        const lastMsgEl = messageEls[messageEls.length - 1];
+        scrollToElement(lastMsgEl, 0, true);
+    }
+
+    function refreshHeadings(callback)
+    {
+        if (callback)
+            refreshHeadings.callback = callback;
+        else
+            refreshHeadings.callback?.();
     }
 
 </script>
@@ -173,36 +268,46 @@
         <node-content>
             <node-header>
                 <node-header-left aria-label={nodeState.nodeTooltip}>
-                    <div>
                         {#if nodeState.inProgress}
-                            ⏳{nodeState.progressStep}/{nodeState.progressSteps}&nbsp;&nbsp;
+                            <Loader size={16} class="rotate"/> 
+                            {nodeState.progressStep}/{nodeState.progressSteps}&nbsp;&nbsp;
                         {/if}
-                        🗪 {nodeState.title || "Dialogue"}
-                    </div>
+                        💬 {nodeState.title || "Dialogue"}
                 </node-header-left>
                 <node-header-right>
+
+                    <HeadingsButton 
+                        bodyEl={nodeBody}
+                        app={viewState.app}
+                        title="Scroll to message:"
+                        class="clickable-icon"
+                        selector=".dialogue-message"
+                        onclick={scrollToElement}
+                        refresh={refreshHeadings} />
                     
                     <GenericButton 
-                        onclick={ev => nodeState.nodeBody.scrollTop = 0} 
+                        onclick={clickUp} 
                         icon={ArrowUpToLine} 
-                        label="Scroll to top" />
+                        label={"Scroll up ▲\n[Shift] Scroll to top"} />
                     
                     <GenericButton 
-                        onclick={ev => nodeState.nodeBody.scrollTop = nodeState.nodeBody.scrollHeight} 
+                        onclick={clickDown} 
                         icon={ArrowDownToLine} 
-                        label="Scroll to bottom" />
+                        label={"Scroll down ▼\n[Shift] Scroll to bottom"} />
 
                     <CopyTextButton {nodeState} label="Copy thread" />
                     <ParamsButton onclick={showParams} />
                 </node-header-right>
             </node-header>
 
-            <node-body class="nodrag nozoom nomenu node-text markdown-rendered" bind:this={nodeState.nodeBody}>
+            <node-body 
+                class="nodrag nozoom nomenu node-text markdown-rendered" 
+                bind:this={nodeBody}>
 
                 {#if nodeState.error}
                     <error>
                         <div>
-                            {@html nodeState.error}
+                            {nodeState.error}
                         </div>
                         <button type="button" class="btn-dark" onclick={() => {nodeState.error = false}}>
                             <XIcon size={24} strokeWidth={2}/>
@@ -210,8 +315,15 @@
                     </error>
                 {/if}
                 
-                {#each nodeState.currentThread as message, messageNum}
-                    <Message {message} {messageNum} {nodeState} {viewState} {saveMessages}/>
+                {#each nodeState.currentThread as message, messageNum (message.id)}
+                    <Message 
+                        {message} 
+                        {messageNum} 
+                        {nodeState} 
+                        {viewState} 
+                        {nodeBody} 
+                        {saveMessages}
+                        {scrollToElement} />
                 {/each}
 
                 {#if !nodeState.editId}
@@ -262,7 +374,7 @@
                                                 <XIcon size={16} />
                                             {:else}
                                                 <Hourglass size={16} />
-                                            {/if}                                            
+                                            {/if}
                                         </button>
                                     {/if}
                                 {/if}
@@ -271,7 +383,13 @@
                         </div>
 
                     {:else}
-                        <Message {nodeState} {viewState} {saveMessages} messageNum={nodeState.currentThread.length+1} />
+                        <Message 
+                            {nodeState} 
+                            {viewState} 
+                            {nodeBody} 
+                            {saveMessages} 
+                            {scrollToElement}
+                            messageNum={nodeState.currentThread.length + 1} />
                     {/if}
                 {/if}
 

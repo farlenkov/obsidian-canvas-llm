@@ -8,6 +8,9 @@ class NodeTypes
 {
     constructor ()
     {
+        this.ById = {};
+        this.Views = {};
+
         this.List = 
         [
             new TextInputNodeType(),
@@ -17,8 +20,11 @@ class NodeTypes
             new DialogueNodeType()
         ];
 
-        this.ById = {};
-        this.List.forEach(nodeType => this.ById[nodeType.id] = nodeType);
+        for (const nodeType of this.List)
+        {
+            this.ById[nodeType.id] = nodeType;
+            this.Views[nodeType.id] = nodeType.view;
+        }
     }
 }
 

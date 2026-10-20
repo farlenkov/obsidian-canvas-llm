@@ -20,6 +20,8 @@
 
             margin: 0.5em;
 
+            .switch-version { font-size: 1em; }
+
             .dialogue-message-head
             {
                 display: flex;
@@ -50,7 +52,7 @@
                     align-items: center;
                     /* flex-direction: row; */
 
-                    .dialogue-message-variants
+                    .dialogue-message-versions
                     {
                         display: flex;
                         /* flex-direction: row; */

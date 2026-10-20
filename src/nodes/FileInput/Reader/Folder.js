@@ -45,7 +45,9 @@ export default class FolderReader extends FileReader
             if (!this.nodeState.exclude.includes(child.path))
             {
                 const text = await this.nodeState.read(child.path, tabs + '\t');
-                result += text;
+
+                if (text)
+                    result += text;
             }
         }
 

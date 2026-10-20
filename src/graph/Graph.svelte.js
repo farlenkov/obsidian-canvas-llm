@@ -1,7 +1,8 @@
-import { createNodeId, createEdgeId } from '$lib/graph/CreateId';
+import { createId } from '$lib/svelte-obsidian/src/CreateId';
 import { PlaceholderSet } from '$lib/svelte-obsidian/src/Placeholder.js';
 import { EventEmitter } from '$lib/svelte-obsidian/src/Event.js';
 import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
+import ListSet from './ListSet';
 
 export default class GraphState
 {
@@ -15,9 +16,10 @@ export default class GraphState
         this.app = plugin.app;
         this.nodes = $state.raw([]);
         this.edges = $state.raw([]);
-        this.getNodeContent = {};
+        
         this.nodeStates = {};
         this.onChange = new EventEmitter();
+        this.nodeContent = new ListSet();
     }
 
     loadFromFile(fileJson)
@@ -75,7 +77,7 @@ export default class GraphState
         {
             source : sourceId, 
             target: targetId, 
-            id : createEdgeId(sourceId, targetId)
+            id : createId()
         };
 
         if (targetHandle)
@@ -238,7 +240,7 @@ export default class GraphState
         if (typeof node !== 'object')
             node = this.nodes.find(node2 => node2.id === node);
         
-        const message = await this.getNodeContent[node.id]();
+        const message = await this.nodeContent.getSingle(node.id)?.();
 
         usedNodes = usedNodes || {};
         usedNodes[node.id] = message;

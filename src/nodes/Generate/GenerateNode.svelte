@@ -1,7 +1,7 @@
 <script>
 
 	import { getContext, onMount } from 'svelte';
-    import { Play, Loader, XIcon, Lightbulb, FileXCorner } from 'lucide-svelte';
+    import { Play, Loader, XIcon, Lightbulb } from 'lucide-svelte';
     import { useUpdateNodeInternals } from '@xyflow/svelte';
     
     import Modal from '$lib/svelte-obsidian/src/Modal.js';
@@ -10,53 +10,105 @@
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
     import NodeResizer from '../Common/NodeResizer.svelte';
     import Handles from '../Common/Handles.svelte';
-    import ModelSelect from '$lib/svelte-llm/settings/ModelSelect.svelte';
+    import VersionButton from '../Common/VersionsButton.svelte';
+    import HeadingsButton from '../Common/HeadingsButton.svelte';
+    import ModelSelect from '$lib/svelte-llm/model-select/ModelSelect.svelte';
 
     const { id } = $props();
     const viewState = getContext("viewState");
     const nodeState = viewState.graph.getNodeState(id);  
 
-    const contextItems =
-    [{
-        label : "CLEAR GENERATIONS",
-        class : "is-warning",
-        icon : FileXCorner,
-        callback : () => 
+    let bodyEl;
+
+    const getContextItems = () => 
+    {
+        if (!nodeState.results?.length)
+            return [];
+
+        const contextItems = [];
+
+        // if (nodeState.results.length > 1)
+        // {
+        //     menu.push
+        //     ({
+        //         title : `Edit generation`,
+        //         icon : "square-pen",
+        //         disabled : nodeState.inProgress,
+        //         onclick : () => startEdit()
+        //     });
+        // }
+
+        contextItems.push
+        ({
+            title : `Delete generation (${nodeState.activeTab + 1}/${nodeState.results.length})`,
+            class : "is-danger",
+            icon : "square-x",
+            onclick : () => 
+            {
+                nodeState.deleteResult(nodeState.activeTab);
+                saveResults();
+            }
+        });
+        
+        if (nodeState.results.length > 1)
         {
-            nodeState.clearResults();
-            saveResults();
+            contextItems.push
+            ({
+                title : `Delete all generations (${nodeState.results.length})`,
+                class : "is-danger",
+                icon : "copy-x",
+                onclick : () => 
+                {
+                    nodeState.clearResults();
+                    saveResults();
+                }
+            });
         }
-    }];
+
+        return contextItems;
+    };
     
     onMount(() => 
     { 
         const updateNodeInternals = useUpdateNodeInternals();
         nodeState.updateNodeInternals.add(updateNodeInternals);
-        viewState.graph.getNodeContent[id] = getMessage;
-        viewState.contextItems[id] = contextItems;
+        viewState.graph.nodeContent.add(id, getMessage);
+        viewState.contextItems.add(id, getContextItems);
 
         return () =>
         {
             nodeState.updateNodeInternals.del(updateNodeInternals);
-            delete viewState.graph.getNodeContent[id];
-            delete viewState.contextItems[id];
+            viewState.graph.nodeContent.del(id, getMessage);
+            viewState.contextItems.del(id, getContextItems);
         };
     });
 
     async function getMessage()
     {
-        if (!nodeState.results ||
-            nodeState.results.length === 0)
-            return { role : "assistant", content : "" };
-
-        const result = nodeState.results[nodeState.activeTab || 0];
-        const text = result.text;
-        return { role : "assistant", content : text };
+        const result = nodeState.getCurrentResult();
+        return { role : "assistant", content : result?.text ?? "" };        
     }
 
-    function clickNextPart()
+    // function startEdit()
+    // {
+    //     nodeState.startEdit();
+    //     saveEdit();
+    // }
+
+    // function saveEdit()
+    // {        
+    //     viewState.updateNode(
+    //         nodeState.id,
+    //         { 
+    //             editId : nodeState.editId,
+    //             edit   : nodeState.editText,
+    //         },
+    //         "editDialogueMessage");
+    // }
+
+    function setVersion(num)
     {
-        nodeState.nextPart();
+        nodeState.setVersion(num);
 
         viewState.updateNode(
             nodeState.id,
@@ -109,6 +161,7 @@
             ModelSelect, 
             {
                 app : viewState.app,
+                state : nodeState.modelSelect,
                 modelId : nodeState.modelId,
                 providerId : nodeState.providerId,
                 onShowSettings : () => viewState.showSettings(),
@@ -138,23 +191,14 @@
         modal.open();
     }
 
-    function getSwitchPartLabel()
+    function clickHeader(el)
     {
-        return `Switch part (${nodeState.activeTab + 1}/${nodeState.results.length}) \n ${nodeState.results[nodeState.activeTab].model}`;
+        bodyEl.scrollTo
+        ({
+            behavior: 'smooth',
+            top: el.offsetTop
+        });
     }
-
-    // function renderHtml(results)
-    // {
-    //     if (nodeState.results.length <= nodeState.activeTab)
-    //     {
-    //         nodeState.textToRender = "";
-    //         return;
-    //     }
-
-    //     const result = nodeState.results[nodeState.activeTab];
-    //     nodeState.textToRender = nodeState.showThink ? result.think : result.text;
-    //     nodeState.hasThink = result.think ? true : false;
-    // }
 
 </script>
 
@@ -170,6 +214,7 @@
         <node-content>
             <node-header>
                 <node-header-left>
+                    ✨ 
                     {#if nodeState.modelId}
                         <div aria-label="{getModelDesc()}">
                             {nodeState.modelId}
@@ -180,6 +225,13 @@
                 </node-header-left>
 
                 <node-header-right>
+
+                    <HeadingsButton 
+                        {bodyEl}
+                        app={viewState.app}
+                        class="clickable-icon"
+                        onclick={clickHeader} />
+
                     {#if nodeState.hasThink}
                         {#if !nodeState.showThink}
                             <button 
@@ -199,12 +251,12 @@
                     {/if}
 
                     {#if nodeState.results?.length > 1}
-                        <button 
-                            class="next-part"
-                            aria-label={getSwitchPartLabel()}
-                            onclick={clickNextPart}>
-                            {nodeState.activeTab + 1}
-                        </button>
+                        <VersionButton 
+                            app={viewState.app}
+                            onclick={setVersion}
+                            class="clickable-icon"
+                            versions={nodeState.results}
+                            versionNum={nodeState.activeTab} />
                     {/if}
 
                     {#if !nodeState.inProgress}
@@ -223,13 +275,15 @@
 
             </node-header>
 
-            <node-body class="nodrag nozoom nomenu node-text markdown-rendered">
+            <node-body class="nodrag nozoom nomenu node-text markdown-rendered" bind:this={bodyEl}>
 
                 <MarkdownRenderer markdown={nodeState.textToRender} />
 
                 {#if nodeState.errorMessage}
                     <error>
+                    
                         {nodeState.errorMessage}
+
                         <button type="button" class="btn-dark" onclick={() => {nodeState.errorMessage = ""}}>
                             <XIcon size={24} strokeWidth={2}/>
                         </button>
@@ -244,11 +298,6 @@
 
 <style>
 
-  button.next-part
-  {
-    padding: var(--size-4-1) var(--size-4-2);
-  }
-
   error
   {
     position: fixed;
@@ -256,8 +305,6 @@
     left: 1px;
     right: 1px;
   }
-
-  
 
   node-header-right .mod-cta
   {

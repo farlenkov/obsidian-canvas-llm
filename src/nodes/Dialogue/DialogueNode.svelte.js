@@ -1,16 +1,16 @@
-import { createId } from '$lib/graph/CreateId';
+import { createId } from '$lib/svelte-obsidian/src/CreateId.js';
 import { extractTag } from '$lib/svelte-obsidian/src/String.js';
 import { EventEmitter } from '$lib/svelte-obsidian/src/Event.js';
 import aiClient from '$lib/svelte-llm/models/AiClient.js';
 import NodeState from '../Common/NodeState.svelte.js';
+import ModelSelectState from '$lib/svelte-llm/model-select/ModelSelect.svelte.js';
 
 export default class DialogueNodeState extends NodeState
 {
-    variantNum = {};
+    versionNums = {};
     parentIds = {};
     onStartEdit = new EventEmitter();
-    nodeBody = null;
-
+    
     static ROLE_LABELS = [ "Role A", "Role B" ];
 
     constructor(id, graph)
@@ -38,6 +38,8 @@ export default class DialogueNodeState extends NodeState
 
         this.nodeTooltip = $state('');
         this.nodeHandles = $state([]);
+        
+        this.modelSelect = new ModelSelectState();
     }
 
     init(data)
@@ -164,11 +166,15 @@ export default class DialogueNodeState extends NodeState
                 const isMyMessage = roleIndex === message.role;
                 const role = isMyMessage ? "assistant" : "user";
 
-                const content = !message.private
+                const content = isMyMessage
                     ? message.text
-                    : isMyMessage
-                        ? message.text
-                        : message.public;
+                    : message.public || message.text;
+                
+                // !message.private
+                //     ? message.text
+                //     : isMyMessage
+                //         ? message.text
+                //         : message.public;
 
                 messages.push({ role : role, content : content });
             }
@@ -180,11 +186,11 @@ export default class DialogueNodeState extends NodeState
                     role : "user", 
 
                     content : 
-                        `### Response format\n` + 
-                        `Always respond in this format, without any external explanations:\n` +
-                        // `<memory>\nYour secret thoughts and info that you want to hide from your interlocutor. Only you will see this in next turns.\n</memory>\n` +
-                        `<memory>\nYour secret thoughts and info that you want to hide from everyone except you. You must use this field to remember information that will be available to you and only you in future requests.\n</memory>\n` +
-                        `<message>\nYour answer addressed to your interlocutor. DO NOT describe any internal thoughts here. You can use markdown format.\n</message>`
+                        '### Response format\n' + 
+                        'Always respond in this format, without any external explanations:\n' +
+                        // '<memory>\nYour secret thoughts and info that you want to hide from your interlocutor. Only you will see this in next turns.\n</memory>\n' +
+                        '<memory>\nYour secret thoughts and info that you want to hide from everyone except you. You must use this field to remember information that will be available to you and only you in future requests. DO NOT mention using of `memory` and `message` tags. LANGUAGE: write this field in the same language the user writes in.\n</memory>\n' +
+                        '<message>\nYour answer addressed to your interlocutor. DO NOT describe any internal thoughts here. You can use markdown format.\n</message>'
                 });
             }
 
@@ -238,16 +244,31 @@ export default class DialogueNodeState extends NodeState
         const memory = extractTag(newMessage.text, "memory");
         const message = extractTag(newMessage.text, "message");
 
-        if (memory && message)
+        if (message)
         {
-            newMessage.private = memory;
             newMessage.public = message;
+
+            if (memory)
+                newMessage.private = memory;
+            else
+                delete newMessage.private;
         }
         else
         {
             delete newMessage.private;
             delete newMessage.public;
         }
+        
+        // if (memory && message)
+        // {
+        //     newMessage.private = memory;
+        //     newMessage.public = message;
+        // }
+        // else
+        // {
+        //     delete newMessage.private;
+        //     delete newMessage.public;
+        // }
 
         if (system)
             newMessage.system = system;
@@ -282,7 +303,7 @@ export default class DialogueNodeState extends NodeState
         this.hasMessages = this.currentThread.length > 0;
     }
 
-    hasVariations(parentId)
+    hasVersions(parentId)
     {
         const messagesByParent = this.messages[parentId || this.rootId];
 
@@ -292,20 +313,13 @@ export default class DialogueNodeState extends NodeState
             return messagesByParent.length > 1;
     }
 
-    switchVariation(message, change)
+    setVersion(message, newVersion)
     {
         let parentId = this.parentIds[message.id];
         let messagesByParent = this.messages[parentId];
-        let currentVariation = this.variantNum[message.id] - 1;
-        let newVariation = currentVariation + change;
-
-        if (newVariation < 0)
-            newVariation = messagesByParent.length - 1;
-        else if (newVariation >= messagesByParent.length)
-            newVariation = 0;
 
         for (var i = 0; i < messagesByParent.length; i++)
-            messagesByParent[i].isActive = (i == newVariation);
+            messagesByParent[i].isActive = (i == newVersion);
         
         this.updateCurrentThread();
     }
@@ -331,22 +345,26 @@ export default class DialogueNodeState extends NodeState
         this.inputText = null;
     }
 
-    submitEdit()
+    async submitEdit()
     {
+        if (!this.editText?.trim())
+            return;
+        
         const oldMessage = this.getMessageById(this.editId);
-        const oldRole = this.roles[oldMessage.role];
 
         if (!oldMessage)
         {
             this.resetEdit();
             return;
         }
-
+        
         if (oldMessage.text === this.editText)
         {
             this.resetEdit();
             return;
         }
+        
+        const oldRole = this.roles[oldMessage.role];
 
         if (!oldMessage.model &&
             !this.messages[oldMessage.id]?.length)
@@ -374,11 +392,14 @@ export default class DialogueNodeState extends NodeState
         const parentId = this.parentIds[oldMessage.id];
         this.addMessage(newMessage, parentId);
         this.resetEdit();
-        this.tryAutoReply();
+        await this.tryAutoReply();
     }
 
-    submitInput()
+    async submitInput()
     {
+        if (!this.inputText?.trim())
+            return;
+        
         const thread = this.currentThread;
 
         const newMessage = 
@@ -395,10 +416,10 @@ export default class DialogueNodeState extends NodeState
             
         this.addMessage(newMessage, parentId);
         this.resetInput();
-        this.tryAutoReply();
+        await this.tryAutoReply();
     }
 
-    tryAutoReply()
+    async tryAutoReply()
     {
         const thread = this.currentThread;
         const prevRole = this.roles[(thread.length - 1) % 2];
@@ -408,7 +429,7 @@ export default class DialogueNodeState extends NodeState
             nextRole.bot && 
             nextRole.auto)
         {
-            this.generate();
+            await this.generate();
         }
     }
 
@@ -534,7 +555,7 @@ export default class DialogueNodeState extends NodeState
             this.rootId,
             this.messages,
             this.parentIds,
-            this.variantNum,
+            this.versionNums,
             lastParentId || this.editId
         );
     }
@@ -549,7 +570,7 @@ export default class DialogueNodeState extends NodeState
         rootId, 
         messages, 
         parentIds = {}, 
-        variantNum = {}, 
+        versionNums = {}, 
         lastParentId = undefined)
     {
         let parentId = rootId;
@@ -565,6 +586,8 @@ export default class DialogueNodeState extends NodeState
             if (!messagesByParent)
                 break;
 
+            let dontStop = false;
+
             for (var i = 0; i < messagesByParent.length; i++)
             {
                 const message = messagesByParent[i];
@@ -572,17 +595,50 @@ export default class DialogueNodeState extends NodeState
 
                 if (message.isActive)
                 {
-                    variantNum[message.id] = i + 1;
+                    versionNums[message.id] = i + 1;
                     parentId = message.id;
+                    dontStop = true;
                     thread.push(message);
                     break;
                 }
             }
+
+            if (!dontStop)
+                break;
 
             if (parentId == lastParentId)
                 break;
         }
 
         return thread;
+    }
+
+    deleteVersion (message)
+    {
+        const parent_id = this.parentIds[message.id] || this.rootId;
+        const messages_by_same_parent = this.messages[parent_id];
+        this.messages[parent_id] = messages_by_same_parent.filter(m => m.id != message.id);
+
+        let delete_count = this.deleteMessagesByParent(message.id);
+        
+        const new_version = Math.max(0, this.versionNums[message.id]-2);
+        this.setVersion(message, new_version);
+
+        return delete_count + (messages_by_same_parent.length - this.messages[parent_id].length);
+    }
+
+    deleteMessagesByParent (parent_id)
+    {
+        let delete_count = 0;
+        const child_messages = this.messages[parent_id];
+
+        if (!child_messages)
+            return 0;
+
+        for (const child_message of child_messages)
+            delete_count += this.deleteMessagesByParent(child_message.id);
+
+        delete this.messages[parent_id];
+        return delete_count + child_messages.length;
     }
 }

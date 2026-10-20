@@ -22,4 +22,4 @@
     {onclick} 
     isActive={nodeState.isTemplate} 
     icon={Braces} 
-    label="Use templating" />
+    label={"Enable templating.\nType {{ name }} to insert a placeholder."} />

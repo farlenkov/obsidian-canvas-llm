@@ -1,6 +1,7 @@
 import providers from '$lib/svelte-llm/models/Providers.js';
 import aiClient from '$lib/svelte-llm/models/AiClient.js';
 import NodeState from '../Common/NodeState.svelte.js';
+import ModelSelectState from '$lib/svelte-llm/model-select/ModelSelect.svelte.js';
 
 export default class GenerateNodeState extends NodeState
 {
@@ -21,7 +22,9 @@ export default class GenerateNodeState extends NodeState
         this.errorMessage = $state("");
         this.textToRender = $state("");
 
-        $effect(() => { this.updatevProviderAndModel(); });
+        this.modelSelect = new ModelSelectState();
+
+        $effect(() => { this.updateProviderAndModel(); });
     }
 
     async init(data)
@@ -33,11 +36,11 @@ export default class GenerateNodeState extends NodeState
         this.providerId = data.provider;
         this.modelId = data.model;
 
-        this.updatevProviderAndModel();
+        this.updateProviderAndModel();
         this.updateCurrentText();
     }
 
-    async updatevProviderAndModel()
+    async updateProviderAndModel()
     {
         while (!providers.List)
             await new Promise(resolve => setTimeout(resolve, 1));
@@ -46,15 +49,30 @@ export default class GenerateNodeState extends NodeState
         this.model = this.provider ? this.provider.ModelById[this.modelId] : null;
     }
 
+    getCurrentResult()
+    {
+        if (!this.results?.length ||
+            this.results.length <= this.activeTab)
+        {
+            return;
+        }
+        else
+        {
+            return this.results[this.activeTab];
+        }
+    }
+
     updateCurrentText()
     {
-        if (this.results.length <= this.activeTab)
+        const result = this.getCurrentResult();
+
+        if (!result)
         {
+            this.hasThink = false;
             this.textToRender = "";
             return;
         }
 
-        const result = this.results[this.activeTab];
         this.textToRender = this.showThink ? result.think : result.text;
         this.hasThink = result.think ? true : false;
     }
@@ -83,26 +101,25 @@ export default class GenerateNodeState extends NodeState
 
             const oldResults = this.results.filter(md => md ? true : false);
             this.results = [...oldResults, result];
-            this.activeTab = this.results.length - 1;
+
+            this.setVersion(this.results.length - 1);
+            // this.activeTab = this.results.length - 1;
         }
         catch (err)
         {
-            this.errorMessage = err;
+            this.errorMessage = err?.message || String(err);
             // throw err;
         }
 
         this.inProgress = false;
-        this.updateCurrentText();
+        // this.updateCurrentText();
     }
 
-    nextPart()
+    setVersion(num)
     {
-        this.activeTab = (this.activeTab + 1) % this.results.length;
+        this.activeTab = num;
         this.showThink = false;
         this.updateCurrentText();
-
-        // viewState.saveGraph("NextPart");
-        // renderHtml(data.results);
     }
 
     toggleThink(value)
@@ -129,10 +146,10 @@ export default class GenerateNodeState extends NodeState
         // remove html & htmls
             
         if (data.html)
-            delete node.data.html;
+            delete data.html;
 
         if (data.htmls)
-            delete node.data.htmls;
+            delete data.htmls;
 
         // markdown to markdowns
 
@@ -179,6 +196,15 @@ export default class GenerateNodeState extends NodeState
     {
         this.results = [];
         this.activeTab = 0;
+        this.showThink = false;
+        this.updateCurrentText();
+    }
+
+    deleteResult (num)
+    {
+        this.results.splice(num, 1);
+        this.activeTab = Math.max(0, Math.min(this.results.length - 1, this.activeTab));
+        this.showThink = false;
         this.updateCurrentText();
     }
 }

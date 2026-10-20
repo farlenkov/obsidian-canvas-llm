@@ -109,7 +109,7 @@ export default class CanvasLLMReader extends FileReader
             for (const edge of canvas.edges)
             {
                 const socket = edge.targetHandle 
-                    ? ` "toSocket"="{{ ${edge.targetHandle} }}" ` 
+                    ? ` "toSocket"="{{ ${escapeXmlAttr(edge.targetHandle)} }}" ` 
                     : "";
 
                 result += `${tabs}\t<edge "fromCard"="${edge.source}" "toCard"="${edge.target}"${socket}/>\n`;

@@ -21,10 +21,13 @@ export default class CanvasReader extends FileReader
 
             const requiredIds = {};
 
-            for (const edge of canvas.edges)
+            if (canvas.edges)
             {
-                requiredIds[edge.fromNode] = true;
-                requiredIds[edge.toNode] = true;
+                for (const edge of canvas.edges)
+                {
+                    requiredIds[edge.fromNode] = true;
+                    requiredIds[edge.toNode] = true;
+                }
             }
 
             // NODES > CARDS
@@ -60,7 +63,7 @@ export default class CanvasReader extends FileReader
                         : "Unidirectional";
 
                 const label = edge.label 
-                    ? ` "label"="${edge.label}" ` 
+                    ? ` "label"="${escapeXmlAttr(edge.label)}" ` 
                     : "";
 
                 result += `${tabs}\t<edge "fromCard"="${edge.fromNode}" "toCard"="${edge.toNode}" "type"="${type}"${label}/>\n`;

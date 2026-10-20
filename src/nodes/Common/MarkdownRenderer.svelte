@@ -3,14 +3,16 @@
 	import { getContext, onMount } from 'svelte';
     import { MarkdownRenderer } from 'obsidian';
 
-    const { markdown, className, label } = $props();
+    let { markdown, className, label, headings } = $props();
     const viewState = getContext("viewState");
     let bodyEl;
 
     onMount(() => 
     { 
         if (markdown)
+        {
             renderHtml();
+        }
     });
 
     $effect(() => 

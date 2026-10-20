@@ -1,27 +1,49 @@
 <script>
 
     import { onMount } from 'svelte';
-    import { RefreshCcw, ChevronLeft, ChevronRight, Lightbulb, ArrowUp, SquarePen, X, ArrowUpToLine, ArrowDownToLine } from 'lucide-svelte';
-    import { delay } from '$lib/svelte-obsidian/src/Async.js';
+    import { RefreshCcw, Lightbulb, ArrowUp, SquarePen, X } from 'lucide-svelte';
+    import { delay, sleep } from '$lib/svelte-obsidian/src/Async.js';
+    import { showContextMenu } from '$lib/svelte-obsidian/src/Menu.js';
+    import { truncateByLength, escapeHtmlAttr } from '$lib/svelte-obsidian/src/String.js';
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
-    import GenericButton from '../Common/GenericButton.svelte';
     import RunButton from './RunButton.svelte';
+    import VersionsButton from '../Common/VersionsButton.svelte';
+    import HeadingsButton from '../Common/HeadingsButton.svelte';
 
-    const {nodeState, viewState, message, messageNum, saveMessages} = $props();
+    const {
+        nodeState, 
+        viewState, 
+        nodeBody,
+        message, 
+        messageNum, 
+        saveMessages, 
+        scrollToElement,
+        class:className} = $props();
     
     let textarea;
-    let rootEl = $state();
-    let headEl = $state();
-    // disabled={rootEl?.previousElementSibling}
-    // disabled={rootEl?.nextElementSibling}
+    let bodyEl, nodeHeadEl;
+    let navText = "";
+    let versions = [];
+    let versionNum = 0;
 
-    onMount(() => 
+    if (message)
+    {
+        versions = nodeState.messages[nodeState.parentIds[message.id] || nodeState.rootId];
+        versionNum = nodeState.versionNums[message.id]-1;
+        
+        let roleName = nodeState.getRoleName(message.role);
+        let navVersions = versions.length > 1 ? ' (' + (versionNum + 1) + '/' + (versions.length) + ')' : "";
+        let messageText = (message.public || message.text).replace(/\s*[\r\n]+\s*/g, ' ');
+        navText = escapeHtmlAttr(truncateByLength(`${messageNum + 1}: ${roleName}${navVersions} → ${messageText}`, 80));
+    }
+    
+    onMount(async () => 
     {
         textareaResize(100, true);
     });
 
-    function startEdit(message)
+    function startEdit()
     {
         nodeState.startEdit(message);
         textareaResize(1);
@@ -35,26 +57,26 @@
         saveEdit();
     }
 
-    function submitEdit()
+    async function submitEdit()
     {
-        nodeState.submitEdit();
+        await nodeState.submitEdit();
         textareaResize(100);
-        saveMessages();
+        saveMessages("submitEdit");
         saveEdit();
     }
 
-    function submitInput()
+    async function submitInput()
     {
-        nodeState.submitInput();
+        await nodeState.submitInput();
         textareaResize(100);
-        saveMessages();
+        saveMessages("submitInput");
         saveInput();
     }
 
-    async function generate(message)
+    async function clickGenerate()
     {
         await nodeState.generate(message);
-        saveMessages();
+        saveMessages("clickGenerate in Message");
     }
 
     function saveEdit()
@@ -82,10 +104,10 @@
         navigator.clipboard.writeText(copyText);
     }
 
-    function switchVariation(message, change)
+    function clickVersion(num)
     {
-        nodeState.switchVariation(message, change);
-        saveMessages();
+        nodeState.setVersion(message, num);
+        saveMessages("switchVersion");
     }
 
     let resizeCounter = 1;
@@ -102,27 +124,27 @@
 
             if (!skipScroll)
             {
-                nodeState.savedScrollTop = nodeState.nodeBody?.scrollTop;
+                nodeState.savedScrollTop = nodeBody?.scrollTop;
 
-                nodeState.wasAtBottom = nodeState.nodeBody 
-                    ? nodeState.nodeBody.scrollHeight - nodeState.nodeBody.clientHeight - nodeState.nodeBody.scrollTop < 30
+                nodeState.wasAtBottom = nodeBody 
+                    ? nodeBody.scrollHeight - nodeBody.clientHeight - nodeBody.scrollTop < 30
                     : false;
             }
             
             textarea.style.height = "auto";
-            textarea.style.height = textarea.scrollHeight + "px";
+            textarea.style.height = Math.max(20, textarea.scrollHeight) + "px";
 
             if (skipScroll)
                 return;
 
-            const counter = resizeCounter++;
+            // const counter = resizeCounter++;
 
             requestAnimationFrame(() => 
             {
-                if (!nodeState.nodeBody)
+                if (!nodeBody)
                     return;
                 
-                nodeState.nodeBody.scrollTop = nodeState.savedScrollTop + (nodeState.wasAtBottom ? 100 : 0);
+                nodeBody.scrollTop = nodeState.savedScrollTop + (nodeState.wasAtBottom ? 100 : 0);
                 // console.log(counter, "<", nodeState.wasAtBottom, nodeState.savedScrollTop);
 
                 delete nodeState.savedScrollTop;
@@ -131,25 +153,73 @@
         });
     }
 
-    function scrollUp()
+    function contextHead(event)
     {
-        scroll(rootEl);
-    }
+        const menu =
+        [{
+            app : viewState.app,
+            event : event,
+            class : 'svelte-obsidian',
+        }];
 
-    function scrollDown()
-    {
-        scroll(rootEl.nextElementSibling);
-    }
+        if (nodeState.roles[message.role].bot)
+        {
+            menu.push
+            ({
+                title : `Edit message`,
+                icon : "square-pen",
+                disabled : nodeState.inProgress,
+                onclick : () => startEdit()
+            });
+        }
 
-    function scroll(child) 
-    {
-        const parent = nodeState.nodeBody;
+        if (message && versions.length > 1)
+        {
+            menu.push
+            ({
+                title : `Delete version (${versionNum + 1}/${versions.length})`,
+                class : "is-danger",
+                icon : "list-x",
+                disabled : nodeState.inProgress,
+                onclick : () => 
+                {  
+                    const delete_count = nodeState.deleteVersion(message);
+                    nodeState.updateCurrentThread();
+                    saveMessages("deleteVersion");
+                    deleteNotice(delete_count);
+                }
+            });
+        }
 
-        parent.scrollTo
+        menu.push
         ({
-            behavior: 'smooth',
-            top: child.offsetTop - headEl.scrollHeight - 8
+            icon : "message-square-x",                
+            class : "is-warning",
+            title : `Delete message`,
+            disabled : nodeState.inProgress,
+
+            onclick : () => 
+            {
+                const parentId = nodeState.parentIds[message.id] || nodeState.rootId;
+                const delete_count = nodeState.deleteMessagesByParent(parentId);
+                nodeState.updateCurrentThread();
+                saveMessages("deleteMessagesByParent");
+                deleteNotice(delete_count);
+            }
         });
+
+        showContextMenu(menu);
+    }
+
+    function deleteNotice(delete_count)
+    {
+        if (delete_count > 0)
+            new Notice(delete_count + ` version(s) deleted`);
+    }
+
+    function clickHeader(headerEl)
+    {
+        scrollToElement(headerEl, nodeHeadEl.scrollHeight + 4);
     }
 
 </script>
@@ -157,56 +227,32 @@
 {#if message}
 
     <div 
-        class="dialogue-message"
-        class:edit={message.id === nodeState.editId}
-        bind:this={rootEl}>
-        <div class="dialogue-message-head" bind:this={headEl}>
+        class="dialogue-message {className}"
+        data-text={navText}
+        class:edit={message.id === nodeState.editId}>
+
+        <div 
+            class="dialogue-message-head" 
+            oncontextmenu={contextHead} 
+            bind:this={nodeHeadEl}>
+
             <div 
                 class="dialogue-message-role"
                 aria-label={message.model}>
                     <span class="dialogue-message-num">#{messageNum+1}</span> 
                     <span class="dialogue-message-role-name">{@html nodeState.getRoleName(message.role)}</span>
             </div>
+            
             <div class="dialogue-message-buttons">
-
-                <GenericButton 
-                    onclick={scrollUp} 
-                    icon={ArrowUpToLine} 
-                    label="Scroll up" />
-                
-                <GenericButton 
-                    onclick={scrollDown} 
-                    icon={ArrowDownToLine} 
-                    label="Scroll down" />
 
                 {#if message.id !== nodeState.editId}
 
-                    {#if nodeState.hasVariations(nodeState.parentIds[message.id])}
-                        <div class="dialogue-message-variants">
-
-                            <button 
-                                class="clickable-icon"
-                                aria-label="Prev variation"
-                                disabled={nodeState.inProgress}
-                                onclick={() => switchVariation(message, -1)}>
-                                <ChevronLeft size={16}/>
-                            </button>
-
-                            {nodeState.variantNum[message.id]}
-                            / 
-                            {nodeState.messages[nodeState.parentIds[message.id]].length}
-
-                            <button 
-                                class="clickable-icon"
-                                aria-label="Next variation"
-                                disabled={nodeState.inProgress}
-                                onclick={() => switchVariation(message, 1)}>
-                                <ChevronRight size={16}/>
-                            </button>
-
-                        </div>
-                    {/if}
-
+                    <HeadingsButton 
+                        {bodyEl}
+                        app={viewState.app}
+                        class="clickable-icon"
+                        onclick={clickHeader} />
+                   
                     {#if message.think}
                         {#if !nodeState.thinkSwitch[message.id]}
                             <button 
@@ -225,13 +271,38 @@
                         {/if}
                     {/if}
 
-                    <button 
-                        class="clickable-icon"
-                        aria-label="Edit message"
-                        disabled={nodeState.inProgress}
-                        onclick={() => startEdit(message)}>
-                        <SquarePen size={16}/>
-                    </button>
+                    {#if versions.length > 1}
+
+                        <VersionsButton 
+                            app={viewState.app}
+                            class="clickable-icon"
+                            onclick={num => clickVersion(num)}
+                            {versions}
+                            {versionNum} />
+
+                    {/if}
+
+                    {#if !nodeState.roles[message.role].bot}
+                        <button 
+                            class="clickable-icon"
+                            aria-label="Edit message"
+                            disabled={nodeState.inProgress}
+                            onclick={() => startEdit()}>
+                            <SquarePen size={16}/>
+                        </button>
+                    {/if}
+
+                    {#if nodeState.roles[message.role].bot}
+
+                        <RunButton
+                            inProgress={nodeState.inProgress}
+                            label1="Regenarate" 
+                            label2="Generating..." 
+                            class="clickable-icon",
+                            onclick={() => clickGenerate()}
+                            Icon={RefreshCcw} />
+
+                    {/if}
 
                     <CopyTextButton 
                         label="Copy message" 
@@ -254,22 +325,10 @@
                     </button>
 
                 {/if}
-                
-                {#if nodeState.roles[message.role].bot}
-
-                    <RunButton
-                        inProgress={nodeState.inProgress}
-                        label1="Regenarate" 
-                        label2="Generating..." 
-                        class="clickable-icon",
-                        onclick={() => generate(message)}
-                        Icon={RefreshCcw} />
-
-                {/if}
 
             </div>
         </div>
-        <div class="dialogue-message-body">
+        <div class="dialogue-message-body" bind:this={bodyEl}>
 
             {#if message.id !== nodeState.editId}
 
@@ -283,7 +342,7 @@
                         <MarkdownRenderer markdown={message.private} label="Memory" className="private" />
                         <MarkdownRenderer markdown={message.public} />
                     {:else}
-                        <MarkdownRenderer markdown={message.text} />
+                        <MarkdownRenderer markdown={message.public || message.text} />
                     {/if}
 
                 {:else}
@@ -306,7 +365,7 @@
 
 {:else}
 
-    <div class="dialogue-message edit">
+    <div class="dialogue-message edit" data-text={truncateByLength(`${messageNum}: You → ${nodeState.inputText || '...'}`, 80)}>
         <div class="dialogue-message-head">
             <div class="dialogue-message-role">
                 <span class="dialogue-message-num">#{messageNum}</span> 

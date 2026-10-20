@@ -1,4 +1,3 @@
-import { TextCursorInputIcon } from 'lucide-svelte';
 import NodeType from '../Type/NodeType.js';
 import NodeView from './TextInputNode.svelte';
 import NodeState from './TextInputNode.svelte.js';
@@ -10,7 +9,8 @@ export default class TextInputNodeType extends NodeType
     desc = "Add node for basic text prompts";
     view = NodeView;
     state = NodeState;
-    icon = TextCursorInputIcon;
+    icon = 'text-cursor-input';
+    category = 'input';
 
     getDefault()
     {

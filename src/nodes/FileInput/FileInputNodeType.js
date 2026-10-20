@@ -1,4 +1,3 @@
-import { FileUp } from 'lucide-svelte';
 import NodeType from '../Type/NodeType.js';
 import NodeView from './FileInputNode.svelte';
 import NodeState from './FileInputNode.svelte.js';
@@ -10,7 +9,8 @@ export default class FileInputNodeType extends NodeType
     desc = "Add node for file attachment";
     view = NodeView;
     state = NodeState;
-    icon = FileUp;
+    icon = 'file-up';
+    category = 'input';
 
     getDefault()
     {

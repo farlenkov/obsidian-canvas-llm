@@ -1,10 +1,10 @@
-import settings from '$lib/svelte-llm/settings/Settings.js';
-import { createNodeId, createEdgeId } from '$lib/graph/CreateId';
+import settings from '$lib/svelte-llm/settings/Settings.svelte.js';
+import { createId } from '$lib/svelte-obsidian/src/CreateId';
 
 export function defaultGraph()
 {
-    const node1 = createNodeId();
-    const node2 = createNodeId();
+    const node1 = createId();
+    const node2 = createId();
     const defaultModel = settings.GetDefaultModel();
 
     return {
@@ -34,7 +34,7 @@ export function defaultGraph()
         "edges" : 
         [
             {
-                "id" : createEdgeId(node1, node2),
+                "id" : createId(),
                 "source" : node1,
                 "target" : node2
             }
