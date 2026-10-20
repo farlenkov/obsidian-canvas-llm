@@ -110,7 +110,7 @@
         saveMessages("switchVersion");
     }
 
-    let resizeCounter = 1;
+    // let resizeCounter = 1;
 
     function textareaResize(timeout, skipScroll) 
     {

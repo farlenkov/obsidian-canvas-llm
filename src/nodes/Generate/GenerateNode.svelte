@@ -109,6 +109,7 @@
     function setVersion(num)
     {
         nodeState.setVersion(num);
+        refreshHeadings();
 
         viewState.updateNode(
             nodeState.id,
@@ -138,6 +139,8 @@
 
     function saveResults()
     {
+        refreshHeadings();
+
         viewState.updateNode(
             nodeState.id, 
             {
@@ -200,6 +203,14 @@
         });
     }
 
+    function refreshHeadings(callback)
+    {
+        if (callback)
+            refreshHeadings.callback = callback;
+        else
+            refreshHeadings.callback?.();
+    }
+
 </script>
 
 <NodeResizer 
@@ -230,7 +241,8 @@
                         {bodyEl}
                         app={viewState.app}
                         class="clickable-icon"
-                        onclick={clickHeader} />
+                        onclick={clickHeader}
+                        refresh={refreshHeadings} />
 
                     {#if nodeState.hasThink}
                         {#if !nodeState.showThink}
