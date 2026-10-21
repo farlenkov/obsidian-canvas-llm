@@ -8,11 +8,12 @@
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import Handles from '../Common/Handles.svelte';
     import NodeResizer from '../Common/NodeResizer.svelte';
+    import EditTitle from '../Common/EditTitle.js';
 
     const { id } = $props();
     const viewState = getContext("viewState");
     const nodeState = viewState.graph.getNodeState(id); 
-    
+
     let webView;
 
     const turndown = new TurndownService
@@ -27,6 +28,18 @@
         .replace(/\sObsidian\/[\d.]+/, '')
         .replace(/\sobsidian\/[\d.]+/, '');
 
+    const getContextItems = () =>
+    {
+        const contextItems = 
+        [
+            new EditTitle(
+                viewState, 
+                nodeState)
+        ];
+
+        return contextItems;
+    };
+
     onMount(() => 
     {
         // https://www.electronjs.org/docs/latest/api/webview-tag
@@ -39,15 +52,17 @@
         // watchAllEvents();
 
         webView.src = nodeState.url;
-        
+
         const updateNodeInternals = useUpdateNodeInternals();
         nodeState.updateNodeInternals.add(updateNodeInternals);
         viewState.graph.nodeContent.add(id, getMessage);
+        viewState.contextItems.add(id, getContextItems);
 
         return () => 
         {
             nodeState.updateNodeInternals.del(updateNodeInternals);
             viewState.graph.nodeContent.del(id, getMessage);
+            viewState.contextItems.del(id, getContextItems);
         };
     });
 
@@ -162,7 +177,7 @@
 
     function onTitleChange(e)
     {
-        nodeState.title = e.title.length > 30
+        nodeState.pageTitle = e.title.length > 30
             ? e.title.substring(0, 27) + "..."
             : e.title;
     }
@@ -170,7 +185,7 @@
     async function onPageLoaded(e)
     {
         webView.setZoomFactor(0.7);
-        
+
         webView.executeJavaScript
         (`
             ((window, document) => {
@@ -235,9 +250,8 @@
             <node-header>
                 <node-header-left>
                     <!-- <Bubbles size={16} color="#ffffff" /> -->
-                    📟
-                    {nodeState.title || "Web"}                    
-                    <!-- {nodeState.title || "🌎🌐📡 Web" } -->
+                    {nodeState.showIcon ? "🌎" : ""} <!-- 📟🖥️💻🔍🔗🌎🌐📡🗺️ -->
+                    {nodeState.title || nodeState.pageTitle || "Web"}
                 </node-header-left>
                 <node-header-right>
 
@@ -245,21 +259,21 @@
                         class="clickable-icon"
                         aria-label="Backward" 
                         onclick={clickBackward}>
-                        <ArrowLeft size={16}/>  
+                        <ArrowLeft size={16}/>
                     </button>
 
                     <button 
                         class="clickable-icon"
                         aria-label="Forward" 
                         onclick={clickForward}>
-                        <ArrowRight size={16}/>  
+                        <ArrowRight size={16}/>
                     </button>
 
                     <button 
                         class="clickable-icon"
                         aria-label="Refresh" 
                         onclick={clickRefresh}>
-                        <RotateCw size={16}/>  
+                        <RotateCw size={16}/>
                     </button>
 
                     <CopyTextButton {nodeState} />

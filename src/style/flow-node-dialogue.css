@@ -216,67 +216,67 @@
 {
     .modal
     {
-        width:      var(--modal-width);
-        /* height:     var(--modal-height); */
-
-        max-width:  25em;
-        /* max-height: 25em; */
-
+        width: var(--modal-width);
+        max-width: 25em;
         padding: 0;
+    }
 
-        .role-list
+    .modal-header
+    {
+        display: none;
+    }
+
+    .role-list
+    {
+        display: flex;
+        flex-direction: column;
+
+        hr 
+        {
+            margin: 0;
+            height: 0;
+            border: none;
+            border-top: var(--modal-border-width) dashed var(--modal-border-color);
+        }
+        
+        .node-title
+        {
+            padding: 1.5em;
+            input[type='text'] { width: 100%;}
+        }
+
+        .role-item
         {
             display: flex;
             flex-direction: column;
+            align-items: stretch;
+            justify-content: space-between;
+            padding: 1.5em;
+            gap: 0.3em;
 
-            hr 
-            {
-                margin: 0;
-                height: 0;
-                border: none;
-                border-top: var(--modal-border-width) dashed var(--modal-border-color);
-            }
-            
-            .node-title
-            {
-                padding: 1.5em;
-
-                input[type='text'] { width: 100%;}
+            .role-label
+            {   
+                font-size: 1.3em;
             }
 
-            .role-item
+            .role-memory,
+            .role-model,
+            .role-auto,
+            .role-model-label
             {
                 display: flex;
-                flex-direction: column;
-                align-items: stretch;
-                justify-content: space-between;
-                gap: 0.2em;
-                padding: 1.5em;
-
-                .role-label
-                {   
-                    font-size: 1.3em;
-                }
-
-                .role-memory,
-                .role-model,
-                .role-auto,
-                .role-model-label
-                {
-                    display: flex;
-                    align-items: center;
-                }
-
-                .role-memory,
-                .role-model,
-                .role-auto
-                {
-                    padding-left: 0.1em;
-                }
+                align-items: center;
             }
 
-            .role-item1 .role-label { color: var(--color-orange); }
-            .role-item2 .role-label { color: var(--color-cyan); }
+            .role-memory,
+            .role-model,
+            .role-auto
+            {
+                padding-left: 0.1em;
+            }
         }
+
+        .role-item1 .role-label { color: var(--color-orange); }
+        .role-item2 .role-label { color: var(--color-cyan); }
     }
 }

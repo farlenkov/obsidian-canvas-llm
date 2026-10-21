@@ -13,6 +13,7 @@
     import VersionButton from '../Common/VersionsButton.svelte';
     import HeadingsButton from '../Common/HeadingsButton.svelte';
     import ModelSelect from '$lib/svelte-llm/model-select/ModelSelect.svelte';
+    import EditTitle from '../Common/EditTitle.js';
 
     const { id } = $props();
     const viewState = getContext("viewState");
@@ -22,47 +23,52 @@
 
     const getContextItems = () => 
     {
-        if (!nodeState.results?.length)
-            return [];
+        const contextItems = 
+        [
+            new EditTitle(
+                viewState, 
+                nodeState)
+        ];
 
-        const contextItems = [];
-
-        // if (nodeState.results.length > 1)
-        // {
-        //     menu.push
-        //     ({
-        //         title : `Edit generation`,
-        //         icon : "square-pen",
-        //         disabled : nodeState.inProgress,
-        //         onclick : () => startEdit()
-        //     });
-        // }
-
-        contextItems.push
-        ({
-            title : `Delete generation (${nodeState.activeTab + 1}/${nodeState.results.length})`,
-            class : "is-danger",
-            icon : "square-x",
-            onclick : () => 
-            {
-                nodeState.deleteResult(nodeState.activeTab);
-                saveResults();
-            }
-        });
-        
-        if (nodeState.results.length > 1)
+        if (nodeState.results?.length > 0)
         {
+            // if (nodeState.results.length > 1)
+            // {
+            //     menu.push
+            //     ({
+            //         title : `Edit generation`,
+            //         icon : "square-pen",
+            //         disabled : nodeState.inProgress,
+            //         onclick : () => startEdit()
+            //     });
+            // }
+
             contextItems.push
             ({
-                title : `Delete all generations (${nodeState.results.length})`,
+                title : `Delete generation (${nodeState.activeTab + 1}/${nodeState.results.length})`,
                 class : "is-danger",
-                icon : "copy-x",
+                icon : "square-x",
                 onclick : () => 
                 {
-                    nodeState.clearResults();
+                    nodeState.deleteResult(nodeState.activeTab);
                     saveResults();
                 }
             });
+            
+            if (nodeState.results.length > 1)
+            {
+                contextItems.push
+                ({
+                    title : `Delete all generations (${nodeState.results.length})`,
+                    class : "is-danger",
+                    icon : "copy-x",
+                    onclick : () => 
+                    {
+                        nodeState.clearResults();
+                        saveResults();
+                    }
+                });
+            }
         }
 
         return contextItems;
@@ -225,13 +231,13 @@
         <node-content>
             <node-header>
                 <node-header-left>
-                    ✨ 
+                    {nodeState.showIcon ? "✨" : ""}
                     {#if nodeState.modelId}
                         <div aria-label="{getModelDesc()}">
-                            {nodeState.modelId}
+                            {nodeState.title || nodeState.modelId}
                         </div>
                     {:else}
-                        Generate
+                        {nodeState.title || "Generate"}
                     {/if}
                 </node-header-left>
 

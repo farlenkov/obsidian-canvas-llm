@@ -7,13 +7,12 @@ export default class WebInputNodeState extends NodeState
         super(id, graph);
 
         this.url = $state();
-        this.title = $state();      
+        this.pageTitle = $state();
     }
 
     init(data)
     {
-        super.init(data);
-        
+        super.init(data);        
         this.url = data.url;
     }
 }

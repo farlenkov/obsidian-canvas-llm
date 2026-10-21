@@ -15,6 +15,7 @@
     import Message from './Message.svelte';
     import Modal from '$lib/svelte-obsidian/src/Modal.js';
     import ParamsView from './Params.svelte'
+    import EditTitle from '../Common/EditTitle.js';
 
     const { id } = $props();
     const viewState = getContext("viewState");
@@ -26,20 +27,27 @@
 
     const getContextItems = () =>
     {
-        if (Object.keys(nodeState.messages).length == 0)
-            return [];
-        
-        const contextItems =
-        [{
-            title : "Delete all messages",
-            class : "is-danger",
-            icon : "message-square-x",
-            onclick : () => 
-            {
-                nodeState.clearMessages();
-                saveMessages("Delete messages");
-            }
-        }];
+        const contextItems = 
+        [
+            new EditTitle(
+                viewState, 
+                nodeState)
+        ];
+
+        if (Object.keys(nodeState.messages).length > 0)
+        {
+            contextItems.push
+            ({
+                title : "Delete all messages",
+                class : "is-danger",
+                icon : "message-square-x",
+                onclick : () => 
+                {
+                    nodeState.clearMessages();
+                    saveMessages("Delete messages");
+                }
+            });
+        }
 
         return contextItems;
     };
@@ -272,7 +280,8 @@
                             <Loader size={16} class="rotate"/> 
                             {nodeState.progressStep}/{nodeState.progressSteps}&nbsp;&nbsp;
                         {/if}
-                        💬 {nodeState.title || "Dialogue"}
+                        {nodeState.showIcon ? "💬" : ""} 
+                        {nodeState.title || "Dialogue"}
                 </node-header-left>
                 <node-header-right>
 

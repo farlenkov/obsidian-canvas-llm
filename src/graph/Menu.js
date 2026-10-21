@@ -27,23 +27,12 @@ export default class GraphMenu
         },
         ...contextItems];
 
-        // for (const contextItem of contextItems)
-        // {
-        //     menu.push
-        //     ({
-        //         icon : contextItem.icon,
-        //         title : contextItem.title,
-        //         class : contextItem.class,
-        //         onclick : contextItem.onclick
-        //     });
-        // }
-
         menu.push
         ({
             icon : "x",
             title : "Delete node",
             class : "is-warning",
-            onclick : () => this.removeNode(node)
+            onclick : e => this.removeNode(e, node)
         });
 
         showContextMenu(menu);
@@ -66,7 +55,7 @@ export default class GraphMenu
             icon : "x",
             title : "Delete edge",
             class : "is-warning",
-            onclick : () => this.removeEdge(edge)
+            onclick : e => this.removeEdge(e, edge)
         });
 
         showContextMenu(menu);
@@ -152,16 +141,52 @@ export default class GraphMenu
         this.viewState.saveGraph("addNode");
     }
 
-    removeNode(node)
+    removeNode(event, node)
     {
-        this.graph.removeNode(node);
-        this.viewState.saveGraph("removeNode");
+        this.confirm(
+            "Delete node?",
+            event,
+            () => 
+            {
+                this.graph.removeNode(node);
+                this.viewState.saveGraph("removeNode");
+            });
     }
 
-    removeEdge(edge)
+    removeEdge(event, edge)
     {
-        this.graph.removeEdge(edge);
-        this.viewState.saveGraph("removeEdge");
+        this.confirm(
+            "Delete edge?",
+            event,
+            () => 
+            {
+                this.graph.removeEdge(edge);
+                this.viewState.saveGraph("removeEdge");
+            });
+    }
+
+    confirm (title, event, callback)
+    {
+        showContextMenu
+        ([{
+            app : this.app,
+            event : event,
+            class : 'canvas-llm svelte-obsidian'
+        },
+        {
+            title : title,
+        },
+        {
+            title : "Yes",
+            icon : "circle-check-big",
+            class : "is-warning",
+            onclick : () => callback()
+        },
+        {
+            title : "No",
+            icon : "circle-x",
+            onclick : () => {}
+        }]);
     }
 
     insertFromFile(event, screenToFlowPosition)

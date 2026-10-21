@@ -100,3 +100,31 @@
         }
     }
 }
+
+.canvas-llm-node-title-edit
+{
+    .modal
+    {
+        width: var(--modal-width);
+        max-width: 25em;
+        padding: 0.5em 1.5em 1.5em;
+    }
+
+    .modal-content
+    {
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+    }
+
+    .node-icon
+    {
+        display: flex;
+        align-items: center;
+    }
+
+    .node-title
+    {
+        input[type='text'] { width: 100%;}
+    }    
+}

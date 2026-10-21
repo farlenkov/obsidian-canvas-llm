@@ -13,6 +13,7 @@
     import NodeResizer from '../Common/NodeResizer.svelte';
     import Handles from '../Common/Handles.svelte';
     import FileSelectModal from '$lib/svelte-obsidian/src/FileSelectModal.js';
+    import EditTitle from '../Common/EditTitle.js';
 
     const { id } = $props();
     const viewState = getContext("viewState");
@@ -20,11 +21,8 @@
     let bodyEl;
 
     let isDragOver = $state(false);
-
-    let nodeTitle = $derived(
-        nodeState.targetName 
-            ? (isFilePath(nodeState.targetName) ? "📃 " : "📁 ") + nodeState.targetName 
-            : "🚫 File not selected");
+    let nodeIcon = $derived(!nodeState.targetName ? "❌ " : (isFilePath(nodeState.targetName) ? "📃 " : "📁 "));
+    let nodeTitle = $derived(nodeState.title || nodeState.targetName || "File not selected");
 
     $effect(() => 
     {
@@ -34,47 +32,56 @@
 
     const getContextItems = () => 
     {
-        if (!nodeState.targetPath)
-            return [];
-
         const contextItems = 
-        [{
-            title : `Show target`,
-            icon : "square-arrow-up-left",
-            onclick : () => 
-            {
-                const item = viewState.app.vault.getAbstractFileByPath(nodeState.targetPath);
-                const explorer = viewState.app.workspace.getLeavesOfType("file-explorer")[0];
+        [
+            new EditTitle(
+                viewState, 
+                nodeState)
+        ];
 
-                if (explorer) 
-                {
-                    explorer.view.revealInFolder(item);
-                    viewState.app.workspace.revealLeaf(explorer);
-                }
-            }
-        },
+        if (nodeState.targetPath)
         {
-            title : `Reset node`,
-            class : "is-danger",
-            icon : "square-x",
-            onclick : () => 
-            {
-                onFileChange();
-            }
-        }];
+            contextItems.push
+            ({
+                title : `Show target`,
+                icon : "square-arrow-up-left",
+                onclick : () => 
+                {
+                    const item = viewState.app.vault.getAbstractFileByPath(nodeState.targetPath);
+                    const explorer = viewState.app.workspace.getLeavesOfType("file-explorer")[0];
+
+                    if (explorer) 
+                    {
+                        explorer.view.revealInFolder(item);
+                        viewState.app.workspace.revealLeaf(explorer);
+                    }
+                }
+            });
+
+            contextItems.push
+            ({
+                title : `Reset node`,
+                class : "is-danger",
+                icon : "square-x",
+                onclick : () => 
+                {
+                    onFileChange();
+                }
+            });
+        }
 
         return contextItems;
     };
 
     onMount(() => 
-    {        
+    {
         const updateNodeInternals = useUpdateNodeInternals();
         nodeState.updateNodeInternals.add(updateNodeInternals);
         viewState.graph.nodeContent.add(id, getMessage);
         viewState.contextItems.add(id, getContextItems);
 
         return () => 
-        {            
+        {
             nodeState.updateNodeInternals.del(updateNodeInternals);
             viewState.graph.nodeContent.del(id, getMessage);
             viewState.contextItems.del(id, getContextItems);
@@ -198,13 +205,12 @@
     ondragleave={handleDragLeave}
     ondrop={handleDrop}>
 
-    <div class="canvas-node-container">      
+    <div class="canvas-node-container">
         <node-content>
             <node-header>
 
-                <node-header-left 
-                    aria-label={nodeState.targetPath || "Drag and drop some file here..."}>
-                    {nodeTitle}
+                <node-header-left aria-label={nodeState.targetPath || "Drag and drop some file or folder here..."}>
+                    {nodeState.showIcon ? nodeIcon : ""} {nodeTitle}
                 </node-header-left>
 
                 <node-header-right>
@@ -250,7 +256,7 @@
                                             checked={!nodeState.exclude.includes(item.fullpath)}> 
                                     {/if}
                                 
-                                    <div                                         
+                                    <div
                                         aria-label={item.fullpath}>
                                         {item.icon} {item.name} 
                                     </div>

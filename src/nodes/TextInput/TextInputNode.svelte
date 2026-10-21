@@ -10,17 +10,31 @@
     import HeadingsButton from '../Common/HeadingsButton.svelte';
     import NodeResizer from '../Common/NodeResizer.svelte';
     import Handles from '../Common/Handles.svelte';
-
+    import EditTitle from '../Common/EditTitle.js';
+    
     const { id } = $props();
     const viewState = getContext("viewState");
     const nodeState = viewState.graph.getNodeState(id);  
     let bodyEl;
+
+    const getContextItems = () =>
+    {
+        const contextItems = 
+        [
+            new EditTitle(
+                viewState, 
+                nodeState)
+        ];
+
+        return contextItems;
+    };
     
     onMount(() => 
     {
         const updateNodeInternals = useUpdateNodeInternals();
         nodeState.updateNodeInternals.add(updateNodeInternals);
         viewState.graph.nodeContent.add(id, getMessage);
+        viewState.contextItems.add(id, getContextItems);
         
         nodeState.parsePlaceholders(nodeState.value);
 
@@ -28,6 +42,7 @@
         {
             nodeState.updateNodeInternals.del(updateNodeInternals);
             viewState.graph.nodeContent.del(id, getMessage);
+            viewState.contextItems.del(id, getContextItems);
         };
     });
 
@@ -76,7 +91,8 @@
         <node-content>
             <node-header>
                 <node-header-left>
-                    📝 {nodeState.isRead ? "Note" : "Input"}
+                    {nodeState.showIcon ? "📝" : ""} 
+                    {nodeState.title || (nodeState.isRead ? "Note" : "Input")}
                 </node-header-left>
                 <node-header-right>
 

@@ -18,7 +18,6 @@ export default class DialogueNodeState extends NodeState
         super(id, graph);
 
         this.rootId = $derived(this.id);
-        this.title = $state();
         this.messages = $state();
         this.roles = $state();
         this.steps = $state();
@@ -46,7 +45,6 @@ export default class DialogueNodeState extends NodeState
     {
         super.init(data);
         
-        this.title = data.title || "";
         this.steps = data.steps || 1;
         this.roles = data.roles;
         this.messages = data.messages;

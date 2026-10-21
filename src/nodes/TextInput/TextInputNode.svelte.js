@@ -7,7 +7,7 @@ export default class TextInputNodeState extends NodeState
         super(id, graph);
 
         this.value = $state();
-        this.isRead = $state();      
+        this.isRead = $state();
     }
 
     init(data)

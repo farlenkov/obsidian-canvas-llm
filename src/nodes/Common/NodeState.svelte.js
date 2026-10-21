@@ -12,6 +12,8 @@ export default class NodeState
         this.updateNodeInternals = new EventEmitter();
         this.placeholders = new PlaceholderSet();
         
+        this.title = $state();
+        this.showIcon = $state(true);
         this.isTemplate = $state();
         this.allIns = $state([]);
         this.error = $state(false);
@@ -20,7 +22,9 @@ export default class NodeState
     init (data)
     {
         this.upgradeNode(data);
+        this.title = data.title || "";
         this.isTemplate = data.template ?? false;
+        this.showIcon = data.noicon ? false : true;
     }
 
     destroy()
