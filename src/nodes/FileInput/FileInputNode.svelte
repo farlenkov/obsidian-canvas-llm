@@ -3,8 +3,8 @@
     import { getContext, onMount } from 'svelte';
     import { useUpdateNodeInternals } from '@xyflow/svelte';
     import { isFilePath } from '$lib/svelte-obsidian/src/String.js';
+    import { showConfirmMenu } from '$lib/svelte-obsidian/src/Menu.js';
 
-    import NodeState from './FileInputNode.svelte.js';
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import TemplatingButton from '../Common/TemplatingButton.svelte';
@@ -63,9 +63,12 @@
                 title : `Reset node`,
                 class : "is-danger",
                 icon : "square-x",
-                onclick : () => 
+                onclick : (event) => 
                 {
-                    onFileChange();
+                    showConfirmMenu("Reset node?", event, () => 
+                    {
+                        onFileChange();
+                    });
                 }
             });
         }

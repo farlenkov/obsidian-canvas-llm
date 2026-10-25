@@ -1,6 +1,6 @@
 import nodeTypes from '$lib/nodes/Type/NodeTypes.js';
 import FileSelectModal from '$lib/svelte-obsidian/src/FileSelectModal.js';
-import { showContextMenu } from '$lib/svelte-obsidian/src/Menu.js';
+import { showContextMenu, showConfirmMenu } from '$lib/svelte-obsidian/src/Menu.js';
 import { createId } from '../svelte-obsidian/src/CreateId.js';
 
 export default class GraphMenu
@@ -143,50 +143,20 @@ export default class GraphMenu
 
     removeNode(event, node)
     {
-        this.confirm(
-            "Delete node?",
-            event,
-            () => 
-            {
-                this.graph.removeNode(node);
-                this.viewState.saveGraph("removeNode");
-            });
+        showConfirmMenu("Delete node?", event, () => 
+        {
+            this.graph.removeNode(node);
+            this.viewState.saveGraph("removeNode");
+        });
     }
 
     removeEdge(event, edge)
     {
-        this.confirm(
-            "Delete edge?",
-            event,
-            () => 
-            {
-                this.graph.removeEdge(edge);
-                this.viewState.saveGraph("removeEdge");
-            });
-    }
-
-    confirm (title, event, callback)
-    {
-        showContextMenu
-        ([{
-            app : this.app,
-            event : event,
-            class : 'canvas-llm svelte-obsidian'
-        },
+        showConfirmMenu("Delete edge?", event, () => 
         {
-            title : title,
-        },
-        {
-            title : "Yes",
-            icon : "circle-check-big",
-            class : "is-warning",
-            onclick : () => callback()
-        },
-        {
-            title : "No",
-            icon : "circle-x",
-            onclick : () => {}
-        }]);
+            this.graph.removeEdge(edge);
+            this.viewState.saveGraph("removeEdge");
+        });
     }
 
     insertFromFile(event, screenToFlowPosition)

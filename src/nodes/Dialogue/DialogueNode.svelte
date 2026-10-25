@@ -4,6 +4,7 @@
     import { Play, XIcon, ArrowUpToLine, ArrowDownToLine, Hourglass, Loader } from 'lucide-svelte';
     import { useUpdateNodeInternals } from '@xyflow/svelte';
     import { delay, sleep } from '$lib/svelte-obsidian/src/Async.js';
+    import { showConfirmMenu } from '$lib/svelte-obsidian/src/Menu.js';
 
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
@@ -41,10 +42,13 @@
                 title : "Delete all messages",
                 class : "is-danger",
                 icon : "message-square-x",
-                onclick : () => 
+                onclick : (event) => 
                 {
-                    nodeState.clearMessages();
-                    saveMessages("Delete messages");
+                    showConfirmMenu("Delete all messages?", event, () => 
+                    {
+                        nodeState.clearMessages();
+                        saveMessages("Delete messages");
+                    });
                 }
             });
         }

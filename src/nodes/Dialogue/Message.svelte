@@ -3,7 +3,7 @@
     import { onMount } from 'svelte';
     import { RefreshCcw, Lightbulb, ArrowUp, SquarePen, X } from 'lucide-svelte';
     import { delay, sleep } from '$lib/svelte-obsidian/src/Async.js';
-    import { showContextMenu } from '$lib/svelte-obsidian/src/Menu.js';
+    import { showContextMenu, showConfirmMenu } from '$lib/svelte-obsidian/src/Menu.js';
     import { truncateByLength, escapeHtmlAttr } from '$lib/svelte-obsidian/src/String.js';
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
@@ -182,11 +182,14 @@
                 icon : "list-x",
                 disabled : nodeState.inProgress,
                 onclick : () => 
-                {  
-                    const delete_count = nodeState.deleteVersion(message);
-                    nodeState.updateCurrentThread();
-                    saveMessages("deleteVersion");
-                    deleteNotice(delete_count);
+                {
+                    showConfirmMenu(`Delete version (${versionNum + 1}/${versions.length})`, event, () => 
+                    {
+                        const delete_count = nodeState.deleteVersion(message);
+                        nodeState.updateCurrentThread();
+                        saveMessages("deleteVersion");
+                        deleteNotice(delete_count);
+                    });
                 }
             });
         }
@@ -200,11 +203,14 @@
 
             onclick : () => 
             {
-                const parentId = nodeState.parentIds[message.id] || nodeState.rootId;
-                const delete_count = nodeState.deleteMessagesByParent(parentId);
-                nodeState.updateCurrentThread();
-                saveMessages("deleteMessagesByParent");
-                deleteNotice(delete_count);
+                showConfirmMenu("Delete message?", event, () => 
+                {
+                    const parentId = nodeState.parentIds[message.id] || nodeState.rootId;
+                    const delete_count = nodeState.deleteMessagesByParent(parentId);
+                    nodeState.updateCurrentThread();
+                    saveMessages("deleteMessagesByParent");
+                    deleteNotice(delete_count);
+                });
             }
         });
 

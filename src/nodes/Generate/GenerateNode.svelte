@@ -4,7 +4,10 @@
     import { Play, Loader, XIcon, Lightbulb } from 'lucide-svelte';
     import { useUpdateNodeInternals } from '@xyflow/svelte';
     
+    import { showConfirmMenu } from '$lib/svelte-obsidian/src/Menu.js';
+    import ModelSelect from '$lib/svelte-llm/model-select/ModelSelect.svelte';
     import Modal from '$lib/svelte-obsidian/src/Modal.js';
+
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
@@ -12,7 +15,6 @@
     import Handles from '../Common/Handles.svelte';
     import VersionButton from '../Common/VersionsButton.svelte';
     import HeadingsButton from '../Common/HeadingsButton.svelte';
-    import ModelSelect from '$lib/svelte-llm/model-select/ModelSelect.svelte';
     import EditTitle from '../Common/EditTitle.js';
 
     const { id } = $props();
@@ -45,13 +47,16 @@
 
             contextItems.push
             ({
-                title : `Delete generation (${nodeState.activeTab + 1}/${nodeState.results.length})`,
+                title : `Delete version (${nodeState.activeTab + 1}/${nodeState.results.length})`,
                 class : "is-danger",
                 icon : "square-x",
-                onclick : () => 
+                onclick : (event) => 
                 {
-                    nodeState.deleteResult(nodeState.activeTab);
-                    saveResults();
+                    showConfirmMenu(`Delete version (${nodeState.activeTab + 1}/${nodeState.results.length})?`, event, () => 
+                    {
+                        nodeState.deleteResult(nodeState.activeTab);
+                        saveResults();
+                    });
                 }
             });
             
@@ -59,13 +64,16 @@
             {
                 contextItems.push
                 ({
-                    title : `Delete all generations (${nodeState.results.length})`,
+                    title : `Delete all versions (${nodeState.results.length})`,
                     class : "is-danger",
                     icon : "copy-x",
-                    onclick : () => 
+                    onclick : (event) => 
                     {
-                        nodeState.clearResults();
-                        saveResults();
+                        showConfirmMenu(`Delete all versions (${nodeState.results.length})?`, event, () => 
+                        {
+                            nodeState.clearResults();
+                            saveResults();
+                        });
                     }
                 });
             }
@@ -159,9 +167,16 @@
     function getModelDesc()
     {
         if (nodeState.model)
-            return `[ ${nodeState.provider.name} / ${nodeState.model.owner} ] ${nodeState.model.desc}`;
+        {
+            if (nodeState.model.owner)
+                return `${nodeState.modelId}\n\n[ ${nodeState.provider.name} / ${nodeState.model.owner} ] ${nodeState.model.desc}`;
+            else
+                return `${nodeState.modelId}\n\n[ ${nodeState.provider.name} ] ${nodeState.model.desc}`;
+        }
         else
+        {
             return `[ ${nodeState.providerId} ] ${nodeState.modelId}`;
+        }
     }
 
     function showParams()
