@@ -14,8 +14,11 @@
     
     const { id } = $props();
     const viewState = getContext("viewState");
-    const nodeState = viewState.graph.getNodeState(id);  
-    let bodyEl;
+    const nodeState = viewState.graph.getNodeState(id);
+
+    let readBody;
+    let scrollLevel = $state(0);
+    let isEdit = $state();
 
     const getContextItems = () =>
     {
@@ -57,21 +60,57 @@
         nodeState.parsePlaceholders(nodeState.value);
     }
 
-    function clickToggleReadMode()
+    function onClickToggleReadMode()
     {
+        isEdit = false;
         nodeState.isRead = !nodeState.isRead;
         viewState.updateNode(id, {read : nodeState.isRead}, "ReadMode");
     }
 
-    function clickHeader(el)
+    function onClickHeader(el)
     {
-        bodyEl.scrollTo
+        readBody.scrollTo
         ({
             behavior: 'smooth',
             top: el.offsetTop
         });
     }
 
+    function onClickReadBody()
+    {
+        isEdit = true;
+    }
+
+    function onBlurTextarea()
+    {
+        isEdit = false;
+    }
+
+    function syncScroll(node) 
+    {
+        const max = () => node.scrollHeight - node.clientHeight;
+        const apply = () => (node.scrollTop = scrollLevel * max());
+
+        apply();
+
+        const onscroll = () => 
+        {
+            const m = max();
+            scrollLevel = m > 0 ? node.scrollTop / m : 0;
+        };
+        
+        node.addEventListener('scroll', onscroll, { passive: true });
+
+        if (node instanceof HTMLTextAreaElement)
+        {
+            node.setSelectionRange(0, 0);
+            node.focus({ preventScroll: true });
+            apply();
+            requestAnimationFrame(apply);
+        }
+
+        return { destroy() { node.removeEventListener('scroll', onscroll); } };
+    }
 </script>
 
 <NodeResizer 
@@ -96,19 +135,19 @@
                 </node-header-left>
                 <node-header-right>
 
-                    {#if nodeState.isRead}
+                    {#if nodeState.isRead && !isEdit}
                         <HeadingsButton 
-                            {bodyEl}
+                            bodyEl={readBody}
                             app={viewState.app}
                             class="clickable-icon"
-                            onclick={clickHeader} />
+                            onclick={onClickHeader} />
                     {/if}
 
                     <button 
                         type="button"
                         class="show-markdown clickable-icon"
                         aria-label={nodeState.isRead ? "Switch to edit mode" : "Switch to read mode"}
-                        onclick={clickToggleReadMode}>
+                        onclick={onClickToggleReadMode}>
 
                         {#if nodeState.isRead}
                             <SquarePen size={16} />
@@ -123,9 +162,15 @@
 
             </node-header>
 
-            {#if nodeState.isRead}
-                <node-body bind:this={bodyEl} class="nodrag nozoom nomenu node-text markdown-rendered">
+            {#if nodeState.isRead && !isEdit}
+                <node-body 
+                    bind:this={readBody} 
+                    onclick={onClickReadBody}
+                    use:syncScroll
+                    class="nodrag nozoom nomenu node-text markdown-rendered">
+
                     <MarkdownRenderer markdown={nodeState.value} />
+
                 </node-body>
             {:else}
                 <node-body class="nomenu">
@@ -133,7 +178,8 @@
                     <textarea 
                         bind:value={nodeState.value} 
                         onchange={onChange}
-                        class:hide={nodeState.isRead}
+                        onblur={onBlurTextarea}
+                        use:syncScroll
                         class="nodrag nozoom node-text"></textarea>
 
                 </node-body>
