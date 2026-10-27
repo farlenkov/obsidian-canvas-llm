@@ -28,18 +28,6 @@
         .replace(/\sObsidian\/[\d.]+/, '')
         .replace(/\sobsidian\/[\d.]+/, '');
 
-    const getContextItems = () =>
-    {
-        const contextItems = 
-        [
-            new EditTitle(
-                viewState, 
-                nodeState)
-        ];
-
-        return contextItems;
-    };
-
     onMount(() => 
     {
         // https://www.electronjs.org/docs/latest/api/webview-tag
@@ -56,15 +44,27 @@
         const updateNodeInternals = useUpdateNodeInternals();
         nodeState.updateNodeInternals.add(updateNodeInternals);
         viewState.graph.nodeContent.add(id, getMessage);
-        viewState.contextItems.add(id, getContextItems);
+        // viewState.contextItems.add(id, getHeadMenu);
 
         return () => 
         {
             nodeState.updateNodeInternals.del(updateNodeInternals);
             viewState.graph.nodeContent.del(id, getMessage);
-            viewState.contextItems.del(id, getContextItems);
+            // viewState.contextItems.del(id, getHeadMenu);
         };
     });
+
+    // function getHeadMenu ()
+    // {
+    //     const contextItems = 
+    //     [
+    //         new EditTitle(
+    //             viewState, 
+    //             nodeState)
+    //     ];
+
+    //     return contextItems;
+    // };
 
     async function getMessage()
     {

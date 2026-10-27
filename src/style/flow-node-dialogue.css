@@ -210,6 +210,9 @@
             }
         }
     }
+
+    .menu-item.role1 .menu-item-icon { color: var(--color-orange); }
+    .menu-item.role2 .menu-item-icon { color: var(--color-cyan); }
 }
 
 .canvas-llm-dialogue-params

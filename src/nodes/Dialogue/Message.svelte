@@ -162,16 +162,16 @@
             class : 'svelte-obsidian',
         }];
 
-        if (nodeState.roles[message.role].bot)
-        {
-            menu.push
-            ({
-                title : `Edit message`,
-                icon : "square-pen",
-                disabled : nodeState.inProgress,
-                onclick : () => startEdit()
-            });
-        }
+        // if (nodeState.roles[message.role].bot)
+        // {
+        //     menu.push
+        //     ({
+        //         title : `Edit message`,
+        //         icon : "square-pen",
+        //         disabled : nodeState.inProgress,
+        //         onclick : () => startEdit()
+        //     });
+        // }
 
         if (message && versions.length > 1)
         {
@@ -277,27 +277,6 @@
                         {/if}
                     {/if}
 
-                    {#if versions.length > 1}
-
-                        <VersionsButton 
-                            app={viewState.app}
-                            class="clickable-icon"
-                            onclick={num => clickVersion(num)}
-                            {versions}
-                            {versionNum} />
-
-                    {/if}
-
-                    {#if !nodeState.roles[message.role].bot}
-                        <button 
-                            class="clickable-icon"
-                            aria-label="Edit message"
-                            disabled={nodeState.inProgress}
-                            onclick={() => startEdit()}>
-                            <SquarePen size={16}/>
-                        </button>
-                    {/if}
-
                     {#if nodeState.roles[message.role].bot}
 
                         <RunButton
@@ -309,6 +288,27 @@
                             Icon={RefreshCcw} />
 
                     {/if}
+
+                    {#if versions.length > 1}
+
+                        <VersionsButton 
+                            app={viewState.app}
+                            class="clickable-icon"
+                            onclick={num => clickVersion(num)}
+                            {versions}
+                            {versionNum} />
+
+                    {/if}
+
+                    <!-- {#if !nodeState.roles[message.role].bot} -->
+                        <button 
+                            class="clickable-icon"
+                            aria-label="Edit message"
+                            disabled={nodeState.inProgress}
+                            onclick={() => startEdit()}>
+                            <SquarePen size={16}/>
+                        </button>
+                    <!-- {/if} -->
 
                     <CopyTextButton 
                         label="Copy message" 

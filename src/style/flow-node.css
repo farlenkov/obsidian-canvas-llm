@@ -18,15 +18,20 @@
         {
             width: 100%;
             height: 100%;
+            position: relative;
             display: grid;
             grid-template-rows: 2em auto;
 
             node-header
             {
                 display: flex;
-                /* flex-direction: row; */
                 justify-content: space-between;
                 min-width: 0;
+                /* position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1; */
 
                 border-bottom-width: 1px;
                 border-bottom-style: solid;
@@ -70,6 +75,16 @@
                 }
             }
 
+            /* node-header > *
+            {
+                visibility: hidden;
+            }
+
+            node-header:hover > *
+            {
+                visibility: visible;
+            } */
+
             node-body
             {
                 display: block;
@@ -106,7 +121,7 @@
     .modal
     {
         width: var(--modal-width);
-        max-width: 25em;
+        max-width: 19em;
         padding: 0.5em 1.5em 1.5em;
     }
 

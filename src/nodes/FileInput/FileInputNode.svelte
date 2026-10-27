@@ -14,6 +14,7 @@
     import Handles from '../Common/Handles.svelte';
     import FileSelectModal from '$lib/svelte-obsidian/src/FileSelectModal.js';
     import EditTitle from '../Common/EditTitle.js';
+    import TemplatingMenuItem from '../Common/TemplatingMenuItem.js';
 
     const { id } = $props();
     const viewState = getContext("viewState");
@@ -30,34 +31,32 @@
         refreshHeadings();
     });
 
-    const getContextItems = () => 
+    onMount(() => 
+    {
+        const updateNodeInternals = useUpdateNodeInternals();
+        nodeState.updateNodeInternals.add(updateNodeInternals);
+        viewState.graph.nodeContent.add(id, getMessage);
+        viewState.contextItems.add(id, getHeadMenu);
+
+        return () => 
+        {
+            nodeState.updateNodeInternals.del(updateNodeInternals);
+            viewState.graph.nodeContent.del(id, getMessage);
+            viewState.contextItems.del(id, getHeadMenu);
+        };
+    });
+
+    function getHeadMenu ()
     {
         const contextItems = 
         [
-            new EditTitle(
-                viewState, 
-                nodeState)
+            // new EditTitle(
+            //     viewState, 
+            //     nodeState)
         ];
 
         if (nodeState.targetPath)
         {
-            contextItems.push
-            ({
-                title : `Show target`,
-                icon : "square-arrow-up-left",
-                onclick : () => 
-                {
-                    const item = viewState.app.vault.getAbstractFileByPath(nodeState.targetPath);
-                    const explorer = viewState.app.workspace.getLeavesOfType("file-explorer")[0];
-
-                    if (explorer) 
-                    {
-                        explorer.view.revealInFolder(item);
-                        viewState.app.workspace.revealLeaf(explorer);
-                    }
-                }
-            });
-
             contextItems.push
             ({
                 title : `Reset node`,
@@ -76,20 +75,39 @@
         return contextItems;
     };
 
-    onMount(() => 
+    function getParamsMenu()
     {
-        const updateNodeInternals = useUpdateNodeInternals();
-        nodeState.updateNodeInternals.add(updateNodeInternals);
-        viewState.graph.nodeContent.add(id, getMessage);
-        viewState.contextItems.add(id, getContextItems);
+        const paramsMenu = 
+        [{
+            title : "Select file",
+            icon : "file-search-corner",
+            onclick : () => onClickSelectFile()
+        }];
 
-        return () => 
+        if (nodeState.targetPath)
         {
-            nodeState.updateNodeInternals.del(updateNodeInternals);
-            viewState.graph.nodeContent.del(id, getMessage);
-            viewState.contextItems.del(id, getContextItems);
-        };
-    });
+            paramsMenu.push
+            ({
+                title : "Show file",
+                icon : "square-arrow-up-left",
+                onclick : () => 
+                {
+                    const item = viewState.app.vault.getAbstractFileByPath(nodeState.targetPath);
+                    const explorer = viewState.app.workspace.getLeavesOfType("file-explorer")[0];
+
+                    if (explorer) 
+                    {
+                        explorer.view.revealInFolder(item);
+                        viewState.app.workspace.revealLeaf(explorer);
+                    }
+                }
+            });
+        }
+                    
+        paramsMenu.push(new TemplatingMenuItem(viewState, nodeState));
+        paramsMenu.push(new EditTitle(viewState, nodeState));
+        return paramsMenu;
+    }
 
     async function getMessage()
     {
@@ -228,9 +246,9 @@
                             refresh={refreshHeadings} />
                     {/if}
 
-                    <TemplatingButton {nodeState} {viewState} />
+                    <!-- <TemplatingButton {nodeState} {viewState} /> -->
                     <CopyTextButton {nodeState} />
-                    <ParamsButton onclick={onClickSelectFile} label="Select file" />
+                    <ParamsButton onclick={onClickSelectFile} {viewState} {nodeState} {getParamsMenu} />
                 </node-header-right>
 
             </node-header>

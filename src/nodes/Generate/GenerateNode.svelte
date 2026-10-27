@@ -23,13 +23,28 @@
 
     let bodyEl;
 
-    const getContextItems = () => 
+    onMount(() => 
+    { 
+        const updateNodeInternals = useUpdateNodeInternals();
+        nodeState.updateNodeInternals.add(updateNodeInternals);
+        viewState.graph.nodeContent.add(id, getMessage);
+        viewState.contextItems.add(id, getHeadMenu);
+
+        return () =>
+        {
+            nodeState.updateNodeInternals.del(updateNodeInternals);
+            viewState.graph.nodeContent.del(id, getMessage);
+            viewState.contextItems.del(id, getHeadMenu);
+        };
+    });
+
+    function getHeadMenu ()
     {
         const contextItems = 
         [
-            new EditTitle(
-                viewState, 
-                nodeState)
+            // new EditTitle(
+            //     viewState, 
+            //     nodeState)
         ];
 
         if (nodeState.results?.length > 0)
@@ -81,21 +96,19 @@
 
         return contextItems;
     };
-    
-    onMount(() => 
-    { 
-        const updateNodeInternals = useUpdateNodeInternals();
-        nodeState.updateNodeInternals.add(updateNodeInternals);
-        viewState.graph.nodeContent.add(id, getMessage);
-        viewState.contextItems.add(id, getContextItems);
 
-        return () =>
-        {
-            nodeState.updateNodeInternals.del(updateNodeInternals);
-            viewState.graph.nodeContent.del(id, getMessage);
-            viewState.contextItems.del(id, getContextItems);
-        };
-    });
+    function getParamsMenu()
+    {
+        const paramsMenu = 
+        [{
+            title : "Select model",
+            icon : "bot",
+            onclick : () => showParams()
+        }];
+
+        paramsMenu.push(new EditTitle(viewState, nodeState));
+        return paramsMenu;
+    }
 
     async function getMessage()
     {
@@ -303,9 +316,8 @@
                     {/if}
 
                     <CopyTextButton {nodeState} copyThink={nodeState.showThink} />
-                    <ParamsButton onclick={showParams} />
+                    <ParamsButton onclick={showParams} {viewState} {nodeState} {getParamsMenu} />
                 </node-header-right>
-
             </node-header>
 
             <node-body class="nodrag nozoom nomenu node-text markdown-rendered" bind:this={bodyEl}>

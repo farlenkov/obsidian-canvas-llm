@@ -2,51 +2,10 @@
 
     import { Settings } from 'lucide-svelte';
     import NodeState from './DialogueNode.svelte.js';
-    import Modal from '$lib/svelte-obsidian/src/Modal.js';
-    import ModelSelect from '$lib/svelte-llm/model-select/ModelSelect.svelte';
+    import ParamsRole from './ParamsRole.js';
 
     const { nodeState, viewState, role, role2, index } = $props();
-
-    function save()
-    {
-        viewState.updateNode(
-            nodeState.id,
-            { roles : nodeState.roles },
-            "changeDialogueRole");
-
-        nodeState.updateNodeTooltip();
-        nodeState.updateAllowSteps();
-        nodeState.updateHandles();
-    }
-    
-    function clickModel(role)
-    {
-        const modal = new Modal(
-            ModelSelect, 
-            {
-                app : viewState.app,
-                state : nodeState.modelSelect,
-                modelId : role.model,
-                providerId : role.provider,
-                onShowSettings : () => viewState.showSettings(),
-                
-                onModelSelected : model => 
-                {
-                    role.model = model.id;
-                    role.provider = model.providerId;
-
-                    save();
-                    modal.close();
-                }
-            }, 
-            [
-                "svelte-obsidian", 
-                "canvas-llm", 
-                "svelte-llm-model-select"
-            ]);
-
-        modal.open();
-    }
+    const roleParams = new ParamsRole(nodeState, viewState, role);
 
 </script>
 
@@ -61,7 +20,7 @@
         class="role-name"
         placeholder={"Title for " + NodeState.ROLE_LABELS[index]}
         bind:value={role.name}
-        onchange={save} />
+        onchange={() => roleParams.save()} />
 
     <div class="role-model">
 
@@ -72,7 +31,7 @@
             <input
                 type="checkbox"
                 bind:checked={role.bot}
-                onchange={save}>
+                onchange={() => roleParams.save()}>
 
             {role.provider} / {role.model}
 
@@ -84,7 +43,7 @@
             class="clickable-icon" 
             class:disabled={!role.bot}
             aria-label="Select model" 
-            onclick={() => clickModel(role)}>
+            onclick={() => roleParams.openModelSelect()}>
             <Settings size={16}/>
         </button>
 
@@ -99,7 +58,7 @@
             type="checkbox"
             bind:checked={role.memory}
             disabled={!role.bot}
-            onchange={save}>
+            onchange={() => roleParams.save()}>
 
         Use hidden memory
 
@@ -114,7 +73,7 @@
             type="checkbox"
             bind:checked={role.auto}
             disabled={!role.bot || role2.bot}
-            onchange={save}>
+            onchange={() => roleParams.save()}>
 
         Reply automatically
 

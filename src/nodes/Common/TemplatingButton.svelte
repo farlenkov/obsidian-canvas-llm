@@ -8,7 +8,7 @@
     function onclick()
     {
         nodeState.isTemplate = !nodeState.isTemplate;
-        nodeState.updateNodeInternals.emit(this.id);
+        nodeState.updateNodeInternals.emit(this.nodeState.id);
 
         viewState.updateNode(
             nodeState.id, 

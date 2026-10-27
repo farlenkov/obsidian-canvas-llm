@@ -6,11 +6,13 @@
 
     import CopyTextButton from '../Common/CopyTextButton.svelte';
     import TemplatingButton from '../Common/TemplatingButton.svelte';
+    import ParamsButton from '../Common/ParamsButton.svelte';
     import MarkdownRenderer from '../Common/MarkdownRenderer.svelte';
     import HeadingsButton from '../Common/HeadingsButton.svelte';
     import NodeResizer from '../Common/NodeResizer.svelte';
     import Handles from '../Common/Handles.svelte';
     import EditTitle from '../Common/EditTitle.js';
+    import TemplatingMenuItem from '../Common/TemplatingMenuItem.js';
     
     const { id } = $props();
     const viewState = getContext("viewState");
@@ -19,25 +21,13 @@
     let readBody;
     let scrollLevel = $state(0);
     let isEdit = $state();
-
-    const getContextItems = () =>
-    {
-        const contextItems = 
-        [
-            new EditTitle(
-                viewState, 
-                nodeState)
-        ];
-
-        return contextItems;
-    };
     
     onMount(() => 
     {
         const updateNodeInternals = useUpdateNodeInternals();
         nodeState.updateNodeInternals.add(updateNodeInternals);
         viewState.graph.nodeContent.add(id, getMessage);
-        viewState.contextItems.add(id, getContextItems);
+        // viewState.contextItems.add(id, getHeadMenu);
         
         nodeState.parsePlaceholders(nodeState.value);
 
@@ -45,9 +35,37 @@
         {
             nodeState.updateNodeInternals.del(updateNodeInternals);
             viewState.graph.nodeContent.del(id, getMessage);
-            viewState.contextItems.del(id, getContextItems);
+            // viewState.contextItems.del(id, getHeadMenu);
         };
     });
+
+    // function getHeadMenu ()
+    // {
+    //     const contextItems = 
+    //     [
+    //         new EditTitle(
+    //             viewState, 
+    //             nodeState)
+    //     ];
+
+    //     return contextItems;
+    // };
+
+    function getParamsMenu()
+    {
+        const paramsMenu = 
+        [{
+            icon : "eye",
+            title : "Read mode",
+            accent : nodeState.isRead,
+            checked : nodeState.isRead,
+            onclick : () => onClickToggleReadMode()
+        }];
+
+        paramsMenu.push(new TemplatingMenuItem(viewState, nodeState));
+        paramsMenu.push(new EditTitle(viewState, nodeState));
+        return paramsMenu;
+    }
 
     async function getMessage()
     {
@@ -143,7 +161,7 @@
                             onclick={onClickHeader} />
                     {/if}
 
-                    <button 
+                    <!-- <button 
                         type="button"
                         class="show-markdown clickable-icon"
                         aria-label={nodeState.isRead ? "Switch to edit mode" : "Switch to read mode"}
@@ -156,8 +174,9 @@
                         {/if}
                     </button>
 
-                    <TemplatingButton {nodeState} {viewState} />
+                    <TemplatingButton {nodeState} {viewState} /> -->
                     <CopyTextButton {nodeState} />
+                    <ParamsButton {viewState} {nodeState} {getParamsMenu} />
                 </node-header-right>
 
             </node-header>

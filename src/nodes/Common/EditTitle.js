@@ -3,7 +3,7 @@ import View from './EditTitle.svelte'
 
 export default class EditTitle
 {
-    title = "Edit title";
+    title = "Edit node title";
     icon = "square-pen";
 
     constructor(viewState, nodeState)

@@ -5,6 +5,7 @@
     import { useUpdateNodeInternals } from '@xyflow/svelte';
     import { delay, sleep } from '$lib/svelte-obsidian/src/Async.js';
     import { showConfirmMenu } from '$lib/svelte-obsidian/src/Menu.js';
+    import { truncateByLength } from '$lib/svelte-obsidian/src/String.js';
 
     import ParamsButton from '../Common/ParamsButton.svelte';
     import CopyTextButton from '../Common/CopyTextButton.svelte';
@@ -17,6 +18,7 @@
     import Modal from '$lib/svelte-obsidian/src/Modal.js';
     import ParamsView from './Params.svelte'
     import EditTitle from '../Common/EditTitle.js';
+    import ParamsRole from './ParamsRole.js';
 
     const { id } = $props();
     const viewState = getContext("viewState");
@@ -26,13 +28,35 @@
     let hideStepsMenu = $state(false);
     let nodeBody = $state();
 
-    const getContextItems = () =>
+    onMount(() => 
+    {
+        scrollToBottom();
+
+        const updateNodeInternals = useUpdateNodeInternals();
+        
+        nodeState.updateNodeInternals.on(updateNodeInternals);
+        nodeState.onStartEdit.on(scrollToBottom);
+        
+        viewState.graph.nodeContent.add(id, getMessage);
+        viewState.contextItems.add(id, getHeadMenu);
+
+        return () => 
+        {
+            nodeState.updateNodeInternals.off(updateNodeInternals);
+            nodeState.onStartEdit.off(scrollToBottom);
+
+            viewState.graph.nodeContent.del(id, getMessage);
+            viewState.contextItems.del(id, getHeadMenu);
+        };
+    });
+
+    function getHeadMenu ()
     {
         const contextItems = 
         [
-            new EditTitle(
-                viewState, 
-                nodeState)
+            // new EditTitle(
+            //     viewState, 
+            //     nodeState)
         ];
 
         if (Object.keys(nodeState.messages).length > 0)
@@ -55,28 +79,46 @@
 
         return contextItems;
     };
-
-    onMount(() => 
+    
+    function getParamsMenu()
     {
-        scrollToBottom();
-
-        const updateNodeInternals = useUpdateNodeInternals();
-        
-        nodeState.updateNodeInternals.on(updateNodeInternals);
-        nodeState.onStartEdit.on(scrollToBottom);
-        
-        viewState.graph.nodeContent.add(id, getMessage);
-        viewState.contextItems.add(id, getContextItems);
-
-        return () => 
+        const getTitle = (index, letter) => 
         {
-            nodeState.updateNodeInternals.off(updateNodeInternals);
-            nodeState.onStartEdit.off(scrollToBottom);
+            const role = nodeState.roles[index];
 
-            viewState.graph.nodeContent.del(id, getMessage);
-            viewState.contextItems.del(id, getContextItems);
+            if (role.bot && role.model)
+                return truncateByLength(`Select model ${letter} → ${role.model}`, 80);
+            else
+                return `Select model ${letter}`;
+        }
+
+        const openModelSelect = (index) =>
+        {
+            const roleParams = new ParamsRole(
+                nodeState, 
+                viewState, 
+                nodeState.roles[index]);
+
+            roleParams.openModelSelect();
         };
-    });
+
+        const paramsMenu = 
+        [{
+            icon : "bot-message-square",
+            title : getTitle(0, "A"),
+            class : "role1",
+            onclick : () => openModelSelect(0)
+        },
+        {
+            icon : "bot-message-square",
+            title : getTitle(1, "B"),
+            class : "role2",
+            onclick : () => openModelSelect(1)
+        }];
+            
+        paramsMenu.push(new EditTitle(viewState, nodeState));
+        return paramsMenu;
+    }
 
     async function scrollToBottom(timeout = 100)
     {
@@ -309,7 +351,7 @@
                         label={"Scroll down ▼\n[Shift] Scroll to bottom"} />
 
                     <CopyTextButton {nodeState} label="Copy thread" />
-                    <ParamsButton onclick={showParams} />
+                    <ParamsButton onclick={showParams} {viewState} {nodeState} {getParamsMenu}/>
                 </node-header-right>
             </node-header>
 

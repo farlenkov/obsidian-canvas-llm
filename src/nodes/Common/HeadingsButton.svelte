@@ -6,13 +6,13 @@
     import { truncateByLength } from '$lib/svelte-obsidian/src/String.js';
 
     let { 
-        app,
-        class : className, 
-        onclick : callback, 
+        app, 
+        title,
         bodyEl,
         selector,
-        title,
-        refresh:onRefresh } = $props();
+        class : className, 
+        onclick : callback,
+        refresh : onRefresh } = $props();
 
     let headings = $state([]);
 
