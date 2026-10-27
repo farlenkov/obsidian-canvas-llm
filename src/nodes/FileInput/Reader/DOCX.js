@@ -1,6 +1,6 @@
-import mammoth from "mammoth";
 import TurndownService from "turndown";
 import FileReader from './FileReader';
+import { OfficeParser } from 'officeparser';
 
 const turndown = new TurndownService
 ({
@@ -18,13 +18,11 @@ export default class DocxReader extends FileReader
 
     async read(file, tabs, preview)
     {
-        const fileBuffer = await this.app.vault.readBinary(file);
-        const result = await mammoth.convertToHtml({arrayBuffer: fileBuffer});
-        const html = result.value;
+        const binary = await this.app.vault.readBinary(file);
+        const buffer = new Uint8Array(binary);
 
-        const markdown = turndown.turndown(html)
-            .replace(/\n{3,}/g, "\n\n")
-            .replace(/[ \t]+/g, " ");
+        const ast = await OfficeParser.parseOffice(buffer);
+        const { value: markdown, messages } = await ast.to('md');
 
         return this.renderFile("document", tabs, file, markdown, preview);
     }
